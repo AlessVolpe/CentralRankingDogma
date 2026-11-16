@@ -46,7 +46,7 @@ Explore the additional [system boundary](docs/architecture/system.md) and [scien
 
 ## Mathematical foundation
 
-For an even number of teams \(N\), a league round is a perfect matching \(M_r\) of the team set \(V\). The strict no-rematch-until-all-opponents rule implies an unordered fixture period \(P=N-1\):
+For an even number of teams $N$, a league round is a perfect matching $M_r$ of the team set $V$. The strict no-rematch-until-all-opponents rule implies an unordered fixture period $P=N-1$:
 
 ```math
 |M_r| = \frac{N}{2},\qquad
@@ -54,14 +54,14 @@ For an even number of teams \(N\), a league round is a perfect matching \(M_r\) 
 M_{r+N-1}=M_r.
 ```
 
-Calendar generation must preserve the original **directed** encounter counts \(D_0(a,b)\), including home/away orientation:
+Calendar generation must preserve the original **directed** encounter counts $D_0(a,b)$, including home/away orientation:
 
 ```math
 D_G(a,b)=D_0(a,b),\qquad
 D_G(a,b)+D_G(b,a)=C_0(a,b).
 ```
 
-Separate standings have the invariant \(P_{\mathrm{league}}=3W+D\), whereas the original team fantasy scores remain fixed by Serie A matchday. The generic ranking abstraction orders signed scores descending, then identifiers ascending. Detailed proofs, algorithms, asymptotic bounds and scientific limitations belong to the respective [module sub-papers](docs/index.md#module-sub-papers), not to this overview. The scheduling model follows the edge-coloring perspective of [Januario et al. (2016)](docs/bibliography.md#januario-et-al-2016) and [Ribeiro et al. (2023)](docs/bibliography.md#ribeiro-et-al-2023).
+Separate standings have the invariant $P_{\mathrm{league}}=3W+D$, whereas the original team fantasy scores remain fixed by Serie A matchday. The generic ranking abstraction orders signed scores descending, then identifiers ascending. Detailed proofs, algorithms, asymptotic bounds and scientific limitations belong to the respective [module sub-papers](docs/index.md#module-sub-papers), not to this overview. The scheduling model follows the edge-coloring perspective of [Januario et al. (2016)](docs/bibliography.md#januario-et-al-2016) and [Ribeiro et al. (2023)](docs/bibliography.md#ribeiro-et-al-2023).
 
 <details>
 <summary>What the library does not yet do</summary>

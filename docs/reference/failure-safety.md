@@ -10,7 +10,7 @@ A data structure is useful as a research instrument only if failures cannot sile
 
 ## 2. Mathematical model
 
-Let \(S\) be the externally observable logical state and \(f(S,x)\) an operation. For a failure-atomic operation, a reported failure leaves the prior state unchanged:
+Let $S$ be the externally observable logical state and $f(S,x)$ an operation. For a failure-atomic operation, a reported failure leaves the prior state unchanged:
 
 ```math
 f(S,x)=\mathrm{failure}\ \Longrightarrow\ S_{after}=S_{before}.

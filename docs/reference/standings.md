@@ -10,7 +10,7 @@ A team can win different numbers of matches under different calendars despite un
 
 ## 2. Mathematical model
 
-For each team, with wins \(W\), draws \(D\) and losses \(L\), the standard points invariant is
+For each team, with wins $W$, draws $D$ and losses $L$, the standard points invariant is
 
 ```math
 P_{\rm league}=3W+D,\qquad G=W+D+L.
@@ -28,7 +28,7 @@ An individual result increments its relevant counter, awarding 3/1/0 league poin
 
 ## 5. Complexity
 
-Storing one record per team uses \(\Theta(N)\) space. Access by index and local result arithmetic are constant-time operations after validation. UUID lookup may require searching the retained identifier mapping, so no unspecified bound is promised.
+Storing one record per team uses $\Theta(N)$ space. Access by index and local result arithmetic are constant-time operations after validation. UUID lookup may require searching the retained identifier mapping, so no unspecified bound is promised.
 
 ## 6. Public C11 interface and ownership
 

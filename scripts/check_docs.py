@@ -103,6 +103,25 @@ def check_fences(path: Path, content: str) -> None:
         fail(str(path), "Mermaid block does not begin with a flowchart/graph declaration")
 
 
+def check_inline_math(path: Path, content: str) -> None:
+    """Reject unsupported TeX math delimiters in prose on GitHub.
+
+    Fenced code and inline code literals are examples, not math to render.
+    Inline math must use $...$ (or GitHub's dollar-backtick alternative).
+    """
+    in_fence = False
+    for lineno, line in enumerate(content.splitlines(), 1):
+        if re.match(r"^\s*(```|~~~)", line):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        prose = re.sub(r"`+[^`]*`+", "", line)
+        if re.search(r"\\(?:\(|\)|\[|\])", prose):
+            fail(str(path.relative_to(ROOT)),
+                 f"line {lineno}: unsupported TeX-style inline math delimiter; use $...$ on GitHub")
+
+
 def check_references() -> None:
     bib = (DOCS / "references.bib").read_text(encoding="utf-8")
     keys = re.findall(r"(?m)^@\w+\{([\w-]+)\s*,", bib)
@@ -158,6 +177,7 @@ def main() -> int:
         content = path.read_text(encoding="utf-8")
         check_fences(path, content)
         check_links(path, content)
+        check_inline_math(path, content)
     check_references()
     check_structure()
     if ERRORS:
@@ -165,7 +185,7 @@ def main() -> int:
         for message in ERRORS:
             print(" - " + message)
         return 1
-    print("Documentation checks passed: links, anchors, scientific sections, bibliography, milestones and diagrams.")
+    print("Documentation checks passed: links, anchors, inline math, scientific sections, bibliography, milestones and diagrams.")
     return 0
 
 

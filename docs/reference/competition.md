@@ -10,14 +10,14 @@ Calendar variation is meaningful only if historical player performance is held f
 
 ## 2. Mathematical model
 
-With \(N\) teams and \(R\) league rounds, a head-to-head round contains \(N/2\) fixtures and all teams exactly once:
+With $N$ teams and $R$ league rounds, a head-to-head round contains $N/2$ fixtures and all teams exactly once:
 
 ```math
 \forall r,\quad |M_r|=N/2,\quad
 \forall v\in V:\ \sum_{e\in M_r}{\bf1}[v\in e]=1.
 ```
 
-Every round maps to an increasing positive Serie A matchday \(d_r\). A score cell \((i,r)\) is `FINAL` or `PENDING`; for FINAL scores only, the partial historical total is
+Every round maps to an increasing positive Serie A matchday $d_r$. A score cell $(i,r)$ is `FINAL` or `PENDING`; for FINAL scores only, the partial historical total is
 
 ```math
 F_i=\sum_{r:\,status(i,r)=FINAL}s_{ir}.
@@ -27,15 +27,15 @@ A finalized zero is legitimate; a pending zero is not a performance observation.
 
 ## 3. Algorithm and design
 
-`competition_create` validates each UUID, unique team identity, strict day ordering, complete round participation, complete score-cell coverage and score status, then deep-copies the inputs. Team indices are sorted by UUID bytes. It caches unordered pair encounter counts \(C_0(a,b)\), which the calendar engine later preserves.
+`competition_create` validates each UUID, unique team identity, strict day ordering, complete round participation, complete score-cell coverage and score status, then deep-copies the inputs. Team indices are sorted by UUID bytes. It caches unordered pair encounter counts $C_0(a,b)$, which the calendar engine later preserves.
 
 ## 4. Invariants and correctness
 
-The constructor is failure-atomic: any invalid input or allocation failure leaves `*out == NULL`. Successful construction has exactly \(NR\) score cells, positive monotonically increasing real-day mappings, no self-fixtures and no team appearing twice in a round. Score totals use checked nonnegative arithmetic. All future mutation occurs in separate objects.
+The constructor is failure-atomic: any invalid input or allocation failure leaves `*out == NULL`. Successful construction has exactly $NR$ score cells, positive monotonically increasing real-day mappings, no self-fixtures and no team appearing twice in a round. Score totals use checked nonnegative arithmetic. All future mutation occurs in separate objects.
 
 ## 5. Complexity
 
-The mandatory \(NR\) score matrix requires \(\Theta(NR)\) memory. The pair-frequency matrix has \(\Theta(N^2)\) entries; construction additionally validates and indexes \(O(NR)\) fixtures. UUID lookup and sorting costs depend on the indexing strategy and are not claimed as fixed amortized bounds here.
+The mandatory $NR$ score matrix requires $\Theta(NR)$ memory. The pair-frequency matrix has $\Theta(N^2)$ entries; construction additionally validates and indexes $O(NR)$ fixtures. UUID lookup and sorting costs depend on the indexing strategy and are not claimed as fixed amortized bounds here.
 
 ## 6. Public C11 interface and ownership
 

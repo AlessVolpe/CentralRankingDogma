@@ -19,7 +19,13 @@ Each `docs/reference/*.md` must have, in order:
 9. `## 8. Limitations`
 10. `## References`
 
-A section can say that an asymptotic claim or formal proof is not applicable. Do not invent theorems to fill a heading. Put GitHub `math` fenced blocks around displayed equations; use inline `\(...\)` for simple symbols. Long examples can use GitHub `<details>` with a descriptive `<summary>`.
+A section can say that an asymptotic claim or formal proof is not applicable.
+Do not invent theorems to fill a heading. Use GitHub `math` fenced blocks for
+standalone equations and `$...$` for inline mathematics. Do **not** use
+`\(...\)` or `\[...\]` as math delimiters: GitHub may display them as literal
+text. For Markdown-sensitive expressions, use GitHub's dollar-backtick form
+(see [GitHub's math documentation](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions)).
+Long examples can use GitHub `<details>` with a descriptive `<summary>`.
 
 ## Evidence labels
 

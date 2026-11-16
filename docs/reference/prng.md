@@ -16,7 +16,7 @@ The MT19937 engine has a theoretical period of
 2^{19937}-1,
 ```
 
-which is a property of its state recurrence, not evidence of uniformity over valid fixture calendars. Given a fixed implementation and seed \(z\), the output sequence is deterministic: \(X_k(z)\) is reproducible.
+which is a property of its state recurrence, not evidence of uniformity over valid fixture calendars. Given a fixed implementation and seed $z$, the output sequence is deterministic: $X_k(z)$ is reproducible.
 
 ## 3. Algorithm and design
 
@@ -28,7 +28,7 @@ A fixed standard seed produces the published MT19937 reference sequence for the 
 
 ## 5. Complexity
 
-A pseudorandom draw has amortized \(O(1)\) time with a fixed 624-word state; initialization is \(O(624)\), constant relative to league size. Rejection sampling has expected bounded work but not a deterministic fixed iteration count for every possible stream.
+A pseudorandom draw has amortized $O(1)$ time with a fixed 624-word state; initialization is $O(624)$, constant relative to league size. Rejection sampling has expected bounded work but not a deterministic fixed iteration count for every possible stream.
 
 ## 6. Public C11 interface and ownership
 

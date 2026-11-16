@@ -10,17 +10,17 @@ Hash tables trade probabilistic expected lookup cost for compact, contiguous sto
 
 ## 2. Mathematical model
 
-For keys \(x\) and table capacity \(m\), \(h(x)\in\{0,\ldots,m-1\}\). In linear probing the \(j\)-th candidate is
+For keys $x$ and table capacity $m$, $h(x)\in\{0,\ldots,m-1\}$. In linear probing the $j$-th candidate is
 
 ```math
 p_j(x) = (h(x)+j)\bmod m,\qquad \alpha=\frac{n}{m}\le 0.75.
 ```
 
-Here \(n\) is the number of occupied entries. Clustering can degrade operation costs despite the load-factor bound.
+Here $n$ is the number of occupied entries. Clustering can degrade operation costs despite the load-factor bound.
 
 ## 3. Algorithm and design
 
-Insertion scans from \(h(x)\) to find an equal key or unused slot; growth may rehash existing entries. Lookup follows the same probe chain. Removal shifts subsequent elements backward where necessary to maintain reachability without tombstones. The modern `HASHMAP_TYPED_DEFINE` interface supplies type-correct callback adapters rather than incompatible pointer casts.
+Insertion scans from $h(x)$ to find an equal key or unused slot; growth may rehash existing entries. Lookup follows the same probe chain. Removal shifts subsequent elements backward where necessary to maintain reachability without tombstones. The modern `HASHMAP_TYPED_DEFINE` interface supplies type-correct callback adapters rather than incompatible pointer casts.
 
 ## 4. Invariants and correctness
 
@@ -31,7 +31,7 @@ Insertion scans from \(h(x)\) to find an equal key or unused slot; growth may re
 
 ## 5. Complexity
 
-Expected average lookup/update is \(O(1)\) under adequate hashing and controlled load, but worst-case probing is \(O(n)\). Rehashing is \(O(n)\); insertion's typical amortized expectation is not a per-operation guarantee. Capacity-dependent memory use is \(O(m)\).
+Expected average lookup/update is $O(1)$ under adequate hashing and controlled load, but worst-case probing is $O(n)$. Rehashing is $O(n)$; insertion's typical amortized expectation is not a per-operation guarantee. Capacity-dependent memory use is $O(m)$.
 
 ## 6. Public C11 interface and ownership
 

@@ -10,7 +10,7 @@ A ranking must support updates without rebuilding an entire sorted array and mus
 
 ## 2. Mathematical model
 
-For records \(a\) and \(b\) with signed 64-bit scores \(s\) and string identifiers \(id\), define:
+For records $a$ and $b$ with signed 64-bit scores $s$ and string identifiers $id$, define:
 
 ```math
 a\prec b\iff(s_a>s_b)\lor (s_a=s_b\land id_a<id_b).
@@ -32,7 +32,7 @@ Every stored ID has exactly one hashmap entry and one ordered tree entry. The sc
 
 ## 5. Complexity
 
-AVL order queries are \(O(\log n)\) worst-case, after ID lookup. Hashmap lookup is expected \(O(1)\), worst case \(O(n)\); an upsert that changes ordering requires logarithmic tree operations plus possible hash reallocation.
+AVL order queries are $O(\log n)$ worst-case, after ID lookup. Hashmap lookup is expected $O(1)$, worst case $O(n)$; an upsert that changes ordering requires logarithmic tree operations plus possible hash reallocation.
 
 ## 6. Public C11 interface and ownership
 

@@ -10,7 +10,7 @@ Rank and selection require structure beyond a basic binary-search tree. AVL bala
 
 ## 2. Mathematical model
 
-For a node \(v\), let \(L(v)\) and \(R(v)\) denote its children. Subtree cardinality and balance satisfy
+For a node $v$, let $L(v)$ and $R(v)$ denote its children. Subtree cardinality and balance satisfy
 
 ```math
 S(v)=1+S(L(v))+S(R(v)),\qquad S(\varnothing)=0,
@@ -20,7 +20,7 @@ S(v)=1+S(L(v))+S(R(v)),\qquad S(\varnothing)=0,
 |h(L(v))-h(R(v))|\le 1.
 ```
 
-If \(k\) is the left subtree size, selecting index \(i\) descends left for \(i<k\), returns the node for \(i=k\), or descends right for \(i>k\) with adjusted index \(i-k-1\).
+If $k$ is the left subtree size, selecting index $i$ descends left for $i<k$, returns the node for $i=k$, or descends right for $i>k$ with adjusted index $i-k-1$.
 
 ## 3. Algorithm and design
 
@@ -32,7 +32,7 @@ The tree preserves BST ordering, parent links, AVL height balance, subtree cardi
 
 ## 5. Complexity
 
-AVL height is \(O(\log n)\). Search, insertion, deletion, rank and selection are \(O(\log n)\) worst-case, assuming constant-cost comparisons. Storage is \(O(n)\) nodes; no claim is made about custom comparator cost.
+AVL height is $O(\log n)$. Search, insertion, deletion, rank and selection are $O(\log n)$ worst-case, assuming constant-cost comparisons. Storage is $O(n)$ nodes; no claim is made about custom comparator cost.
 
 ## 6. Public C11 interface and ownership
 

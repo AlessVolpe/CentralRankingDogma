@@ -10,7 +10,7 @@ Human-readable names need not be unique or stable. UUID identity avoids conflati
 
 ## 2. Mathematical model
 
-A team record is \(t=(u,n,f)\) where \(u\in\{0,1\}^{128}\) is a UUID, \(n\) a bounded display name, and \(f\in[0,2^{32}-1]\) an integer count of fantasy-point **tenths**. A 16-byte binary UUID is ordered lexicographically to assign deterministic indices within a competition.
+A team record is $t=(u,n,f)$ where $u\in\{0,1\}^{128}$ is a UUID, $n$ a bounded display name, and $f\in[0,2^{32}-1]$ an integer count of fantasy-point **tenths**. A 16-byte binary UUID is ordered lexicographically to assign deterministic indices within a competition.
 
 ## 3. Algorithm and design
 
@@ -22,7 +22,7 @@ Team UUIDs are unique within a validated competition, although names can repeat.
 
 ## 5. Complexity
 
-UUID compare, parse and format have \(O(1)\) cost for fixed-width identifiers. Team construction requires \(O(|n|)\) time and storage to copy the bounded name. Constructing and sorting a competition's full team set is addressed in the [competition paper](competition.md).
+UUID compare, parse and format have $O(1)$ cost for fixed-width identifiers. Team construction requires $O(|n|)$ time and storage to copy the bounded name. Constructing and sorting a competition's full team set is addressed in the [competition paper](competition.md).
 
 ## 6. Public C11 interface and ownership
 

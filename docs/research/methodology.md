@@ -14,9 +14,9 @@ How sensitive are championship outcomes to the allocation of a fixed set of hist
 
 ## Metrics and reproducibility
 
-Record league size \(N\), rounds \(R\), original fixture hash, seed, sampling mode, generation counts, modified base/season rounds, accepted exchanges, search exhaustion counts, unique fingerprints, runtime, compiler, flags and hardware. Since fingerprints are not collision-proof, never equate distinct hashes with a formal proof of distinct calendars.
+Record league size $N$, rounds $R$, original fixture hash, seed, sampling mode, generation counts, modified base/season rounds, accepted exchanges, search exhaustion counts, unique fingerprints, runtime, compiler, flags and hardware. Since fingerprints are not collision-proof, never equate distinct hashes with a formal proof of distinct calendars.
 
-The empirical measure \(\hat{p}(A)=k_A/n\) is descriptive for observed sampled calendars. Without established mixing and uniformity, it should **not** be presented as the exact proportion of all feasible calendars satisfying event \(A\).
+The empirical measure $\hat{p}(A)=k_A/n$ is descriptive for observed sampled calendars. Without established mixing and uniformity, it should **not** be presented as the exact proportion of all feasible calendars satisfying event $A$.
 
 ## Distinguish questions
 

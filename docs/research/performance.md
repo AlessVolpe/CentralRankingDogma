@@ -8,7 +8,7 @@ This document distinguishes the **existing performance benchmark machinery** int
 
 ## Proposed 3.1.2 comparisons
 
-For fixture generation, vary \(N\in\{8,10,12\}\), round count, seed, sample count, independent/chain mode and three-round budgets. Record elapsed/CPU time, peak memory, accepted/rejected moves, search limits and diversity. Compare the constrained shuffle baseline with two-/three-round recombination under **identical input and hardware**.
+For fixture generation, vary $N\in\{8,10,12\}$, round count, seed, sample count, independent/chain mode and three-round budgets. Record elapsed/CPU time, peak memory, accepted/rejected moves, search limits and diversity. Compare the constrained shuffle baseline with two-/three-round recombination under **identical input and hardware**.
 
 Time and storage should be interpreted alongside their algorithmic cost models, not as absolute machine-independent numbers. Statistical analysis should report repeated-run variation and account for correlated chain samples. Avoid cross-machine speed comparisons without normalized configurations.
 
