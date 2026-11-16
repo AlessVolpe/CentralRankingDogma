@@ -1,5 +1,9 @@
 # Team/player model: simulation-independent totals and league standings
 
+> **Historical contract for 3.0.10.5.** The `player_t` API described here
+> was replaced in 3.0.11 by [`team_t` and `competition_t`](league-fixture-contract-3.0.11.md).
+> Read the 3.0.11 migration notes before updating existing consumers.
+
 ## Scope
 
 `player_t` is the small, public C representation of a Fantacalcio **team**.

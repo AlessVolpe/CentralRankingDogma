@@ -1,6 +1,6 @@
 # LeaderboardSystem documentation
 
-The current CMake package version is **3.0.10.5**. This index separates the
+The current CMake package version is **3.0.11**. This index separates the
 implemented interfaces from historical milestone descriptions.
 
 ## Current reference
@@ -9,8 +9,13 @@ implemented interfaces from historical milestone descriptions.
   interfaces, ownership and future Python/fixture integration boundaries.
 - [Verification](verification.md): CMake, CTest, CI, installed consumer,
   sanitizers and optional benchmarks.
-- [Team/player model](team-player-model.md): championship points, fantasy
-  totals in tenths, borrowed names and compatibility.
+- [League/fixture contract (3.0.11)](league-fixture-contract-3.0.11.md):
+  team UUID identity, snapshot creation, scores, fixtures and pair frequencies.
+- [Standings contract (3.0.11)](standings-contract-3.0.11.md):
+  reusable mutable championship points and W/D/L counters; reset and lookup API.
+- [3.0.11 migration](league-3.0.11-CHANGELOG.md): public API compatibility.
+- [Historical team/player model (3.0.10.5)](team-player-model.md):
+  superseded player struct and compatibility notes.
 - [Contributing](../CONTRIBUTING.md): toolchains and development practices.
 
 ## Historical milestone contracts

@@ -107,6 +107,9 @@ add_library(leaderboard_fault_test STATIC
     ${PROJECT_SOURCE_DIR}/src/hashmap.c
     ${PROJECT_SOURCE_DIR}/src/bostree.c
     ${PROJECT_SOURCE_DIR}/src/ranking.c
+    ${PROJECT_SOURCE_DIR}/src/team.c
+    ${PROJECT_SOURCE_DIR}/src/competition.c
+    ${PROJECT_SOURCE_DIR}/src/standings.c
     ${PROJECT_SOURCE_DIR}/src/alloc.c)
 target_include_directories(leaderboard_fault_test PRIVATE
     ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
@@ -231,7 +234,7 @@ add_test(NAME ranking_batch_example COMMAND leaderboard_ranking_batch)
 # Standalone ISO C11 translation units for installed public headers.
 # In contrast to a combined include test, this also catches missing headers.
 foreach (header IN ITEMS
-        bostree commons hashmap_base hashmap_typed mtwister player ranking)
+        bostree commons hashmap_base hashmap_typed mtwister team competition standings ranking)
     add_library(header_c11_${header} OBJECT test_public_header_c11.c)
     target_include_directories(header_c11_${header} PRIVATE ${PROJECT_SOURCE_DIR}/include)
     target_compile_definitions(header_c11_${header} PRIVATE
@@ -243,12 +246,29 @@ foreach (header IN ITEMS
     endif()
 endforeach()
 
-# Team model: fixed season aggregate and simulation-dependent league points.
-add_executable(test_player test_player.c)
-target_link_libraries(test_player PRIVATE Leaderboard::leaderboard)
-leaderboard_apply_dev_options(test_player)
-set_target_properties(test_player PROPERTIES C_EXTENSIONS OFF)
-add_test(NAME player_model_contract COMMAND test_player)
+# 3.0.11 team/UUID contract and the full user-provided fixture regression.
+add_executable(test_team test_team.c)
+target_link_libraries(test_team PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_team)
+set_target_properties(test_team PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME team_model_contract COMMAND test_team)
+
+add_executable(test_competition test_competition.c)
+target_link_libraries(test_competition PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_competition)
+set_target_properties(test_competition PROPERTIES C_EXTENSIONS OFF)
+target_compile_definitions(test_competition PRIVATE
+    "LEADERBOARD_CALENDAR_TSV=\"${CMAKE_CURRENT_SOURCE_DIR}/fixtures/calendar_2026_2027.tsv\"")
+add_test(NAME competition_snapshot_contract COMMAND test_competition)
+
+add_executable(test_competition_failures test_competition_failures.c)
+target_include_directories(test_competition_failures PRIVATE
+    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+target_compile_definitions(test_competition_failures PRIVATE LEADERBOARD_TEST_ALLOCATION_FAULTS)
+target_link_libraries(test_competition_failures PRIVATE leaderboard_fault_test)
+leaderboard_apply_dev_options(test_competition_failures)
+set_target_properties(test_competition_failures PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME competition_allocation_failures COMMAND test_competition_failures)
 
 # Team names are human-readable, including embedded spaces.
 add_test(NAME leaderboard_cli_team_names COMMAND ${CMAKE_COMMAND}
@@ -257,3 +277,20 @@ add_test(NAME leaderboard_cli_team_names COMMAND ${CMAKE_COMMAND}
     -DEXPECT_INSERTED=5
     -DEXPECT_DUPLICATES=0
     -P ${CMAKE_CURRENT_SOURCE_DIR}/run_leaderboard_cli.cmake)
+
+# 3.0.11: reusable mutable W/D/L and championship-points state.
+add_executable(test_standings test_standings.c)
+target_link_libraries(test_standings PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_standings)
+set_target_properties(test_standings PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME standings_contract COMMAND test_standings)
+
+# White-box overflow plus deterministic allocation-failure rollback.
+add_executable(test_standings_failures test_standings_failures.c)
+target_include_directories(test_standings_failures PRIVATE
+    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+target_compile_definitions(test_standings_failures PRIVATE LEADERBOARD_TEST_ALLOCATION_FAULTS)
+target_link_libraries(test_standings_failures PRIVATE leaderboard_fault_test)
+leaderboard_apply_dev_options(test_standings_failures)
+set_target_properties(test_standings_failures PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME standings_failure_contract COMMAND test_standings_failures)

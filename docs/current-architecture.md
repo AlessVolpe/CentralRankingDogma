@@ -1,54 +1,61 @@
 # Current architecture and integration boundaries
 
-**Baseline:** post-player-refactor `master`, package version **3.0.10.5**.
-This is the native C library, not a working Fantacalcio simulation engine.
+**Baseline:** milestone 3.0.11. The library exports `Leaderboard::leaderboard`
+as a single installed C11 static archive. The Python application is not built
+in this repository and no fixture permutation/match simulation is implemented.
 
-## Native components
+## Native layers
 
-CMake combines the internal `leaderboard_containers_obj`,
-`leaderboard_ranking_obj` and `leaderboard_legacy_obj` targets into a single
-static `leaderboard` library exported as `Leaderboard::leaderboard`.
-These object targets are not independently installable libraries.
-
-| Layer | Interface | Role |
+| Layer | Interface | Responsibility |
 | --- | --- | --- |
-| Hashmap | `hashmap_base.h`, `hashmap_typed.h` | Keyed lookup and portable typed callbacks |
-| AVL order-statistics tree | `bostree.h` | Search, deletion, zero-based rank and selection |
-| Generic ranking | `ranking.h` | Opaque `ranking_t`, descending signed 64-bit score and identifier tie-break |
-| Team record | `player.h` | Borrowed team name, championship points, fantasy total in tenths |
-| PRNG / example utilities | `mtwister.h`, legacy helpers | MT19937 and demonstration support |
+| Hashmap | `hashmap_base.h`, `hashmap_typed.h` | Identifier lookup / typed callbacks |
+| AVL order-statistics tree | `bostree.h` | Ordered search, rank and selection |
+| Generic ranking | `ranking.h` | Independent signed-64-bit scores and deterministic ID tie-break |
+| Team identity | `team.h` | Parsed UUIDs, owned names, historical sum in tenths |
+| Competition | `competition.h` | Validated original calendar, scores, pair frequencies, immutable snapshot |
+| Championship standings | `standings.h` | Per-simulation W/D/L and checked 3/1/0 point accumulation |
+| PRNG and examples | `mtwister.h`, legacy utilities | Deterministic/noncryptographic PRNG and demos |
 
-New code should prefer the portable C11 typed hashmap API; deprecated
-`HASHMAP(...)` macros require GNU extensions. Internal representations are
-private and are included by designated white-box tests only.
+CMake builds `leaderboard_containers_obj`, `leaderboard_ranking_obj`,
+`leaderboard_legacy_obj`, and `leaderboard_domain_obj` into one static target.
+The old GNU-extension `HASHMAP(...)` macros remain compatibility-only; use
+`hashmap_typed.h` for strict C11 clients. Only designated white-box tests can
+access internal representations.
 
-## Team records versus generic rankings
+## Domain boundaries
 
-A `player_t` represents a Fantacalcio **team**, despite its historical name.
-It borrows its NUL-terminated name and does not treat it as a unique key.
-`total_points_tenths` stores the nonnegative, one-decimal season score
-(e.g. `24835` is `2483.5`) independently of fixture permutations.
-`championship_points` accumulates simulation-dependent standings points and
-can be reset without changing the total. Addition is checked for overflow.
+Team UUIDs are supplied externally (future DB) and converted to 16-byte
+identifiers. Competition indices are stable for an input set because they are
+sorted by UUID bytes; they are not persistent IDs. `team_t` owns its copied
+name. Immutable `competition_t` owns a deep copy of input data and exposes
+only read-only names plus copied fixture, score, and UUID values.
 
-The independent `ranking_t` copies its identifiers and uses a **single**
-signed 64-bit score. Its deterministic order is descending score, then
-ascending ID. It does not infer championship rules, fantasy totals, or
-season ranking tie-break policies. The interactive CLI's name-ordered tree
-and the batch ranking example demonstrate APIs, not fixture simulation.
+There are no simulation-dependent championship points in `team_t`.
+`standings_t` owns a separately allocated array of zeroed championship records
+with copied UUIDs in the same sorted order as the original competition.
+It can outlive `competition_t`, tracks wins/draws/losses and the derived
+championship points, and supports reset between calendar experiments.
+`standings_record_match` applies an externally supplied outcome to both
+teams atomically; fantasy-goal and match outcome calculations remain future work.
+A team's `total_points_tenths` is derived from finalized historical day scores; when
+the season is incomplete this is a **partial** sum. Pending scores are
+represented explicitly and do not equal a finalized score of zero.
 
-The change from `player->score` to the two `uint32_t` fields changes the
-public structure layout. Native consumers of the old layout must be rebuilt.
-Destroying a player does not free its borrowed name; an identifier borrowed
-from `ranking_t` becomes invalid after removal/destruction.
+A league round maps to a distinct Serie A matchday, possibly beginning later
+than Serie A matchday 1. The original fixtures are preserved verbatim after
+UUID-to-index normalization. Pair frequencies are cached for 3.0.12, whose
+generated calendars must preserve the exact unordered pair counts. Home/away
+order is retained but home advantage is disabled.
 
-## Future integration, not implemented
+The existing `ranking_t` maintains its independent signed-64-bit score API
+and has no implicit Fantacalcio tie-break rules. The interactive CLI remains
+a demonstration, not a fixture simulator.
 
-Teams will be registered and stored by the Python web application/database.
-The initial basic Fantagazzetta fixture list will be supplied externally;
-a future C engine will generate calendar permutations, simulate standings,
-and return results to the application. Calendar import, permutations,
-tie-break policies, persistence and Python bindings remain separate design
-and implementation tasks. None are implied by the generic ranking API.
+No persistence, database calls, athlete-grade calculation, configurable
+bonus/malus, calendar permutations, **match-outcome calculation**, or Python
+bindings are included. The standings layer only records outcomes provided by
+its caller.
 
-See the [team/player contract](team-player-model.md) for field-level details.
+See [3.0.11 league/fixture contract](league-fixture-contract-3.0.11.md),
+[standings contract](standings-contract-3.0.11.md), and
+[3.0.11 migration notes](league-3.0.11-CHANGELOG.md).

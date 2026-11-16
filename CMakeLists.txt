@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(leaderboardsystem VERSION 3.0.10.5 LANGUAGES C)
+project(leaderboardsystem VERSION 3.0.11 LANGUAGES C)
 
 include(CTest)
 include(GNUInstallDirs)
@@ -69,11 +69,15 @@ add_library(leaderboard_ranking_obj OBJECT
 )
 add_library(leaderboard_legacy_obj OBJECT
         src/mtwister.c
-        src/player.c
         src/commons.c
 )
+add_library(leaderboard_domain_obj OBJECT
+        src/team.c
+        src/competition.c
+        src/standings.c
+)
 
-foreach (component IN ITEMS containers ranking legacy)
+foreach (component IN ITEMS containers ranking legacy domain)
     target_include_directories(leaderboard_${component}_obj PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/include)
     leaderboard_apply_dev_options(leaderboard_${component}_obj)
@@ -84,11 +88,14 @@ target_include_directories(leaderboard_containers_obj PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
 target_include_directories(leaderboard_ranking_obj PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
+target_include_directories(leaderboard_domain_obj PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
 
 add_library(leaderboard STATIC
         $<TARGET_OBJECTS:leaderboard_containers_obj>
         $<TARGET_OBJECTS:leaderboard_ranking_obj>
         $<TARGET_OBJECTS:leaderboard_legacy_obj>
+        $<TARGET_OBJECTS:leaderboard_domain_obj>
 )
 add_library(Leaderboard::leaderboard ALIAS leaderboard)
 
