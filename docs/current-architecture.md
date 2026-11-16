@@ -1,8 +1,8 @@
 # Current architecture and integration boundaries
 
-**Baseline:** milestone 3.0.11. The library exports `Leaderboard::leaderboard`
+**Baseline:** milestone 3.0.12. The library exports `Leaderboard::leaderboard`
 as a single installed C11 static archive. The Python application is not built
-in this repository and no fixture permutation/match simulation is implemented.
+in this repository; fixture permutations are implemented but match resolution is not.
 
 ## Native layers
 
@@ -14,6 +14,7 @@ in this repository and no fixture permutation/match simulation is implemented.
 | Team identity | `team.h` | Parsed UUIDs, owned names, historical sum in tenths |
 | Competition | `competition.h` | Validated original calendar, scores, pair frequencies, immutable snapshot |
 | Championship standings | `standings.h` | Per-simulation W/D/L and checked 3/1/0 point accumulation |
+| Calendar permutation | `calendar.h` | Periodic opponent schedules, seeded shuffle, 2/3-round recoloring, validation |
 | PRNG and examples | `mtwister.h`, legacy utilities | Deterministic/noncryptographic PRNG and demos |
 
 CMake builds `leaderboard_containers_obj`, `leaderboard_ranking_obj`,
@@ -43,19 +44,22 @@ represented explicitly and do not equal a finalized score of zero.
 
 A league round maps to a distinct Serie A matchday, possibly beginning later
 than Serie A matchday 1. The original fixtures are preserved verbatim after
-UUID-to-index normalization. Pair frequencies are cached for 3.0.12, whose
-generated calendars must preserve the exact unordered pair counts. Home/away
-order is retained but home advantage is disabled.
+UUID-to-index normalization. Pair frequencies are used in 3.0.12, whose
+generated calendars preserve exact unordered and directed home/away pair
+counts. The stronger cooldown requires every team to face all opponents
+before repeating one; generated pairings therefore repeat every `N-1`
+rounds. It is enforced by generator creation, not by 3.0.11 snapshot import.
+Home advantage remains disabled. Only calendars are generated, not match results.
 
 The existing `ranking_t` maintains its independent signed-64-bit score API
 and has no implicit Fantacalcio tie-break rules. The interactive CLI remains
 a demonstration, not a fixture simulator.
 
 No persistence, database calls, athlete-grade calculation, configurable
-bonus/malus, calendar permutations, **match-outcome calculation**, or Python
-bindings are included. The standings layer only records outcomes provided by
+bonus/malus, **match-outcome calculation**, or Python bindings are included. The standings layer only records outcomes provided by
 its caller.
 
 See [3.0.11 league/fixture contract](league-fixture-contract-3.0.11.md),
 [standings contract](standings-contract-3.0.11.md), and
-[3.0.11 migration notes](league-3.0.11-CHANGELOG.md).
+[3.0.11 migration notes](league-3.0.11-CHANGELOG.md), and
+[3.0.12 mathematical contract](calendar-permutation-3.0.12.md).

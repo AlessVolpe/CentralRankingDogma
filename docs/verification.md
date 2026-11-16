@@ -19,7 +19,9 @@ ctest --test-dir build --output-on-failure
 `ctest --test-dir build -N` lists configured tests. The 3.0.11 cases are
 `team_model_contract`, `competition_snapshot_contract`,
 `competition_allocation_failures`, `standings_contract`,
-`standings_failure_contract` and `leaderboard_cli_team_names`; ranking
+`standings_failure_contract`, `calendar_permutation_contract`,
+`calendar_permutation_failures`, `calendar_sampling_diagnostics`,
+and `leaderboard_cli_team_names`; ranking
 and container invariants, deletion lifecycle, failure injection, and
 `mtwister_reference_vectors` run in the ordinary suite as well.
 
@@ -54,9 +56,9 @@ cmake --build build-consumer
 ctest --test-dir build-consumer --output-on-failure
 ```
 
-Current CMake version: `3.0.11`. The independent installed consumer
-requests `Leaderboard 3.0.11`, and exercises `team_t`, `competition_t`
-and `standings_t`.
+Current CMake version: `3.0.12`. The independent installed consumer
+requests `Leaderboard 3.0.12`, and exercises `team_t`, `competition_t`
+`standings_t` and `calendar_t`.
 The old public `player_t` API is removed; clients must rebuild and migrate.
 Version numbering alone does not establish ABI compatibility.
 

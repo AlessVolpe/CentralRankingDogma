@@ -11,6 +11,7 @@
 #include "team.h"
 #include "competition.h"
 #include "standings.h"
+#include "calendar.h"
 #include "hashmap_typed.h"
 
 HASHMAP_TYPED_DEFINE(external_score_map, char, int)
@@ -73,6 +74,23 @@ int main(void) {
          competition_pair_count(competition,0U,1U,&pair_count) == 0 &&
          pair_count == 1U;
     if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
+
+    /* An installed consumer can generate and validate a calendar without
+     * depending on private headers or the repository source tree. */
+    calendar_options_t options = calendar_options_default();
+    options.method = CALENDAR_METHOD_ROUND_SHUFFLE;
+    calendar_generator_t *generator = NULL;
+    calendar_t *permuted = NULL;
+    if (calendar_generator_create(competition, &options, &generator) != 0 ||
+        calendar_generator_next(generator, &permuted, NULL) != 0 ||
+        calendar_validate(competition, permuted) != 0) {
+        calendar_destroy(permuted);
+        calendar_generator_destroy(generator);
+        competition_destroy(competition);
+        return EXIT_FAILURE;
+    }
+    calendar_generator_destroy(generator);
+    calendar_destroy(permuted);
 
     standings_t *standings = NULL;
     if (standings_create(competition, &standings) != 0) {
