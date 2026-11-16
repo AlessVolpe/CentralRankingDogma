@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install pinned documentation validation tools
-        run: npm install --no-save --package-lock=false markdownlint-cli2@0.20.0 mermaid@11.12.0
+        run: npm install --no-save --package-lock=false markdownlint-cli2@0.20.0 mermaid@11.12.0 jsdom@26.1.0
       - name: Lint canonical Markdown (historical archive excluded)
         run: npx --no-install markdownlint-cli2 'README.md' 'CONTRIBUTING.md' 'docs/**/*.md' '#docs/archive/**'
       - name: Parse current Mermaid diagrams
