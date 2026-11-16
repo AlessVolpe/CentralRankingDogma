@@ -110,6 +110,10 @@ add_library(leaderboard_fault_test STATIC
     ${PROJECT_SOURCE_DIR}/src/team.c
     ${PROJECT_SOURCE_DIR}/src/competition.c
     ${PROJECT_SOURCE_DIR}/src/standings.c
+    ${PROJECT_SOURCE_DIR}/src/calendar.c
+    ${PROJECT_SOURCE_DIR}/src/calendar_shuffle.c
+    ${PROJECT_SOURCE_DIR}/src/calendar_recombine.c
+    ${PROJECT_SOURCE_DIR}/src/mtwister.c
     ${PROJECT_SOURCE_DIR}/src/alloc.c)
 target_include_directories(leaderboard_fault_test PRIVATE
     ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
@@ -234,7 +238,7 @@ add_test(NAME ranking_batch_example COMMAND leaderboard_ranking_batch)
 # Standalone ISO C11 translation units for installed public headers.
 # In contrast to a combined include test, this also catches missing headers.
 foreach (header IN ITEMS
-        bostree commons hashmap_base hashmap_typed mtwister team competition standings ranking)
+        bostree commons hashmap_base hashmap_typed mtwister team competition standings calendar ranking)
     add_library(header_c11_${header} OBJECT test_public_header_c11.c)
     target_include_directories(header_c11_${header} PRIVATE ${PROJECT_SOURCE_DIR}/include)
     target_compile_definitions(header_c11_${header} PRIVATE
@@ -294,3 +298,29 @@ target_link_libraries(test_standings_failures PRIVATE leaderboard_fault_test)
 leaderboard_apply_dev_options(test_standings_failures)
 set_target_properties(test_standings_failures PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME standings_failure_contract COMMAND test_standings_failures)
+
+# 3.0.12: fixture permutations and strict rematch cooldown.
+add_executable(test_calendar test_calendar.c)
+target_link_libraries(test_calendar PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_calendar)
+set_target_properties(test_calendar PROPERTIES C_EXTENSIONS OFF)
+target_compile_definitions(test_calendar PRIVATE
+    "LEADERBOARD_CALENDAR_TSV=\"${CMAKE_CURRENT_SOURCE_DIR}/fixtures/calendar_2026_2027.tsv\"")
+add_test(NAME calendar_permutation_contract COMMAND test_calendar)
+
+# White-box validation and allocation-failure atomicity.
+add_executable(test_calendar_failures test_calendar_failures.c)
+target_include_directories(test_calendar_failures PRIVATE
+    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+target_compile_definitions(test_calendar_failures PRIVATE LEADERBOARD_TEST_ALLOCATION_FAULTS)
+target_link_libraries(test_calendar_failures PRIVATE leaderboard_fault_test)
+leaderboard_apply_dev_options(test_calendar_failures)
+set_target_properties(test_calendar_failures PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME calendar_permutation_failures COMMAND test_calendar_failures)
+
+# 3.0.12: empirical seeded-sampling diagnostics, not a uniformity guarantee.
+add_executable(test_calendar_sampling test_calendar_sampling.c)
+target_link_libraries(test_calendar_sampling PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_calendar_sampling)
+set_target_properties(test_calendar_sampling PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME calendar_sampling_diagnostics COMMAND test_calendar_sampling)

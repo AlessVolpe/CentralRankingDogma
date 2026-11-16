@@ -1,6 +1,6 @@
 # LeaderboardSystem documentation
 
-The current CMake package version is **3.0.11**. This index separates the
+The current CMake package version is **3.0.12**. This index separates the
 implemented interfaces from historical milestone descriptions.
 
 ## Current reference
@@ -9,6 +9,9 @@ implemented interfaces from historical milestone descriptions.
   interfaces, ownership and future Python/fixture integration boundaries.
 - [Verification](verification.md): CMake, CTest, CI, installed consumer,
   sanitizers and optional benchmarks.
+- [Calendar permutation engine (3.0.12)](calendar-permutation-3.0.12.md):
+  strict rematch periodicity, edge recoloring algorithms, unbiased bounded
+  randomness and scientific sampling limitations.
 - [League/fixture contract (3.0.11)](league-fixture-contract-3.0.11.md):
   team UUID identity, snapshot creation, scores, fixtures and pair frequencies.
 - [Standings contract (3.0.11)](standings-contract-3.0.11.md):

@@ -31,6 +31,105 @@ See the [3.0.11 competition contract](docs/league-fixture-contract-3.0.11.md),
 [standings contract](docs/standings-contract-3.0.11.md), and
 [migration notes](docs/league-3.0.11-CHANGELOG.md).
 
+### Generic ranking mathematics (existing 3.0.5 API)
+
+The independent `ranking_t` sorts records by descending signed 64-bit score
+and breaks ties by ascending identifier. Define `a \prec b` to mean that
+`a` appears before `b`:
+
+```math
+a\prec b\iff(s_a>s_b)\lor(s_a=s_b\land\mathrm{id}_a<\mathrm{id}_b),
+\qquad
+\mathrm{rank}(a)=\sum_{b\ne a}\mathbf{1}[b\prec a].
+```
+
+The rank is zero-based. Balanced AVL order statistics make rank/select
+`O(log n)` tree operations (subject to successful identifier lookup); the
+hashmap's lookup is expected `O(1)` but has a worst-case `O(n)` probe
+sequence. The [ranking contract](docs/ranking-contract.md) records the
+update, removal and tie-breaking invariants independently of league scoring.
+
+## 3.0.12: Constrained calendar permutations and scientific foundations
+
+A complete head-to-head calendar of `N` even-numbered teams is represented by
+an ordered sequence of perfect matchings `M_r`: one fixture per team in every
+round. The complete single round-robin period has `P = N-1` rounds and is a
+**one-factorization** of the complete graph `K_N`:
+
+```math
+|M_r| = \frac N2, \quad
+\biguplus_{r=0}^{N-2} M_r = E(K_N), \quad
+|E(K_N)| = \frac{N(N-1)}2.
+```
+
+Our league's strict rematch rule (each team must meet every other opponent
+before a rematch) has a useful consequence. The **unordered** matchings are
+periodic, but home/away assignments can change between occurrences:
+
+```math
+M_{r+(N-1)}=M_r \qquad (0\le r< R-(N-1)).
+```
+
+For a season of `R = m(N-1)+q` rounds, with `0 <= q < N-1`, every pairing
+in the first `q` base positions occurs `m+1` times and all remaining base
+pairings occur `m` times. An allowed permutation must preserve both its
+original encounter frequency and its **directed** home/away counts:
+
+```math
+C_G(a,b)=C_0(a,b), \quad D_G(a,b)=D_0(a,b), \quad
+D_G(a,b)+D_G(b,a)=C_G(a,b).
+```
+
+For the included 10-team, 35-round league, `35=3*9+8`. Forty pairs meet
+four times and five meet three times; the latter pairings must remain in
+the ninth base round. This constraint is checked independently of whether
+historical fantasy scores are finalized or pending.
+
+The 3.0.12 module exposes two complementary approaches:
+
+- **Constrained Fisher–Yates shuffle:** uniformly permute the base-round
+  positions *within each encounter-frequency class* using unbiased bounded
+  MT19937 draws. It is a baseline, not a uniform generator of calendars.
+- **Alternating-cycle recoloring:** choose two same-class perfect matchings
+  and exchange the round assignments of edges on an alternating cycle.
+  Both resulting matchings remain perfect matchings. Optional **three-round
+  recoloring** solves a bounded edge three-coloring problem:
+
+```math
+\forall v,\;\forall k\in\{0,1,2\}:\quad
+\sum_{e\ni v}\mathbf{1}[c(e)=k]=1.
+```
+
+The underlying mathematics draws from **one-factorizations and graph edge
+coloring** in sports scheduling, especially Januario, Urrutia, Ribeiro and
+de Werra's [2016 review](https://doi.org/10.1016/j.ejor.2016.03.038),
+[recoloring research (2021)](https://doi.org/10.1016/j.tcs.2021.03.029),
+and a [2023 tutorial](https://doi.org/10.1111/itor.13290). The shuffle uses
+Durstenfeld's [1964 algorithm](https://doi.org/10.1145/364520.364540);
+the PRNG is the existing MT19937 described below.
+
+**Seeded reproducibility is not statistical uniformity.** Two-round moves
+need not connect every factorization, bounded three-round search may fail
+to discover a new schedule, and chain-mode outputs can be correlated. The
+implementation exposes attempt counts, search budgets, changed-round counts
+and opponent-schedule fingerprints without claiming uniform sampling or
+cross-sample uniqueness. Full proofs, randomized selection formulas,
+complexity bounds and ownership contracts are in
+[the 3.0.12 mathematical specification](docs/calendar-permutation-3.0.12.md).
+
+For comparison, the simulation-dependent championship standings remain
+separate from fixed historical fantasy scores. The 3.0.11 invariant is
+
+```math
+P_{\mathrm{league}}=3W+D,\qquad
+F_i^{\mathrm{final}}=\sum_{r:\,\mathrm{status}_{ir}=\mathrm{FINAL}} s_{ir}.
+```
+
+where `s_{ir}` is the **integer fantasy score in tenths** for team `i` on
+Serie A matchday `r`; pending cells do not enter the sum. Calendar generation
+never applies bonus/malus again and does not calculate standings until
+match resolution is introduced in 3.1.0.
+
 ## Player pool or hashmap
 
 The player pool is implemented using a hashmap, a data structure that maps keys to values. An index is computed via a hash function \(h\), which maps the universe \(U\) of possible keys to one of the \(m\) available slots in the table:
@@ -155,7 +254,7 @@ graph LR
 
 ## Development: 3.x native engine foundation
 
-The current CMake project/package version is **3.0.10.5**. The numbered
+The current CMake project/package version is **3.0.12**. The numbered
 sections below describe historical milestone scopes, not the current API
 in isolation.
 

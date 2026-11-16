@@ -1,0 +1,1865 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1ac923d..572605e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ cmake_minimum_required(VERSION 3.16)
+-project(leaderboardsystem VERSION 3.0.11 LANGUAGES C)
++project(leaderboardsystem VERSION 3.0.12 LANGUAGES C)
+ 
+ include(CTest)
+ include(GNUInstallDirs)
+@@ -75,6 +75,9 @@ add_library(leaderboard_domain_obj OBJECT
+         src/team.c
+         src/competition.c
+         src/standings.c
++        src/calendar.c
++        src/calendar_shuffle.c
++        src/calendar_recombine.c
+ )
+ 
+ foreach (component IN ITEMS containers ranking legacy domain)
+diff --git a/README.md b/README.md
+index 4761c08..b6e0e30 100644
+--- a/README.md
++++ b/README.md
+@@ -31,4 +31,103 @@ See the [3.0.11 competition contract](docs/league-fixture-contract-3.0.11.md),
+ [standings contract](docs/standings-contract-3.0.11.md), and
+ [migration notes](docs/league-3.0.11-CHANGELOG.md).
+ 
++### Generic ranking mathematics (existing 3.0.5 API)
++
++The independent `ranking_t` sorts records by descending signed 64-bit score
++and breaks ties by ascending identifier. Define `a \prec b` to mean that
++`a` appears before `b`:
++
++```math
++a\prec b\iff(s_a>s_b)\lor(s_a=s_b\land\mathrm{id}_a<\mathrm{id}_b),
++\qquad
++\mathrm{rank}(a)=\sum_{b\ne a}\mathbf{1}[b\prec a].
++```
++
++The rank is zero-based. Balanced AVL order statistics make rank/select
++`O(log n)` tree operations (subject to successful identifier lookup); the
++hashmap's lookup is expected `O(1)` but has a worst-case `O(n)` probe
++sequence. The [ranking contract](docs/ranking-contract.md) records the
++update, removal and tie-breaking invariants independently of league scoring.
++
++## 3.0.12: Constrained calendar permutations and scientific foundations
++
++A complete head-to-head calendar of `N` even-numbered teams is represented by
++an ordered sequence of perfect matchings `M_r`: one fixture per team in every
++round. The complete single round-robin period has `P = N-1` rounds and is a
++**one-factorization** of the complete graph `K_N`:
++
++```math
++|M_r| = \frac N2, \quad
++\biguplus_{r=0}^{N-2} M_r = E(K_N), \quad
++|E(K_N)| = \frac{N(N-1)}2.
++```
++
++Our league's strict rematch rule (each team must meet every other opponent
++before a rematch) has a useful consequence. The **unordered** matchings are
++periodic, but home/away assignments can change between occurrences:
++
++```math
++M_{r+(N-1)}=M_r \qquad (0\le r< R-(N-1)).
++```
++
++For a season of `R = m(N-1)+q` rounds, with `0 <= q < N-1`, every pairing
++in the first `q` base positions occurs `m+1` times and all remaining base
++pairings occur `m` times. An allowed permutation must preserve both its
++original encounter frequency and its **directed** home/away counts:
++
++```math
++C_G(a,b)=C_0(a,b), \quad D_G(a,b)=D_0(a,b), \quad
++D_G(a,b)+D_G(b,a)=C_G(a,b).
++```
++
++For the included 10-team, 35-round league, `35=3*9+8`. Forty pairs meet
++four times and five meet three times; the latter pairings must remain in
++the ninth base round. This constraint is checked independently of whether
++historical fantasy scores are finalized or pending.
++
++The 3.0.12 module exposes two complementary approaches:
++
++- **Constrained Fisher–Yates shuffle:** uniformly permute the base-round
++  positions *within each encounter-frequency class* using unbiased bounded
++  MT19937 draws. It is a baseline, not a uniform generator of calendars.
++- **Alternating-cycle recoloring:** choose two same-class perfect matchings
++  and exchange the round assignments of edges on an alternating cycle.
++  Both resulting matchings remain perfect matchings. Optional **three-round
++  recoloring** solves a bounded edge three-coloring problem:
++
++```math
++\forall v,\;\forall k\in\{0,1,2\}:\quad
++\sum_{e\ni v}\mathbf{1}[c(e)=k]=1.
++```
++
++The underlying mathematics draws from **one-factorizations and graph edge
++coloring** in sports scheduling, especially Januario, Urrutia, Ribeiro and
++de Werra's [2016 review](https://doi.org/10.1016/j.ejor.2016.03.038),
++[recoloring research (2021)](https://doi.org/10.1016/j.tcs.2021.03.029),
++and a [2023 tutorial](https://doi.org/10.1111/itor.13290). The shuffle uses
++Durstenfeld's [1964 algorithm](https://doi.org/10.1145/364520.364540);
++the PRNG is the existing MT19937 described below.
++
++**Seeded reproducibility is not statistical uniformity.** Two-round moves
++need not connect every factorization, bounded three-round search may fail
++to discover a new schedule, and chain-mode outputs can be correlated. The
++implementation exposes attempt counts, search budgets, changed-round counts
++and opponent-schedule fingerprints without claiming uniform sampling or
++cross-sample uniqueness. Full proofs, randomized selection formulas,
++complexity bounds and ownership contracts are in
++[the 3.0.12 mathematical specification](docs/calendar-permutation-3.0.12.md).
++
++For comparison, the simulation-dependent championship standings remain
++separate from fixed historical fantasy scores. The 3.0.11 invariant is
++
++```math
++P_{\mathrm{league}}=3W+D,\qquad
++F_i^{\mathrm{final}}=\sum_{r:\,\mathrm{status}_{ir}=\mathrm{FINAL}} s_{ir}.
++```
++
++where `s_{ir}` is the **integer fantasy score in tenths** for team `i` on
++Serie A matchday `r`; pending cells do not enter the sum. Calendar generation
++never applies bonus/malus again and does not calculate standings until
++match resolution is introduced in 3.1.0.
++
+ ## Player pool or hashmap
+@@ -156,5 +255,5 @@
+ ## Development: 3.x native engine foundation
+ 
+-The current CMake project/package version is **3.0.10.5**. The numbered
++The current CMake project/package version is **3.0.12**. The numbered
+ sections below describe historical milestone scopes, not the current API
+ in isolation.
+diff --git a/docs/calendar-permutation-3.0.12.md b/docs/calendar-permutation-3.0.12.md
+new file mode 100644
+index 0000000..c1cb2da
+--- /dev/null
++++ b/docs/calendar-permutation-3.0.12.md
+@@ -0,0 +1,281 @@
++# Calendar Permutation Engine: mathematics and implementation (3.0.12)
++
++**Status:** implemented in the native C11 library. **Scope:** fixture scheduling
++only, with no match resolution, point bonuses, database access or Python binding.
++This is the scientific and implementation reference for `calendar.h`; the main
++[README](../README.md) retains the condensed mathematical overview.
++
++## 1. Sporting model: one-factorizations
++
++Let `N` be an **even** team count (`N >= 2`) and `R` be the number of historical
++league rounds (`R >= 1`). Each round contains exactly `N/2` fixtures; every
++team participates in exactly one. Let `V={0,...,N-1}` and let
++`M_r \subseteq {{a,b}: a,b \in V, a != b}` denote the unordered pairings in
++round `r`. Then
++
++```math
++|M_r|=N/2, \qquad \deg_{M_r}(v)=1\quad \forall v\in V.
++```
++
++Thus each `M_r` is a **perfect matching** (one-factor). A complete cycle of
++`P=N-1` rounds partitions all edges of the complete graph `K_N`:
++
++```math
++\biguplus_{r=0}^{P-1} M_r=E(K_N),\qquad
++|E(K_N)|=\binom N2=\frac{N(N-1)}2.
++```
++
++This is an *ordered one-factorization*. Edge coloring, where each color is a
++competition round, is a standard mathematical model for sports scheduling
++(Januario et al., 2016; Ribeiro et al., 2023, listed below). The implementation
++never relies on club names for graph identity: vertices are the compact,
++UUID-sorted indices of `competition_t`.
++
++### 1.1 Strict rematch cooldown and periodicity
++
++The league rule is **no repeated opponent before every other opponent has
++been faced**. With one match per team each round, the first `P` rounds
++(if present) cannot repeat an unordered pair. At round `P`, each team has
++met every other team. Its only permissible opponent at round `P+1` (1-based)
++is then its opponent from round 1; induction gives:
++
++```math
++M_{r+P}=M_r \qquad\text{for every } r \ge 0\text{ with }r+P<R.
++```
++
++The *pairings* repeat, but home/away orientation can alternate. The engine
++validates this condition on creation. A valid 3.0.11 snapshot violating the
++strict cooldown is rejected with `-ENOTSUP`. It is never silently repaired.
++
++Write `R=mP+q` with `0 <= q < P`. Pairings assigned to base slots
++`0,...,q-1` appear `m+1` times; pairings in remaining base slots appear
++`m` times. Hence for each unordered pair `{a,b}`:
++
++```math
++C(a,b)=m+\mathbf{1}[\operatorname{slot}(a,b)<q].
++```
++
++The `q` high-frequency slots and `P-q` low-frequency slots **cannot mix**
++under a legal move, since the original pair-frequency matrix must remain
++fixed. For `q=0` all `P` slots have equal frequency. For `R<P`, only `R`
++base slots exist, and each represented pair appears once.
++
++**Real regression:** `N=10, P=9, R=35=3*9+8`. Eight base positions occur
++four times, but the ninth appears three times. The five pairs in the ninth
++original round are consequently anchored in that base slot. Every emitted
++schedule retains 40 four-encounter pairs and five three-encounter pairs.
++The underlying imported matchday mapping is `league round + 3` (Serie A
++matchdays 4..38), and the source calendar contains 40 finalized fixtures and
++135 pending fixtures. Pending scores **do not** prevent schedule generation.
++
++### 1.2 Directed home/away preservation
++
++Write `D(a,b)` for the count of original matches where `a` hosts `b`. Every
++candidate must satisfy both
++
++```math
++D_G(a,b)=D_{\mathrm{original}}(a,b),\quad
++C_G(a,b)=D_G(a,b)+D_G(b,a)=C_{\mathrm{original}}(a,b).
++```
++
++To preserve directed counts without constructing a second optimization
++problem, the generator retains the *chronological orientation sequence* of
++every original pair and applies it to that pair's ordered occurrences after
++reassigning its base-round slot. This is stronger than the validation
++contract (which checks directed counts only) and introduces no home-advantage
++bonus. Because fantasy scores stay attached to their original Serie A days,
++permutations change opponents at a fixed historical performance date.
++
++## 2. Two algorithms sharing the same valid state space
++
++### 2.1 Baseline: constrained Fisher–Yates round shuffle
++
++Permute base-round positions independently in the two frequency groups.
++For a group containing `g` positions, Durstenfeld's in-place Fisher–Yates
++algorithm performs, for `i = g-1,...,1`, a swap with uniform `j \in [0,i]`.
++This is an `O(g * N)` fixture-copy procedure and, for unbiased bounded
++random draws, samples permutations **within that particular group** uniformly.
++It **does not** sample all one-factorizations or all legal schedules.
++
++### 2.2 Primary: alternating-cycle recoloring of two rounds
++
++Choose two base-round perfect matchings `M_a,M_b` in the **same** frequency
++group. The graph `(V,M_a \cup M_b)` is 2-regular; its connected components
++are alternating even cycles. On a chosen component `Q`, swap the two
++round colors of every edge:
++
++```math
++M_a'=(M_a\setminus E(Q))\cup(M_b\cap E(Q)),\qquad
++M_b'=(M_b\setminus E(Q))\cup(M_a\cap E(Q)).
++```
++
++Both new groups remain perfect matchings. The fixture multiset is unchanged.
++When there is only one component, the move merely exchanges whole rounds;
++`two_round_whole_swaps` counts such operations separately from proper partial
++cycle moves. A given input factorization might not be connected under only
++these moves, so no global reachability claim is made. The algorithm follows
++the local graph recoloring perspective developed in sports scheduling
++(Januario et al., 2016; recoloring work in *Theoretical Computer Science*, 2021).
++
++### 2.3 Optional three-round bounded exact cover
++
++Choose three base-round matchings in the same frequency group. Their union
++contains `E=3N/2` original fixtures. Reassign each fixture `e` a label
++`c(e) \in {0,1,2}` such that every team appears once in each new round:
++
++```math
++\forall v\in V,\ \forall k\in\{0,1,2\}:\quad
++\sum_{e\ni v}\mathbf{1}[c(e)=k]=1.
++```
++
++This is an edge 3-coloring / exact-cover formulation. The implementation
++uses an **iterative**, seeded randomized backtracking search with explicit
++limits on attempted color placements per restart and a limit on restarts.
++When a three-round move is enabled and its frequency group has at least three
++base rounds, it is selected with probability `1/4` on a move attempt; other
++attempts use two-round recoloring. These heuristic selection weights are
++fixed in 3.0.12 and are not calibrated for a uniform stationary measure.
++A complete solution that only reorders the three input rounds is rejected
++as trivial. On exhaustion, no partial work is committed; the next scheduled
++move still operates on a fully valid factorization. Worst-case exhaustive
++search is exponential (`O(3^E)` color assignments), but actual search visits
++at most `three_round_node_limit` placements **per restart**. This optional
++operator can reach schedules outside simple two-round recoloring neighborhoods,
++but is not proved to make the full state space connected.
++
++## 3. Reproducibility and sampling limitations
++
++All random choices use `mtwister_seed_standard` plus the library's published
++MT19937 32-bit stream. No clocks or platform-dependent `rand()` calls are used.
++To choose uniformly among the integers `0,...,b-1`, for `1<b<=2^32-1`:
++
++```math
++M=2^{32},\qquad t=M\bmod b;\qquad
++X\sim\operatorname{Uniform}\{0,...,M-1\}.
++```
++
++Reject `X<t` and output `X mod b`. Since `M-t` is divisible by `b`,
++all accepted residues have the same cardinality. This removes modulo bias,
++but it **does not** make the *overall schedule sampler* uniform.
++
++- **Independent (default):** reset the working base matching to the original
++  on every `next` call. The stateful PRNG stream continues from its previous
++  successful draw. Each sample starts from the same fixture baseline, but
++  outputs are not asserted to be independent, identically distributed, or
++  uniform over all legal calendars.
++- **Chain:** start from the previously generated matching, with explicit
++  extra `chain_warmup_moves` on the first sample and extra
++  `chain_thinning_moves` on later samples. These are additional shuffle passes
++  for the baseline method, or additional moves for recombination. The shuffle
++  always performs one normal pass per call; `moves_per_sample` applies only to
++  the recombination method. Outputs are correlated in general.
++- **No deduplication:** identical schedules may be emitted repeatedly;
++  batch-level uniqueness analysis is deferred to milestone 3.1.1.
++- **Failure atomicity:** an allocation or validation error leaves the PRNG
++  stream, chain state, and prior outputs unchanged. A repeated call after
++  clearing a fault has the same first successful output as if the failure
++  had never occurred.
++
++The FNV-1a `calendar_fingerprint()` canonicalizes the unordered opponent
++for each team in each round; it ignores fixture order and orientation. This
++is an efficient **diagnostic**, not a collision-resistant identifier and not
++proof of unique calendars. Report empirical diversity, chain autocorrelation,
++accepted moves, color-search exhaustion, and performance separately. There
++is **no claim of stationary distribution, mixing time, or uniform sampling**.
++
++## 4. Complexity and bounded behavior
++
++Let `K=N/2`, `P=N-1`, `B=min(R,P)` and `T=moves_per_sample` plus any chain
++warm-up/thinning budget. An immutable generated calendar materializes all
++`R*K` fixtures. A standard call therefore necessarily needs `Theta(RN)`
++space for its returned calendar, and `Theta(RN)` time to materialize it.
++
++| Operation | Time | Additional temporary storage |
++| --- | --- | --- |
++| Generator construction | `O(RN + BN + N^2 + B^2 N)` | `O(BN + N^2 ceil(R/P))` |
++| Baseline round shuffle | `O(BN)` | `O(1)` beyond base copy |
++| Two-round recoloring | `O(N)` per attempt | `O(N)` |
++| Three-round recoloring | `O(A * L + AN)` per attempted move; `A` restarts each of `L` nodes | `O(N)` |
++| Full candidate validation | `O(RN + N^2)` | `O(N^2 + BN)` |
++| Generated calendar storage | `Theta(RN)` | `Theta(RN)` owned |
++
++Generator initialization presently checks base-pair uniqueness by comparing
++earlier partner lookups, hence the conservative `O(B^2 N)` component.
++Search bounds limit work per requested attempt; they do not guarantee a new
++calendar. Failure-safe allocation and validation also contribute to runtime.
++
++## 5. Public C11 API and ownership
++
++`calendar.h` provides `calendar_options_default()`, creation/destruction,
++`calendar_generator_next()`, read-only matchday/fixture accessors,
++`calendar_validate()` and `calendar_fingerprint()`.
++
++- The generator **borrows** its `const competition_t*`: the source must
++  outlive it. Creating a generator on a structurally valid but cooldown-
++  incompatible competition returns `-ENOTSUP`.
++- Each successful `calendar_t` has an independently owned copy of its
++  fixtures and matchday mapping. It survives generator destruction. Team
++  indices refer to its original UUID-sorted competition.
++- A successful call supplies complete `calendar_diagnostics_t` for that call.
++  `calendar_generator_next()` clears `*out` before any error. Pending fantasy
++  scores are acceptable; match resolution is deliberately absent.
++- The two frequency groups can be too small for nontrivial moves. In that
++  case the engine produces a valid possibly unchanged calendar, not a hang.
++- All production allocations, including scratch, use the library allocation
++  boundary; fault injection is compiled only into dedicated tests.
++
++## 6. Verification and scientific reproducibility
++
++`test_calendar` exercises N=2,4,8,10,12 with complete/incomplete cycles,
++independent/chain modes, both methods, seed replay, and the original
++2026/27 10-team/35-round TSV fixture. `test_calendar_failures` tests
++allocation-failure rollback, rejection of invalid source schedules, semantic
++validation errors and bounded three-round exhaustion. `test_calendar_sampling`
++empirically measures seeded baseline and recombination diversity. For the
++small `K_4` baseline, six possible round orders give a reference distribution;
++with `S` samples and `K=6` possible permutations, the reported Pearson
++statistic is:
++
++```math
++\chi^2=\sum_{i=1}^K\frac{(O_i-S/K)^2}{S/K}.
++```
++
++This is a smoke diagnostic with a loose cutoff, not a proof of independent
++uniform random calendars and not a test of stationary distributions. The user fixture's
++35-round test verifies both directed home/away counts and the anchored
++ninth-round matching for every emitted calendar.
++
++Recorded study results should include: the original calendar fingerprint,
++team UUID mapping, input dataset version, program commit SHA, seed,
++algorithm/mode/options, sample index, all diagnostics, compiler flags,
++hardware/runtime, and implementation version. Separate computational
++performance analysis from sporting-outcome simulation once 3.1.0/3.1.1 exist.
++
++## References and attribution
++
++1. T. Januario, S. Urrutia, C. C. Ribeiro, and D. de Werra,
++   **"Edge coloring: A natural model for sports scheduling,"** *European
++   Journal of Operational Research* **254**(1), 1–8 (2016).
++   DOI: [10.1016/j.ejor.2016.03.038](https://doi.org/10.1016/j.ejor.2016.03.038).
++   Graph modeling, one-factorizations and local-search neighborhoods.
++2. **"Recoloring subgraphs of K₂ₙ for sports scheduling,"** *Theoretical
++   Computer Science* **877**, 36–45 (2021).
++   DOI: [10.1016/j.tcs.2021.03.029](https://doi.org/10.1016/j.tcs.2021.03.029).
++   Inspiration for recoloring cycles and recognizing limitations of local moves.
++3. C. C. Ribeiro and colleagues, **"A tutorial on graph models for scheduling
++   round-robin sports tournaments,"** *International Transactions in
++   Operational Research* **30**(6), 3267–3295 (2023).
++   DOI: [10.1111/itor.13290](https://doi.org/10.1111/itor.13290).
++4. R. Durstenfeld, **"Algorithm 235: Random permutation,"** *Communications
++   of the ACM* **7**(7), 420 (1964). DOI:
++   [10.1145/364520.364540](https://doi.org/10.1145/364520.364540).
++   In-place Fisher–Yates shuffle and unbiased bounded choices.
++5. M. Matsumoto and T. Nishimura, **"Mersenne Twister: A 623-dimensionally
++   equidistributed uniform pseudo-random number generator,"** *ACM
++   Transactions on Modeling and Computer Simulation* **8**(1), 3–30 (1998).
++   Existing MT19937 source and references: [MT19937 portability contract](portability-prng-3.0.9.md).
++
++The implementation is original project code following these mathematical
++ideas, not a transcription of the cited articles' implementations. Its
++reported validity and reproducibility are testable properties; sampling
++uniformity and full reachability remain open scientific limitations.
+diff --git a/docs/current-architecture.md b/docs/current-architecture.md
+index 4616439..21628e0 100644
+--- a/docs/current-architecture.md
++++ b/docs/current-architecture.md
+@@ -1,8 +1,8 @@
+ # Current architecture and integration boundaries
+ 
+-**Baseline:** milestone 3.0.11. The library exports `Leaderboard::leaderboard`
++**Baseline:** milestone 3.0.12. The library exports `Leaderboard::leaderboard`
+ as a single installed C11 static archive. The Python application is not built
+-in this repository and no fixture permutation/match simulation is implemented.
++in this repository; fixture permutations are implemented but match resolution is not.
+ 
+ ## Native layers
+ 
+@@ -14,6 +14,7 @@ in this repository and no fixture permutation/match simulation is implemented.
+ | Team identity | `team.h` | Parsed UUIDs, owned names, historical sum in tenths |
+ | Competition | `competition.h` | Validated original calendar, scores, pair frequencies, immutable snapshot |
+ | Championship standings | `standings.h` | Per-simulation W/D/L and checked 3/1/0 point accumulation |
++| Calendar permutation | `calendar.h` | Periodic opponent schedules, seeded shuffle, 2/3-round recoloring, validation |
+ | PRNG and examples | `mtwister.h`, legacy utilities | Deterministic/noncryptographic PRNG and demos |
+ 
+ CMake builds `leaderboard_containers_obj`, `leaderboard_ranking_obj`,
+@@ -43,19 +44,22 @@ represented explicitly and do not equal a finalized score of zero.
+ 
+ A league round maps to a distinct Serie A matchday, possibly beginning later
+ than Serie A matchday 1. The original fixtures are preserved verbatim after
+-UUID-to-index normalization. Pair frequencies are cached for 3.0.12, whose
+-generated calendars must preserve the exact unordered pair counts. Home/away
+-order is retained but home advantage is disabled.
++UUID-to-index normalization. Pair frequencies are used in 3.0.12, whose
++generated calendars preserve exact unordered and directed home/away pair
++counts. The stronger cooldown requires every team to face all opponents
++before repeating one; generated pairings therefore repeat every `N-1`
++rounds. It is enforced by generator creation, not by 3.0.11 snapshot import.
++Home advantage remains disabled. Only calendars are generated, not match results.
+ 
+ The existing `ranking_t` maintains its independent signed-64-bit score API
+ and has no implicit Fantacalcio tie-break rules. The interactive CLI remains
+ a demonstration, not a fixture simulator.
+ 
+ No persistence, database calls, athlete-grade calculation, configurable
+-bonus/malus, calendar permutations, **match-outcome calculation**, or Python
+-bindings are included. The standings layer only records outcomes provided by
++bonus/malus, **match-outcome calculation**, or Python bindings are included. The standings layer only records outcomes provided by
+ its caller.
+ 
+ See [3.0.11 league/fixture contract](league-fixture-contract-3.0.11.md),
+ [standings contract](standings-contract-3.0.11.md), and
+-[3.0.11 migration notes](league-3.0.11-CHANGELOG.md).
++[3.0.11 migration notes](league-3.0.11-CHANGELOG.md), and
++[3.0.12 mathematical contract](calendar-permutation-3.0.12.md).
+diff --git a/docs/index.md b/docs/index.md
+index 20e1b2f..28091fe 100644
+--- a/docs/index.md
++++ b/docs/index.md
+@@ -1,6 +1,6 @@
+ # LeaderboardSystem documentation
+ 
+-The current CMake package version is **3.0.11**. This index separates the
++The current CMake package version is **3.0.12**. This index separates the
+ implemented interfaces from historical milestone descriptions.
+ 
+ ## Current reference
+@@ -9,6 +9,9 @@ implemented interfaces from historical milestone descriptions.
+   interfaces, ownership and future Python/fixture integration boundaries.
+ - [Verification](verification.md): CMake, CTest, CI, installed consumer,
+   sanitizers and optional benchmarks.
++- [Calendar permutation engine (3.0.12)](calendar-permutation-3.0.12.md):
++  strict rematch periodicity, edge recoloring algorithms, unbiased bounded
++  randomness and scientific sampling limitations.
+ - [League/fixture contract (3.0.11)](league-fixture-contract-3.0.11.md):
+   team UUID identity, snapshot creation, scores, fixtures and pair frequencies.
+ - [Standings contract (3.0.11)](standings-contract-3.0.11.md):
+diff --git a/docs/verification.md b/docs/verification.md
+index 13eec92..00e155a 100644
+--- a/docs/verification.md
++++ b/docs/verification.md
+@@ -19,7 +19,9 @@ ctest --test-dir build --output-on-failure
+ `ctest --test-dir build -N` lists configured tests. The 3.0.11 cases are
+ `team_model_contract`, `competition_snapshot_contract`,
+ `competition_allocation_failures`, `standings_contract`,
+-`standings_failure_contract` and `leaderboard_cli_team_names`; ranking
++`standings_failure_contract`, `calendar_permutation_contract`,
++`calendar_permutation_failures`, `calendar_sampling_diagnostics`,
++and `leaderboard_cli_team_names`; ranking
+ and container invariants, deletion lifecycle, failure injection, and
+ `mtwister_reference_vectors` run in the ordinary suite as well.
+ 
+@@ -54,9 +56,9 @@ cmake --build build-consumer
+ ctest --test-dir build-consumer --output-on-failure
+ ```
+ 
+-Current CMake version: `3.0.11`. The independent installed consumer
+-requests `Leaderboard 3.0.11`, and exercises `team_t`, `competition_t`
+-and `standings_t`.
++Current CMake version: `3.0.12`. The independent installed consumer
++requests `Leaderboard 3.0.12`, and exercises `team_t`, `competition_t`
++`standings_t` and `calendar_t`.
+ The old public `player_t` API is removed; clients must rebuild and migrate.
+ Version numbering alone does not establish ABI compatibility.
+ 
+diff --git a/examples/external_consumer/CMakeLists.txt b/examples/external_consumer/CMakeLists.txt
+index 81c0d68..c83afac 100644
+--- a/examples/external_consumer/CMakeLists.txt
++++ b/examples/external_consumer/CMakeLists.txt
+@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
+ set(CMAKE_C_STANDARD_REQUIRED ON)
+ set(CMAKE_C_EXTENSIONS OFF)
+ 
+-find_package(Leaderboard 3.0.11 CONFIG REQUIRED)
++find_package(Leaderboard 3.0.12 CONFIG REQUIRED)
+ add_executable(leaderboard_external_consumer main.c)
+ target_link_libraries(leaderboard_external_consumer PRIVATE Leaderboard::leaderboard)
+ 
+diff --git a/examples/external_consumer/main.c b/examples/external_consumer/main.c
+index ba3fc19..bb34556 100644
+--- a/examples/external_consumer/main.c
++++ b/examples/external_consumer/main.c
+@@ -11,6 +11,7 @@
+ #include "team.h"
+ #include "competition.h"
+ #include "standings.h"
++#include "calendar.h"
+ #include "hashmap_typed.h"
+ 
+ HASHMAP_TYPED_DEFINE(external_score_map, char, int)
+@@ -74,6 +75,23 @@ int main(void) {
+          pair_count == 1U;
+     if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
+ 
++    /* An installed consumer can generate and validate a calendar without
++     * depending on private headers or the repository source tree. */
++    calendar_options_t options = calendar_options_default();
++    options.method = CALENDAR_METHOD_ROUND_SHUFFLE;
++    calendar_generator_t *generator = NULL;
++    calendar_t *permuted = NULL;
++    if (calendar_generator_create(competition, &options, &generator) != 0 ||
++        calendar_generator_next(generator, &permuted, NULL) != 0 ||
++        calendar_validate(competition, permuted) != 0) {
++        calendar_destroy(permuted);
++        calendar_generator_destroy(generator);
++        competition_destroy(competition);
++        return EXIT_FAILURE;
++    }
++    calendar_generator_destroy(generator);
++    calendar_destroy(permuted);
++
+     standings_t *standings = NULL;
+     if (standings_create(competition, &standings) != 0) {
+         competition_destroy(competition);
+diff --git a/include/calendar.h b/include/calendar.h
+new file mode 100644
+index 0000000..2e8a9b9
+--- /dev/null
++++ b/include/calendar.h
+@@ -0,0 +1,99 @@
++/*
++ * LeaderboardSystem calendar permutation API (milestone 3.0.12).
++ * Copyright (C) 2026 Alessandro Volpe
++ * SPDX-License-Identifier: GPL-3.0-only
++ */
++#ifndef LEADERBOARD_CALENDAR_H
++#define LEADERBOARD_CALENDAR_H
++
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++#include "competition.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++typedef struct calendar calendar_t;
++typedef struct calendar_generator calendar_generator_t;
++
++typedef enum calendar_method {
++    CALENDAR_METHOD_ROUND_SHUFFLE = 0,
++    CALENDAR_METHOD_RECOMBINE = 1
++} calendar_method_t;
++
++typedef enum calendar_sampling_mode {
++    CALENDAR_SAMPLING_INDEPENDENT = 0,
++    CALENDAR_SAMPLING_CHAIN = 1
++} calendar_sampling_mode_t;
++
++typedef struct calendar_options {
++    calendar_method_t method;
++    calendar_sampling_mode_t sampling_mode;
++    uint32_t seed;
++    size_t moves_per_sample; /* RECOMBINE attempts; SHUFFLE does one pass */
++    bool enable_three_round;
++    size_t three_round_attempts; /* randomized search restarts per 3-round move */
++    size_t three_round_node_limit; /* max candidate placements per restart */
++    size_t chain_warmup_moves; /* extra passes/moves before first CHAIN sample */
++    size_t chain_thinning_moves; /* extra passes/moves before later CHAIN samples */
++} calendar_options_t;
++
++typedef struct calendar_diagnostics {
++    uint64_t two_round_attempts;
++    uint64_t two_round_partial_moves;
++    uint64_t two_round_whole_swaps;
++    uint64_t three_round_attempts;
++    uint64_t three_round_moves;
++    uint64_t three_round_search_exhaustions;
++    uint64_t three_round_nodes;
++    size_t changed_base_rounds; /* unordered matchings vs original */
++    size_t changed_season_rounds;
++} calendar_diagnostics_t;
++
++/* Defaults: recombination, independent mode, explicit seed 5489, 32 moves,
++ * bounded 3-round diversification. Supplying explicit options is preferred
++ * for reproducible experiments. */
++calendar_options_t calendar_options_default(void);
++
++/* Borrows competition until calendar_generator_destroy; the original must
++ * already respect the strict N-1-round opponent cooldown / periodicity.
++ * -ENOTSUP: valid 3.0.11 snapshot incompatible with that stronger contract.
++ * -EINVAL: invalid input/options; -EOVERFLOW: size bounds; -ENOMEM: failure.
++ * On ANY error *out=NULL. Pending scores are permitted. */
++int calendar_generator_create(const competition_t *competition,
++                              const calendar_options_t *options,
++                              calendar_generator_t **out);
++void calendar_generator_destroy(calendar_generator_t *generator);
++
++/* Each successful call returns an independently owned, immutable calendar.
++ * RNG and chain state only advance on success; *out=NULL on failure.
++ * A valid result may equal a previously emitted calendar, including original.
++ * Diagnostics summarize this generation call only. */
++int calendar_generator_next(calendar_generator_t *generator,
++                            calendar_t **out,
++                            calendar_diagnostics_t *diagnostics);
++void calendar_destroy(calendar_t *calendar);
++size_t calendar_round_count(const calendar_t *calendar);
++size_t calendar_team_count(const calendar_t *calendar);
++int calendar_round_matchday(const calendar_t *calendar,
++                            size_t round_index, uint32_t *out_matchday);
++int calendar_fixture_at(const calendar_t *calendar, size_t round_index,
++                        size_t fixture_index, fixture_t *out_fixture);
++
++/* Check the complete schedule independently from the generator: dimensions,
++ * team participation, matchday mapping, directed pair counts and cooldown.
++ * Returns 0 for valid, -EINVAL for invalid, -ENOMEM/-EOVERFLOW on resource
++ * failure. Candidate is interpreted under original's team-index mapping. */
++int calendar_validate(const competition_t *original, const calendar_t *candidate);
++
++/* Stable FNV-1a fingerprint of canonical per-round unordered pairings;
++ * fixture order and home/away orientation are ignored. This is for sampling
++ * diagnostics, NOT collision-proof deduplication. */
++uint64_t calendar_fingerprint(const calendar_t *calendar);
++
++#ifdef __cplusplus
++}
++#endif
++#endif /* LEADERBOARD_CALENDAR_H */
+diff --git a/src/calendar.c b/src/calendar.c
+new file mode 100644
+index 0000000..405aea7
+--- /dev/null
++++ b/src/calendar.c
+@@ -0,0 +1,353 @@
++/*
++ * Periodic fixture calendars and independent validation (3.0.12).
++ * Copyright (C) 2026 Alessandro Volpe
++ * SPDX-License-Identifier: GPL-3.0-only
++ */
++#include "calendar.h"
++#include "calendar_internal.h"
++#include "alloc_internal.h"
++
++#include <errno.h>
++#include <limits.h>
++#include <stdlib.h>
++#include <string.h>
++
++static int multiply(size_t a, size_t b, size_t *out) {
++    if (a != 0U && b > SIZE_MAX / a) return -EOVERFLOW;
++    *out = a * b;
++    return 0;
++}
++
++static void *copy_buffer(const void *src, size_t count, size_t element_size) {
++    size_t bytes;
++    if (multiply(count, element_size, &bytes) != 0) return NULL;
++    void *p = leaderboard_alloc_malloc(bytes);
++    if (p != NULL) memcpy(p, src, bytes);
++    return p;
++}
++
++static int same_pair(fixture_t a, fixture_t b) {
++    return (a.home == b.home && a.away == b.away) ||
++           (a.home == b.away && a.away == b.home);
++}
++
++static int same_matching(const fixture_t *a, const fixture_t *b, size_t k) {
++    for (size_t i = 0; i < k; ++i) {
++        bool found = false;
++        for (size_t j = 0; j < k; ++j)
++            if (same_pair(a[i], b[j])) { found = true; break; }
++        if (!found) return 0;
++    }
++    return 1;
++}
++
++calendar_options_t calendar_options_default(void) {
++    calendar_options_t options = {
++        CALENDAR_METHOD_RECOMBINE, CALENDAR_SAMPLING_INDEPENDENT,
++        UINT32_C(5489), 32U, true, 4U, 4000U, 0U, 0U
++    };
++    return options;
++}
++
++void calendar_destroy(calendar_t *c) {
++    if (c == NULL) return;
++    free(c->matchdays);
++    free(c->fixtures);
++    free(c);
++}
++
++size_t calendar_round_count(const calendar_t *c) { return c ? c->round_count : 0U; }
++size_t calendar_team_count(const calendar_t *c) { return c ? c->team_count : 0U; }
++
++int calendar_round_matchday(const calendar_t *c, size_t r, uint32_t *out) {
++    if (c == NULL || out == NULL) return -EINVAL;
++    if (r >= c->round_count) return -ERANGE;
++    *out = c->matchdays[r];
++    return 0;
++}
++int calendar_fixture_at(const calendar_t *c, size_t r, size_t f, fixture_t *out) {
++    if (c == NULL || out == NULL) return -EINVAL;
++    if (r >= c->round_count || f >= c->team_count / 2U) return -ERANGE;
++    *out = c->fixtures[r * (c->team_count / 2U) + f];
++    return 0;
++}
++
++/* Canonical fingerprint: sorted partner of every team for every round. This
++ * ignores both fixture ordering and home/away direction. */
++static uint64_t hash_word(uint64_t h, uint32_t v) {
++    for (unsigned k = 0; k < 4U; ++k) {
++        h ^= (uint8_t)(v >> (8U * k));
++        h *= UINT64_C(1099511628211);
++    }
++    return h;
++}
++uint64_t calendar_fingerprint(const calendar_t *c) {
++    if (c == NULL) return 0U;
++    uint64_t h = UINT64_C(14695981039346656037);
++    h = hash_word(h, (uint32_t)c->team_count);
++    h = hash_word(h, (uint32_t)c->round_count);
++    const size_t k = c->team_count / 2U;
++    for (size_t r = 0; r < c->round_count; ++r) {
++        h = hash_word(h, c->matchdays[r]);
++        for (size_t team = 0; team < c->team_count; ++team) {
++            uint32_t opponent = UINT32_MAX;
++            for (size_t f = 0; f < k; ++f) {
++                fixture_t m = c->fixtures[r*k + f];
++                if (m.home == team) opponent = m.away;
++                if (m.away == team) opponent = m.home;
++            }
++            h = hash_word(h, opponent);
++        }
++    }
++    return h;
++}
++
++/* Validation must not simply trust internal generator invariants. */
++int calendar_validate(const competition_t *source, const calendar_t *c) {
++    if (source == NULL || c == NULL) return -EINVAL;
++    const size_t n = competition_team_count(source);
++    const size_t rcount = competition_round_count(source);
++    if (n < 2U || (n & 1U) || c->team_count != n ||
++        c->round_count != rcount || c->fixtures == NULL || c->matchdays == NULL)
++        return -EINVAL;
++    const size_t period = n - 1U;
++    size_t square, bytes;
++    if (multiply(n, n, &square) != 0 ||
++        multiply(square, sizeof(uint32_t), &bytes) != 0) return -EOVERFLOW;
++    uint32_t *directed = leaderboard_alloc_calloc(square, sizeof(*directed));
++    uint8_t *seen = leaderboard_alloc_calloc(n, sizeof(*seen));
++    const size_t base_rounds = rcount < period ? rcount : period;
++    size_t partner_count;
++    if (multiply(base_rounds, n, &partner_count) != 0 ||
++        partner_count > SIZE_MAX / sizeof(team_index_t)) {
++        free(directed); free(seen); return -EOVERFLOW;
++    }
++    team_index_t *reference = leaderboard_alloc_malloc(partner_count * sizeof(*reference));
++    if (directed == NULL || seen == NULL || reference == NULL) {
++        free(directed); free(seen); free(reference); return -ENOMEM;
++    }
++    int result = 0;
++    const size_t k = n / 2U;
++    for (size_t r = 0; r < rcount; ++r) {
++        uint32_t mapped = 0U;
++        if (competition_round_matchday(source, r, &mapped) != 0 ||
++            mapped != c->matchdays[r]) { result = -EINVAL; break; }
++        memset(seen, 0, n);
++        for (size_t f = 0; f < k; ++f) {
++            fixture_t m = c->fixtures[r*k+f];
++            if (m.home >= n || m.away >= n || m.home == m.away ||
++                seen[m.home] || seen[m.away]) { result = -EINVAL; break; }
++            seen[m.home] = seen[m.away] = 1U;
++            if (r < period) {
++                if (directed[(size_t)m.home*n + m.away] != 0U ||
++                    directed[(size_t)m.away*n + m.home] != 0U) {
++                    result = -EINVAL; break;
++                }
++                reference[r*n+m.home]=m.away;
++                reference[r*n+m.away]=m.home;
++            } else if (reference[(r%period)*n + m.home] != m.away) {
++                result = -EINVAL; break;
++            }
++            if (directed[(size_t)m.home*n + m.away] == UINT32_MAX) {
++                result = -EOVERFLOW; break;
++            }
++            directed[(size_t)m.home*n + m.away]++;
++        }
++        if (result != 0) break;
++    }
++    if (result == 0) {
++        for (size_t r = 0; r < rcount; ++r) {
++            for (size_t f = 0; f < k; ++f) {
++                fixture_t m;
++                if (competition_fixture_at(source, r, f, &m) != 0) {
++                    result = -EINVAL; break;
++                }
++                size_t offset = (size_t)m.home*n + m.away;
++                if (directed[offset] == 0U) { result = -EINVAL; break; }
++                directed[offset]--;
++            }
++            if (result != 0) break;
++        }
++    }
++    if (result == 0) {
++        for (size_t i = 0; i < square; ++i)
++            if (directed[i] != 0U) { result = -EINVAL; break; }
++    }
++    free(directed); free(seen); free(reference);
++    return result;
++}
++
++void calendar_generator_destroy(calendar_generator_t *g) {
++    if (g == NULL) return;
++    free(g->initial_base);
++    free(g->chain_base);
++    free(g->orientation);
++    free(g);
++}
++
++int calendar_generator_create(const competition_t *source,
++                              const calendar_options_t *given,
++                              calendar_generator_t **out) {
++    if (out == NULL) return -EINVAL;
++    *out = NULL;
++    if (source == NULL) return -EINVAL;
++    calendar_options_t options = given ? *given : calendar_options_default();
++    if ((options.method != CALENDAR_METHOD_ROUND_SHUFFLE &&
++         options.method != CALENDAR_METHOD_RECOMBINE) ||
++        (options.sampling_mode != CALENDAR_SAMPLING_INDEPENDENT &&
++         options.sampling_mode != CALENDAR_SAMPLING_CHAIN) ||
++        (options.enable_three_round &&
++         (options.three_round_attempts == 0U ||
++          options.three_round_node_limit == 0U))) return -EINVAL;
++    const size_t n = competition_team_count(source), r = competition_round_count(source);
++    if (n < 2U || (n & 1U) != 0U || r == 0U) return -EINVAL;
++    if (n > UINT32_MAX || r > UINT32_MAX) return -EOVERFLOW;
++    const size_t p = n-1U, b = r < p ? r : p, k = n/2U;
++    size_t base_fixtures, square, orientations, stride = r/p + (r%p != 0U);
++    size_t partner_cells;
++    if (multiply(b,k,&base_fixtures) != 0 ||
++        multiply(b,n,&partner_cells) != 0 ||
++        partner_cells > SIZE_MAX / sizeof(uint32_t) ||
++        multiply(n,n,&square) != 0 ||
++        multiply(square,stride,&orientations) != 0 ||
++        base_fixtures > SIZE_MAX / sizeof(fixture_t)) return -EOVERFLOW;
++    calendar_generator_t *g = leaderboard_alloc_calloc(1U, sizeof(*g));
++    if (g == NULL) return -ENOMEM;
++    g->source=source; g->options=options;g->n=n;g->rounds=r;
++    g->period=p;g->base_rounds=b;g->fixtures_per_round=k;
++    g->frequency_group_split = r % p == 0U ? b : r % p;
++    g->orientation_stride=stride;
++    g->initial_base=leaderboard_alloc_malloc(base_fixtures*sizeof(fixture_t));
++    g->chain_base=leaderboard_alloc_malloc(base_fixtures*sizeof(fixture_t));
++    g->orientation=leaderboard_alloc_calloc(orientations,sizeof(*g->orientation));
++    if (g->initial_base == NULL || g->chain_base == NULL || g->orientation == NULL) {
++        calendar_generator_destroy(g); return -ENOMEM;
++    }
++    int status = 0;
++    uint32_t *base_partner = leaderboard_alloc_malloc(partner_cells*sizeof(*base_partner));
++    if (base_partner == NULL) { calendar_generator_destroy(g); return -ENOMEM; }
++    for (size_t i = 0; i < partner_cells; ++i) base_partner[i] = UINT32_MAX;
++    for (size_t ri = 0; ri < r; ++ri) {
++        for (size_t f = 0; f < k; ++f) {
++            fixture_t m;
++            if (competition_fixture_at(source,ri,f,&m) != 0 ||
++                m.home >= n || m.away >= n || m.home == m.away) {
++                status = -EINVAL; goto invalid;
++            }
++            if (ri < b) {
++                g->initial_base[ri*k+f]=m;
++                if (base_partner[ri*n+m.home] != UINT32_MAX ||
++                    base_partner[ri*n+m.away] != UINT32_MAX) {
++                    status = -ENOTSUP; goto invalid;
++                }
++                base_partner[ri*n+m.home]=m.away;
++                base_partner[ri*n+m.away]=m.home;
++                /* All base matchings must be pairwise edge-disjoint. */
++                for (size_t prev=0;prev<ri;++prev)
++                    if (base_partner[prev*n+m.home] == m.away) {
++                        status = -ENOTSUP;goto invalid;
++                    }
++            } else if (base_partner[(ri%p)*n+m.home] != m.away) {
++                status = -ENOTSUP;goto invalid;
++            }
++            size_t low = m.home < m.away ? m.home : m.away;
++            size_t high = m.home < m.away ? m.away : m.home;
++            g->orientation[(low*n+high)*stride+ri/p] = (uint8_t)(m.home == low);
++        }
++    }
++    memcpy(g->chain_base,g->initial_base,base_fixtures*sizeof(fixture_t));
++    mtwister_seed_standard(&g->rng,options.seed);
++invalid:
++    free(base_partner);
++    if (status != 0) { calendar_generator_destroy(g); return status; }
++    *out=g;return 0;
++}
++
++static int materialize(const calendar_generator_t *g, const fixture_t *base,
++                       calendar_t **out) {
++    calendar_t *c = leaderboard_alloc_calloc(1U,sizeof(*c));
++    if (c == NULL) return -ENOMEM;
++    c->team_count=g->n; c->round_count=g->rounds;
++    size_t count=g->rounds*g->fixtures_per_round;
++    c->matchdays=leaderboard_alloc_malloc(g->rounds*sizeof(*c->matchdays));
++    c->fixtures=leaderboard_alloc_malloc(count*sizeof(*c->fixtures));
++    if (c->matchdays==NULL || c->fixtures==NULL) { calendar_destroy(c);return -ENOMEM; }
++    for (size_t r=0;r<g->rounds;++r) {
++        uint32_t day;
++        if (competition_round_matchday(g->source,r,&day) != 0) {
++            calendar_destroy(c);return -EINVAL;
++        }
++        c->matchdays[r]=day;
++        for (size_t f=0;f<g->fixtures_per_round;++f) {
++            fixture_t m=base[(r%g->period)*g->fixtures_per_round+f];
++            size_t low=m.home < m.away ? m.home : m.away;
++            size_t high=m.home < m.away ? m.away : m.home;
++            uint8_t low_at_home=g->orientation[(low*g->n+high)*g->orientation_stride+r/g->period];
++            c->fixtures[r*g->fixtures_per_round+f]=
++                low_at_home ? (fixture_t){(team_index_t)low,(team_index_t)high}
++                            : (fixture_t){(team_index_t)high,(team_index_t)low};
++        }
++    }
++    *out=c;return 0;
++}
++
++int calendar_generator_next(calendar_generator_t *g, calendar_t **out,
++                            calendar_diagnostics_t *diagnostics) {
++    if (out == NULL) return -EINVAL;
++    *out = NULL;
++    if (g == NULL) return -EINVAL;
++    calendar_diagnostics_t stats={0};
++    size_t count=g->base_rounds*g->fixtures_per_round;
++    const fixture_t *start = g->options.sampling_mode == CALENDAR_SAMPLING_CHAIN
++                             ? g->chain_base : g->initial_base;
++    fixture_t *base=copy_buffer(start,count,sizeof(*base));
++    if (base == NULL) return -ENOMEM;
++    mtwister_t rng=g->rng; /* state is failure-atomic */
++    int error=0;
++    if (g->options.method == CALENDAR_METHOD_ROUND_SHUFFLE) {
++        size_t passes = 1U;
++        if (g->options.sampling_mode == CALENDAR_SAMPLING_CHAIN) {
++            size_t extra = g->generated ? g->options.chain_thinning_moves
++                                        : g->options.chain_warmup_moves;
++            if (extra == SIZE_MAX) { free(base);return -EOVERFLOW; }
++            passes += extra;
++        }
++        for (size_t pass = 0; pass < passes; ++pass)
++            calendar_shuffle_base(g,&rng,base);
++    } else {
++        size_t moves=g->options.moves_per_sample;
++        if (g->options.sampling_mode == CALENDAR_SAMPLING_CHAIN) {
++            size_t extra = g->generated ? g->options.chain_thinning_moves
++                                        : g->options.chain_warmup_moves;
++            if (moves > SIZE_MAX-extra) { free(base);return -EOVERFLOW; }
++            moves+=extra;
++        }
++        error=calendar_recombine_base(g,&rng,base,moves,&stats);
++    }
++    if (error == 0) {
++        for (size_t i=0;i<g->base_rounds;++i) {
++            if (!same_matching(base+i*g->fixtures_per_round,
++                               g->initial_base+i*g->fixtures_per_round,
++                               g->fixtures_per_round)) {
++                stats.changed_base_rounds++;
++                /* Each base position appears either floor(R/P) or ceil(R/P) times. */
++                stats.changed_season_rounds += g->rounds/g->period +
++                    (i < (g->rounds%g->period) ? 1U : 0U);
++            }
++        }
++        calendar_t *c=NULL;
++        error=materialize(g,base,&c);
++        if (error == 0) {
++            error=calendar_validate(g->source,c);
++            if (error == 0) {
++                if (g->options.sampling_mode == CALENDAR_SAMPLING_CHAIN)
++                    memcpy(g->chain_base,base,count*sizeof(*base));
++                g->rng=rng;g->generated=true;
++                *out=c;
++                if (diagnostics != NULL) *diagnostics=stats;
++            } else calendar_destroy(c);
++        }
++    }
++    free(base);
++    return error;
++}
+diff --git a/src/calendar_recombine.c b/src/calendar_recombine.c
+new file mode 100644
+index 0000000..915255a
+--- /dev/null
++++ b/src/calendar_recombine.c
+@@ -0,0 +1,236 @@
++/*
++ * Constrained edge recolorings of periodic one-factorizations (3.0.12).
++ * Copyright (C) 2026 Alessandro Volpe
++ * SPDX-License-Identifier: GPL-3.0-only
++ */
++#include "calendar_internal.h"
++#include "alloc_internal.h"
++
++#include <errno.h>
++#include <stdlib.h>
++#include <string.h>
++
++static int same_pair(fixture_t a,fixture_t b) {
++    return (a.home==b.home && a.away==b.away) ||
++           (a.home==b.away && a.away==b.home);
++}
++static int same_matching(const fixture_t *a,const fixture_t *b,size_t count) {
++    for(size_t i=0;i<count;++i) {
++        int found=0;
++        for(size_t j=0;j<count;++j) if(same_pair(a[i],b[j])) {found=1;break;}
++        if(!found) return 0;
++    }
++    return 1;
++}
++
++/* Select k distinct positions from an equally frequent group. */
++static int select_positions(const calendar_generator_t *g,mtwister_t *rng,
++                            size_t requested,size_t positions[3]) {
++    const size_t split=g->frequency_group_split;
++    const size_t first_length=split,second_length=g->base_rounds-split;
++    int first_ok=first_length>=requested,second_ok=second_length>=requested;
++    if(!first_ok && !second_ok) return 0;
++    size_t start=0U, count=first_length;
++    if(!first_ok || (second_ok && calendar_random_bounded(rng,2U)==1U)) {
++        start=split;count=second_length;
++    }
++    for(size_t i=0;i<requested;++i) {
++        size_t pick;
++        int repeat;
++        do {
++            pick=start+calendar_random_bounded(rng,(uint32_t)count);
++            repeat=0;
++            for(size_t j=0;j<i;++j) if(positions[j]==pick) {repeat=1;break;}
++        } while(repeat);
++        positions[i]=pick;
++    }
++    return 1;
++}
++
++/* In the union of two perfect matchings each vertex has exactly one edge
++ * of each color. Hence its components are alternating even cycles. */
++static int two_round_move(const calendar_generator_t *g,mtwister_t *rng,
++                          fixture_t *base,calendar_diagnostics_t *stats,
++                          team_index_t *partner_a,team_index_t *partner_b,
++                          size_t *components,size_t *queue) {
++    size_t positions[3];
++    if(!select_positions(g,rng,2U,positions)) return 0;
++    ++stats->two_round_attempts;
++    const size_t n=g->n,k=g->fixtures_per_round;
++    fixture_t *a=base+positions[0]*k,*b=base+positions[1]*k;
++    for(size_t i=0;i<n;++i) {partner_a[i]=UINT32_MAX;partner_b[i]=UINT32_MAX;components[i]=SIZE_MAX;}
++    for(size_t i=0;i<k;++i) {
++        partner_a[a[i].home]=a[i].away;partner_a[a[i].away]=a[i].home;
++        partner_b[b[i].home]=b[i].away;partner_b[b[i].away]=b[i].home;
++    }
++    size_t count=0U;
++    for(size_t v=0;v<n;++v) if(components[v]==SIZE_MAX) {
++        size_t head=0U,tail=0U;
++        queue[tail++]=v;components[v]=count;
++        while(head<tail) {
++            size_t x=queue[head++];
++            size_t nb[2]={partner_a[x],partner_b[x]};
++            for(size_t i=0;i<2U;++i) if(components[nb[i]]==SIZE_MAX) {
++                components[nb[i]]=count;queue[tail++]=nb[i];
++            }
++        }
++        ++count;
++    }
++    if(count==0U) return 0;
++    size_t chosen=calendar_random_bounded(rng,(uint32_t)count);
++    /* Each component contributes the same number of edges to each round. */
++    size_t left=0U,right=0U;
++    for(size_t i=0;i<k;++i) if(components[a[i].home]==chosen) queue[left++]=i;
++    /* Reuse partner_a as temporary right-side indices: n >= k. */
++    for(size_t i=0;i<k;++i) if(components[b[i].home]==chosen) partner_a[right++]=(team_index_t)i;
++    if(left!=right) return -EINVAL;
++    for(size_t i=0;i<left;++i) {
++        fixture_t tmp=a[queue[i]];
++        a[queue[i]]=b[partner_a[i]];
++        b[partner_a[i]]=tmp;
++    }
++    if(count>1U) ++stats->two_round_partial_moves;
++    else ++stats->two_round_whole_swaps;
++    return 0;
++}
++
++/* Coloring the 3-factor union is an exact-cover/3-edge-coloring problem.
++ * Each vertex must use each of three colors exactly once. Iterative bounded
++ * DFS avoids stack exhaustion on large league sizes. */
++static int three_round_search(const calendar_generator_t *g, mtwister_t *rng,
++                              fixture_t *base,size_t slots[3],
++                              calendar_diagnostics_t *stats,
++                              fixture_t *edges,fixture_t *result,
++                              uint8_t *used,uint8_t *choice,
++                              uint8_t *assigned,uint8_t *starts,
++                              size_t *order) {
++    const size_t n=g->n,k=g->fixtures_per_round,e=3U*k;
++    for(size_t a=0;a<3U;++a)
++        memcpy(edges+a*k,base+slots[a]*k,k*sizeof(*edges));
++    for(size_t a=0;a<e;++a) order[a]=a;
++    for(size_t a=e;a>1U;--a) {
++        size_t j=calendar_random_bounded(rng,(uint32_t)a);
++        size_t tmp=order[a-1U];order[a-1U]=order[j];order[j]=tmp;
++    }
++    memset(used,0,n);
++    memset(choice,0,e);
++    for(size_t a=0;a<e;++a) starts[a]=(uint8_t)calendar_random_bounded(rng,3U);
++    size_t depth=0U,nodes=0U;
++    while(1) {
++        if(depth==e) {
++            size_t counts[3]={0U,0U,0U};
++            for(size_t i=0;i<e;++i) {
++                uint8_t color=assigned[i];
++                result[color*k+counts[color]++]=edges[order[i]];
++            }
++            /* Reject all three-round permutations of original groups. */
++            int trivial=1;
++            for(size_t i=0;i<3U;++i) {
++                int found=0;
++                for(size_t j=0;j<3U;++j)
++                    if(same_matching(result+i*k,base+slots[j]*k,k)) {found=1;break;}
++                if(!found) {trivial=0;break;}
++            }
++            if(!trivial) {
++                for(size_t i=0;i<3U;++i)
++                    memcpy(base+slots[i]*k,result+i*k,k*sizeof(*result));
++                stats->three_round_nodes+=nodes;
++                return 1;
++            }
++            /* Continue searching after trivial factorizations. */
++        }
++        if(depth==e || choice[depth]==3U) {
++            if(depth==0U) {stats->three_round_nodes+=nodes;return 0;}
++            if(depth<e) choice[depth]=0U;
++            --depth;
++            fixture_t m=edges[order[depth]];
++            uint8_t bit=(uint8_t)(1U<<assigned[depth]);
++            used[m.home]=(uint8_t)(used[m.home]&~bit);
++            used[m.away]=(uint8_t)(used[m.away]&~bit);
++            continue;
++        }
++        if(nodes==g->options.three_round_node_limit) {
++            stats->three_round_nodes+=nodes;
++            ++stats->three_round_search_exhaustions;
++            return 0;
++        }
++        uint8_t color=(uint8_t)((starts[depth]+choice[depth]++)%3U);
++        ++nodes;
++        fixture_t m=edges[order[depth]];
++        uint8_t bit=(uint8_t)(1U<<color);
++        if((used[m.home]&bit)!=0U || (used[m.away]&bit)!=0U) continue;
++        used[m.home]|=bit;used[m.away]|=bit;
++        assigned[depth]=color;
++        ++depth;
++        if(depth<e) choice[depth]=0U;
++    }
++}
++
++int calendar_recombine_base(const calendar_generator_t *g,
++                            mtwister_t *rng, fixture_t *base,
++                            size_t moves,calendar_diagnostics_t *stats) {
++    if(moves==0U) return 0;
++    const size_t n=g->n,k=g->fixtures_per_round;
++    /* Allocate all move workspace through the injectable allocation layer,
++     * before any attempt; generator/PRNG state commit is caller-controlled. */
++    team_index_t *a=leaderboard_alloc_malloc(n*sizeof(*a));
++    team_index_t *b=leaderboard_alloc_malloc(n*sizeof(*b));
++    size_t *components=leaderboard_alloc_malloc(n*sizeof(*components));
++    size_t *queue=leaderboard_alloc_malloc(n*sizeof(*queue));
++    if(a==NULL || b==NULL || components==NULL || queue==NULL) {
++        free(a);free(b);free(components);free(queue);return -ENOMEM;
++    }
++    if(k>SIZE_MAX/3U) {
++        free(a);free(b);free(components);free(queue);return -EOVERFLOW;
++    }
++    size_t triple_size=3U*k;
++    fixture_t *edges=NULL,*result=NULL;
++    uint8_t *used=NULL,*choice=NULL,*assigned=NULL,*starts=NULL;
++    size_t *order=NULL;
++    int triple_possible = g->options.enable_three_round &&
++        (g->frequency_group_split>=3U || g->base_rounds-g->frequency_group_split>=3U);
++    if(triple_possible) {
++        if(triple_size>UINT32_MAX ||
++           triple_size>SIZE_MAX/sizeof(fixture_t) ||
++           triple_size>SIZE_MAX/sizeof(size_t)) {
++            free(a);free(b);free(components);free(queue);return -EOVERFLOW;
++        }
++        edges=leaderboard_alloc_malloc(triple_size*sizeof(*edges));
++        result=leaderboard_alloc_malloc(triple_size*sizeof(*result));
++        used=leaderboard_alloc_malloc(n*sizeof(*used));
++        choice=leaderboard_alloc_malloc(triple_size*sizeof(*choice));
++        assigned=leaderboard_alloc_malloc(triple_size*sizeof(*assigned));
++        starts=leaderboard_alloc_malloc(triple_size*sizeof(*starts));
++        order=leaderboard_alloc_malloc(triple_size*sizeof(*order));
++        if(edges==NULL || result==NULL || used==NULL || choice==NULL ||
++           assigned==NULL || starts==NULL || order==NULL) {
++            free(a);free(b);free(components);free(queue);
++            free(edges);free(result);free(used);free(choice);
++            free(assigned);free(starts);free(order);return -ENOMEM;
++        }
++    }
++    int status=0;
++    for(size_t move=0;move<moves;++move) {
++        /* A three-round move is selected in one out of four attempts; the
++         * remaining moves are fast alternating-cycle recolorings. */
++        int triple=triple_possible && calendar_random_bounded(rng,4U)==0U;
++        if(triple) {
++            size_t slots[3];
++            ++stats->three_round_attempts;
++            if(!select_positions(g,rng,3U,slots)) continue;
++            for(size_t retry=0;retry<g->options.three_round_attempts;++retry) {
++                if(three_round_search(g,rng,base,slots,stats,edges,result,used,
++                                      choice,assigned,starts,order)) {
++                    ++stats->three_round_moves;break;
++                }
++            }
++        } else {
++            status=two_round_move(g,rng,base,stats,a,b,components,queue);
++            if(status!=0) break;
++        }
++    }
++    free(a);free(b);free(components);free(queue);
++    free(edges);free(result);free(used);free(choice);
++    free(assigned);free(starts);free(order);
++    return status;
++}
+diff --git a/src/calendar_shuffle.c b/src/calendar_shuffle.c
+new file mode 100644
+index 0000000..39202ac
+--- /dev/null
++++ b/src/calendar_shuffle.c
+@@ -0,0 +1,37 @@
++/*
++ * Unbiased bounded MT19937 draws and period-class Fisher-Yates shuffle.
++ * Copyright (C) 2026 Alessandro Volpe
++ * SPDX-License-Identifier: GPL-3.0-only
++ */
++#include "calendar_internal.h"
++
++/* Let M=2^32 and t=M mod b. Reject [0,t), then the remaining
++ * M-t integers have equal-sized residue classes modulo b. */
++uint32_t calendar_random_bounded(mtwister_t *rng, uint32_t bound) {
++    if (bound <= 1U) return 0U;
++    const uint32_t threshold = (uint32_t)(0U - bound) % bound;
++    uint32_t x;
++    do { x = mtwister_next_u32(rng); } while (x < threshold);
++    return x % bound;
++}
++
++void calendar_shuffle_group(mtwister_t *rng, fixture_t *base, size_t first,
++                            size_t length, size_t k) {
++    for (size_t i = length; i > 1U; --i) {
++        size_t j = calendar_random_bounded(rng, (uint32_t)i);
++        size_t left=(first+i-1U)*k,right=(first+j)*k;
++        for (size_t f=0;f<k;++f) {
++            fixture_t temporary=base[left+f];
++            base[left+f]=base[right+f];
++            base[right+f]=temporary;
++        }
++    }
++}
++
++void calendar_shuffle_base(const calendar_generator_t *g,
++                           mtwister_t *rng, fixture_t *base) {
++    const size_t split=g->frequency_group_split;
++    calendar_shuffle_group(rng,base,0U,split,g->fixtures_per_round);
++    calendar_shuffle_group(rng,base,split,g->base_rounds-split,
++                           g->fixtures_per_round);
++}
+diff --git a/src/internal/calendar_internal.h b/src/internal/calendar_internal.h
+new file mode 100644
+index 0000000..b7bb9cd
+--- /dev/null
++++ b/src/internal/calendar_internal.h
+@@ -0,0 +1,34 @@
++/* Only implementation and designated failure-injection tests may use this. */
++#ifndef LEADERBOARD_CALENDAR_INTERNAL_H
++#define LEADERBOARD_CALENDAR_INTERNAL_H
++#include "calendar.h"
++#include "mtwister.h"
++
++struct calendar {
++    size_t team_count, round_count;
++    uint32_t *matchdays;
++    fixture_t *fixtures; /* row-major; team_count/2 fixtures per round */
++};
++
++struct calendar_generator {
++    const competition_t *source; /* borrowed */
++    calendar_options_t options;
++    mtwister_t rng; /* value-owned, standard MT19937 initialization */
++    size_t n, rounds, period, base_rounds, fixtures_per_round;
++    size_t frequency_group_split;
++    size_t orientation_stride;
++    fixture_t *initial_base;
++    fixture_t *chain_base;
++    uint8_t *orientation; /* (low*n + high)*stride + encounter ordinal */
++    bool generated;
++};
++/* Internal generator moves. All operations use caller-owned working data. */
++uint32_t calendar_random_bounded(mtwister_t *rng, uint32_t bound);
++void calendar_shuffle_group(mtwister_t *rng, fixture_t *base, size_t first,
++                            size_t length, size_t fixtures_per_round);
++void calendar_shuffle_base(const calendar_generator_t *generator,
++                           mtwister_t *rng, fixture_t *base);
++int calendar_recombine_base(const calendar_generator_t *generator,
++                            mtwister_t *rng, fixture_t *base,
++                            size_t moves, calendar_diagnostics_t *stats);
++#endif /* LEADERBOARD_CALENDAR_INTERNAL_H */
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 6f38c07..c8a1ac7 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -7,6 +7,10 @@ add_library(leaderboard_fault_test STATIC
+     ${PROJECT_SOURCE_DIR}/src/team.c
+     ${PROJECT_SOURCE_DIR}/src/competition.c
+     ${PROJECT_SOURCE_DIR}/src/standings.c
++    ${PROJECT_SOURCE_DIR}/src/calendar.c
++    ${PROJECT_SOURCE_DIR}/src/calendar_shuffle.c
++    ${PROJECT_SOURCE_DIR}/src/calendar_recombine.c
++    ${PROJECT_SOURCE_DIR}/src/mtwister.c
+     ${PROJECT_SOURCE_DIR}/src/alloc.c)
+ target_include_directories(leaderboard_fault_test PRIVATE
+     ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+@@ -35,7 +39,7 @@ leaderboard_apply_dev_options(leaderboard_fault_test)
+ # Standalone ISO C11 translation units for installed public headers.
+ # In contrast to a combined include test, this also catches missing headers.
+ foreach (header IN ITEMS
+-        bostree commons hashmap_base hashmap_typed mtwister team competition standings ranking)
++        bostree commons hashmap_base hashmap_typed mtwister team competition standings calendar ranking)
+     add_library(header_c11_${header} OBJECT test_public_header_c11.c)
+     target_include_directories(header_c11_${header} PRIVATE ${PROJECT_SOURCE_DIR}/include)
+     target_compile_definitions(header_c11_${header} PRIVATE
+@@ -95,3 +99,29 @@ target_link_libraries(test_standings_failures PRIVATE leaderboard_fault_test)
+ leaderboard_apply_dev_options(test_standings_failures)
+ set_target_properties(test_standings_failures PROPERTIES C_EXTENSIONS OFF)
+ add_test(NAME standings_failure_contract COMMAND test_standings_failures)
++
++# 3.0.12: fixture permutations and strict rematch cooldown.
++add_executable(test_calendar test_calendar.c)
++target_link_libraries(test_calendar PRIVATE Leaderboard::leaderboard)
++leaderboard_apply_dev_options(test_calendar)
++set_target_properties(test_calendar PROPERTIES C_EXTENSIONS OFF)
++target_compile_definitions(test_calendar PRIVATE
++    "LEADERBOARD_CALENDAR_TSV=\"${CMAKE_CURRENT_SOURCE_DIR}/fixtures/calendar_2026_2027.tsv\"")
++add_test(NAME calendar_permutation_contract COMMAND test_calendar)
++
++# White-box validation and allocation-failure atomicity.
++add_executable(test_calendar_failures test_calendar_failures.c)
++target_include_directories(test_calendar_failures PRIVATE
++    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
++target_compile_definitions(test_calendar_failures PRIVATE LEADERBOARD_TEST_ALLOCATION_FAULTS)
++target_link_libraries(test_calendar_failures PRIVATE leaderboard_fault_test)
++leaderboard_apply_dev_options(test_calendar_failures)
++set_target_properties(test_calendar_failures PROPERTIES C_EXTENSIONS OFF)
++add_test(NAME calendar_permutation_failures COMMAND test_calendar_failures)
++
++# 3.0.12: empirical seeded-sampling diagnostics, not a uniformity guarantee.
++add_executable(test_calendar_sampling test_calendar_sampling.c)
++target_link_libraries(test_calendar_sampling PRIVATE Leaderboard::leaderboard)
++leaderboard_apply_dev_options(test_calendar_sampling)
++set_target_properties(test_calendar_sampling PROPERTIES C_EXTENSIONS OFF)
++add_test(NAME calendar_sampling_diagnostics COMMAND test_calendar_sampling)
+diff --git a/tests/calendar_test_fixture.h b/tests/calendar_test_fixture.h
+new file mode 100644
+index 0000000..c00f169
+--- /dev/null
++++ b/tests/calendar_test_fixture.h
+@@ -0,0 +1,56 @@
++/* Deterministic round-robin input builder for 3.0.12 tests. */
++#ifndef LEADERBOARD_CALENDAR_TEST_FIXTURE_H
++#define LEADERBOARD_CALENDAR_TEST_FIXTURE_H
++#include "competition.h"
++#include <stdio.h>
++#include <string.h>
++
++typedef struct calendar_test_fixture {
++    char ids[12][TEAM_UUID_TEXT_SIZE];
++    competition_team_input_t teams[12];
++    competition_fixture_input_t matches[40][6];
++    competition_round_input_t rounds[40];
++    competition_score_input_t scores[480];
++    competition_input_t input;
++} calendar_test_fixture_t;
++
++static int calendar_test_prepare(calendar_test_fixture_t *fixture,
++                                 size_t n,size_t r) {
++    if(n<2U || n>12U || (n&1U)!=0U || r==0U || r>40U) return -1;
++    memset(fixture,0,sizeof(*fixture));
++    for(size_t i=0;i<n;++i) {
++        (void)snprintf(fixture->ids[i],TEAM_UUID_TEXT_SIZE,
++                       "00000000-0000-4000-8000-%012u",(unsigned)(i+1U));
++        fixture->teams[i]=(competition_team_input_t){fixture->ids[i],"A team"};
++    }
++    size_t arrangement[12];for(size_t i=0;i<n;++i)arrangement[i]=i;
++    size_t period=n-1U;
++    for(size_t round=0;round<r;++round) {
++        size_t k=n/2U;
++        for(size_t i=0;i<k;++i) {
++            size_t a=arrangement[i],b=arrangement[n-1U-i];
++            if((round/period)%2U != 0U) {size_t tmp=a;a=b;b=tmp;}
++            fixture->matches[round][i]=(competition_fixture_input_t){
++                fixture->ids[a],fixture->ids[b]
++            };
++        }
++        fixture->rounds[round]=(competition_round_input_t){
++            (uint32_t)(round+4U),fixture->matches[round],k
++        };
++        for(size_t i=0;i<n;++i) {
++            fixture->scores[round*n+i]=(competition_score_input_t){
++                fixture->ids[i],(uint32_t)(round+4U),
++                {round<8U ? (uint32_t)(600U+10U*i+round) : 0U,
++                 round<8U ? FANTASY_SCORE_FINAL : FANTASY_SCORE_PENDING}
++            };
++        }
++        /* Circle method: hold team 0 fixed, rotate the other N-1 teams. */
++        size_t last=arrangement[n-1U];
++        for(size_t i=n-1U;i>1U;--i) arrangement[i]=arrangement[i-1U];
++        arrangement[1]=last;
++    }
++    fixture->input=(competition_input_t){fixture->teams,n,fixture->rounds,r,
++                                         fixture->scores,n*r};
++    return 0;
++}
++#endif
+diff --git a/tests/test_calendar.c b/tests/test_calendar.c
+new file mode 100644
+index 0000000..3a1d978
+--- /dev/null
++++ b/tests/test_calendar.c
+@@ -0,0 +1,176 @@
++/* Public permutation contracts: small leagues, real fixtures, determinism. */
++#include "calendar.h"
++#include "calendar_test_fixture.h"
++#include <errno.h>
++#include <inttypes.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#define CHECK(expr) do { if(!(expr)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#expr); return EXIT_FAILURE; } } while(0)
++
++static int exercise(size_t n,size_t r,calendar_method_t method,
++                    calendar_sampling_mode_t mode) {
++    calendar_test_fixture_t fixture;
++    CHECK(calendar_test_prepare(&fixture,n,r)==0);
++    competition_t *source=NULL;
++    CHECK(competition_create(&fixture.input,&source)==0);
++    calendar_options_t opts=calendar_options_default();
++    opts.method=method;opts.sampling_mode=mode;opts.seed=42U;
++    opts.moves_per_sample=30U;opts.chain_warmup_moves=4U;
++    opts.chain_thinning_moves=3U;
++    calendar_generator_t *first=NULL,*second=NULL;
++    CHECK(calendar_generator_create(source,&opts,&first)==0);
++    CHECK(calendar_generator_create(source,&opts,&second)==0);
++    for(size_t iter=0;iter<15U;++iter) {
++        calendar_t *a=NULL,*b=NULL;
++        calendar_diagnostics_t da,db;
++        CHECK(calendar_generator_next(first,&a,&da)==0 && a!=NULL);
++        CHECK(calendar_generator_next(second,&b,&db)==0 && b!=NULL);
++        CHECK(calendar_validate(source,a)==0 && calendar_validate(source,b)==0);
++        CHECK(calendar_fingerprint(a)==calendar_fingerprint(b));
++        CHECK(memcmp(&da,&db,sizeof(da))==0);
++        CHECK(calendar_team_count(a)==n && calendar_round_count(a)==r);
++        for(size_t i=0;i<r;++i) {
++            uint32_t day;
++            CHECK(calendar_round_matchday(a,i,&day)==0 && day==i+4U);
++            for(size_t j=0;j<n/2U;++j) {
++                fixture_t f;
++                CHECK(calendar_fixture_at(a,i,j,&f)==0);
++                CHECK(f.home<n && f.away<n && f.home!=f.away);
++            }
++        }
++        calendar_destroy(b);
++        if(iter==14U) {
++            /* Output must be independently owned after generator teardown. */
++            calendar_generator_destroy(first);first=NULL;
++            CHECK(calendar_validate(source,a)==0);
++        }
++        calendar_destroy(a);
++    }
++    calendar_generator_destroy(first);calendar_generator_destroy(second);
++    competition_destroy(source);
++    return 0;
++}
++
++static int reject_incompatible(void) {
++    calendar_test_fixture_t f;
++    CHECK(calendar_test_prepare(&f,4U,6U)==0);
++    f.rounds[1].fixtures=f.rounds[0].fixtures;
++    competition_t *source=NULL;
++    CHECK(competition_create(&f.input,&source)==0);
++    calendar_generator_t *generator=(calendar_generator_t*)(uintptr_t)1U;
++    CHECK(calendar_generator_create(source,NULL,&generator)==-ENOTSUP);
++    CHECK(generator==NULL);
++    competition_destroy(source);
++    return 0;
++}
++
++/* Import the literal 10-team/35-round user calendar (including pending dates)
++ * to check the anchored ninth base round and real directed home/away counts. */
++static int real_calendar(void) {
++#ifndef LEADERBOARD_CALENDAR_TSV
++#error "Define LEADERBOARD_CALENDAR_TSV"
++#endif
++    FILE *file=fopen(LEADERBOARD_CALENDAR_TSV,"rb");CHECK(file!=NULL);
++    char ids[10][TEAM_UUID_TEXT_SIZE];
++    char names[10][TEAM_NAME_MAX_BYTES+1];
++    competition_team_input_t teams[10];
++    competition_fixture_input_t matches[35][5];
++    competition_round_input_t rounds[35]={0};
++    competition_score_input_t scores[350]={0};
++    char line[1024];size_t team_count=0U,fixture_count=0U;
++    while(fgets(line,sizeof(line),file)!=NULL) {
++        if(line[0]=='#')continue;
++        unsigned rd,day,p1,p2;char home[256],away[256],stat;
++        CHECK(sscanf(line,"%u\t%u\t%255[^\t]\t%255[^\t]\t%u\t%u\t%c",
++                     &rd,&day,home,away,&p1,&p2,&stat)==7);
++        CHECK(rd>=1U && rd<=35U && team_count<=10U);
++        size_t idx[2];const char *parts[2]={home,away};
++        for(size_t k=0;k<2U;++k) {
++            size_t j=0;
++            for(;j<team_count;++j) if(strcmp(names[j],parts[k])==0) break;
++            if(j==team_count) {
++                CHECK(team_count<10U);
++                (void)snprintf(names[j],sizeof(names[j]),"%s",parts[k]);
++                (void)snprintf(ids[j],sizeof(ids[j]),
++                               "00000000-0000-4000-8000-%012u",(unsigned)(j+1U));
++                teams[j]=(competition_team_input_t){ids[j],names[j]};
++                ++team_count;
++            }
++            idx[k]=j;
++        }
++        size_t rr=(size_t)(rd-1U), fi=rounds[rr].fixture_count;
++        CHECK(fi<5U);
++        matches[rr][fi]=(competition_fixture_input_t){ids[idx[0]],ids[idx[1]]};
++        rounds[rr].fixture_count++;
++        rounds[rr].serie_a_matchday=day;
++        CHECK(stat=='F' || stat=='P');
++        scores[rr*10U+idx[0]]=(competition_score_input_t){ids[idx[0]],day,
++            {p1,stat=='F' ? FANTASY_SCORE_FINAL : FANTASY_SCORE_PENDING}};
++        scores[rr*10U+idx[1]]=(competition_score_input_t){ids[idx[1]],day,
++            {p2,stat=='F' ? FANTASY_SCORE_FINAL : FANTASY_SCORE_PENDING}};
++        fixture_count++;
++    }
++    CHECK(fclose(file)==0 && fixture_count==175U && team_count==10U);
++    for(size_t r=0;r<35U;++r) {
++        CHECK(rounds[r].fixture_count==5U);
++        rounds[r].fixtures=matches[r];
++    }
++    competition_input_t input={teams,10U,rounds,35U,scores,350U};
++    competition_t *source=NULL;
++    CHECK(competition_create(&input,&source)==0);
++    CHECK(!competition_is_simulation_ready(source));
++    for(unsigned method=0;method<2U;++method) {
++        calendar_options_t opts=calendar_options_default();
++        opts.seed=12345U;opts.method=(calendar_method_t)method;
++        opts.moves_per_sample=80U;
++        calendar_generator_t *generator=NULL;
++        CHECK(calendar_generator_create(source,&opts,&generator)==0);
++        size_t changed=0U,three=0U;
++        for(size_t i=0;i<32U;++i) {
++            calendar_t *calendar=NULL;calendar_diagnostics_t info;
++            CHECK(calendar_generator_next(generator,&calendar,&info)==0);
++            CHECK(calendar_validate(source,calendar)==0);
++            fixture_t original[5];
++            for(size_t j=0;j<5U;++j) CHECK(competition_fixture_at(source,8U,j,&original[j])==0);
++            for(size_t j=0;j<5U;++j) {
++                fixture_t candidate;int found=0;
++                CHECK(calendar_fixture_at(calendar,8U,j,&candidate)==0);
++                for(size_t k=0;k<5U;++k)
++                    if((candidate.home==original[k].home && candidate.away==original[k].away) ||
++                       (candidate.home==original[k].away && candidate.away==original[k].home)) found=1;
++                CHECK(found);
++            }
++            if(info.changed_base_rounds) ++changed;
++            three+=(size_t)info.three_round_moves;
++            calendar_destroy(calendar);
++        }
++        CHECK(changed>0U);
++        if(method==CALENDAR_METHOD_RECOMBINE) CHECK(three>0U);
++        calendar_generator_destroy(generator);
++    }
++    competition_destroy(source);
++    return 0;
++}
++
++int main(void) {
++    CHECK(calendar_round_count(NULL)==0U && calendar_team_count(NULL)==0U);
++    CHECK(calendar_fingerprint(NULL)==0U);
++    CHECK(calendar_generator_create(NULL,NULL,NULL)==-EINVAL);
++    calendar_t *calendar=(calendar_t*)(uintptr_t)1U;
++    CHECK(calendar_generator_next(NULL,&calendar,NULL)==-EINVAL && calendar==NULL);
++    calendar_destroy(NULL);calendar_generator_destroy(NULL);
++    CHECK(reject_incompatible()==0);
++    const size_t sizes[]={2U,4U,8U,10U,12U};
++    for(size_t s=0;s<5U;++s) {
++        size_t n=sizes[s],p=n-1U;
++        size_t rounds[4]={p>1U ? p-1U : 1U,p,p*2U,p*3U-1U};
++        for(size_t j=0;j<4U;++j) for(unsigned method=0;method<2U;++method)
++            for(unsigned mode=0;mode<2U;++mode)
++                CHECK(exercise(n,rounds[j],(calendar_method_t)method,
++                               (calendar_sampling_mode_t)mode)==0);
++    }
++    CHECK(real_calendar()==0);
++    return 0;
++}
+diff --git a/tests/test_calendar_failures.c b/tests/test_calendar_failures.c
+new file mode 100644
+index 0000000..3bcace1
+--- /dev/null
++++ b/tests/test_calendar_failures.c
+@@ -0,0 +1,100 @@
++/* Failure-atomic generator RNG/chain state and adversarial validation. */
++#include "calendar.h"
++#include "calendar_internal.h"
++#include "alloc_internal.h"
++#include "calendar_test_fixture.h"
++#include <errno.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#define CHECK(expr) do {if(!(expr)){fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#expr);return EXIT_FAILURE;}}while(0)
++
++static int failure_matrix(void) {
++    calendar_test_fixture_t f;
++    CHECK(calendar_test_prepare(&f,10U,35U)==0);
++    competition_t *c=NULL;CHECK(competition_create(&f.input,&c)==0);
++    calendar_options_t options=calendar_options_default();
++    options.seed=UINT32_C(0xDEADBEEF);options.moves_per_sample=13U;
++    options.sampling_mode=CALENDAR_SAMPLING_CHAIN;
++    for(size_t cutoff=0U;cutoff<10U;++cutoff) {
++        calendar_generator_t *g=NULL;
++        leaderboard_alloc_fail_after(cutoff);
++        int status=calendar_generator_create(c,&options,&g);
++        leaderboard_alloc_reset();
++        CHECK(status==0 || status==-ENOMEM);
++        if(status==0)calendar_generator_destroy(g);
++        else CHECK(g==NULL);
++    }
++    /* A successful generator must be unchanged by *any* failed next call. */
++    for(size_t cutoff=0U;cutoff<25U;++cutoff) {
++        calendar_generator_t *reference=NULL,*candidate=NULL;
++        CHECK(calendar_generator_create(c,&options,&reference)==0);
++        CHECK(calendar_generator_create(c,&options,&candidate)==0);
++        calendar_t *attempt=NULL;
++        leaderboard_alloc_fail_after(cutoff);
++        int status=calendar_generator_next(candidate,&attempt,NULL);
++        leaderboard_alloc_reset();
++        CHECK(status==0 || status==-ENOMEM);
++        if(status!=0) {
++            CHECK(attempt==NULL);
++            calendar_t *expected=NULL,*received=NULL;
++            CHECK(calendar_generator_next(reference,&expected,NULL)==0);
++            CHECK(calendar_generator_next(candidate,&received,NULL)==0);
++            CHECK(calendar_fingerprint(expected)==calendar_fingerprint(received));
++            calendar_destroy(expected);calendar_destroy(received);
++        } else {
++            CHECK(attempt!=NULL && calendar_validate(c,attempt)==0);
++            calendar_destroy(attempt);
++        }
++        calendar_generator_destroy(candidate);calendar_generator_destroy(reference);
++    }
++    competition_destroy(c);return 0;
++}
++
++static int validation_edges(void) {
++    calendar_test_fixture_t f;
++    CHECK(calendar_test_prepare(&f,8U,20U)==0);
++    competition_t *competition=NULL;CHECK(competition_create(&f.input,&competition)==0);
++    calendar_options_t options=calendar_options_default();
++    calendar_generator_t *g=NULL;CHECK(calendar_generator_create(competition,&options,&g)==0);
++    calendar_t *c=NULL;CHECK(calendar_generator_next(g,&c,NULL)==0);
++    CHECK(calendar_validate(competition,c)==0);
++    fixture_t original=c->fixtures[0];
++    c->fixtures[0]=c->fixtures[1];
++    CHECK(calendar_validate(competition,c)==-EINVAL);
++    c->fixtures[0]=original;
++    c->matchdays[0]++;
++    CHECK(calendar_validate(competition,c)==-EINVAL);
++    c->matchdays[0]--;
++    /* Intact source and candidate must both remain valid. */
++    CHECK(calendar_validate(competition,c)==0);
++    CHECK(calendar_validate(NULL,c)==-EINVAL);
++    CHECK(calendar_validate(competition,NULL)==-EINVAL);
++    /* A changed directed match that keeps the undirected pair still fails. */
++    c->fixtures[0]=(fixture_t){original.away,original.home};
++    CHECK(calendar_validate(competition,c)==-EINVAL);
++    c->fixtures[0]=original;
++    CHECK(calendar_validate(competition,c)==0);
++    /* Public API argument and bounds validation. */
++    CHECK(calendar_fixture_at(c,999U,0U,&original)==-ERANGE);
++    CHECK(calendar_round_matchday(c,999U,NULL)==-EINVAL);
++    CHECK(calendar_round_matchday(c,999U,&(uint32_t){0})==-ERANGE);
++    calendar_destroy(c);
++    calendar_generator_destroy(g);
++    options.method=(calendar_method_t)99;
++    CHECK(calendar_generator_create(competition,&options,&g)==-EINVAL && g==NULL);
++    options=calendar_options_default();options.three_round_node_limit=0U;
++    CHECK(calendar_generator_create(competition,&options,&g)==-EINVAL && g==NULL);
++    options=calendar_options_default();options.three_round_node_limit=1U;
++    CHECK(calendar_generator_create(competition,&options,&g)==0);
++    CHECK(calendar_generator_next(g,&c,NULL)==0);
++    CHECK(calendar_validate(competition,c)==0);
++    calendar_destroy(c);calendar_generator_destroy(g);
++    competition_destroy(competition);return 0;
++}
++int main(void) {
++    CHECK(failure_matrix()==0);
++    CHECK(validation_edges()==0);
++    return 0;
++}
+diff --git a/tests/test_calendar_sampling.c b/tests/test_calendar_sampling.c
+new file mode 100644
+index 0000000..73a37be
+--- /dev/null
++++ b/tests/test_calendar_sampling.c
+@@ -0,0 +1,92 @@
++/* Deterministic, descriptive sampling diagnostics; NOT a uniformity proof. */
++#include "calendar.h"
++#include "calendar_test_fixture.h"
++#include <inttypes.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++#define CHECK(expr) do {if(!(expr)){fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#expr);return EXIT_FAILURE;}}while(0)
++
++static int small_exact_reference(void) {
++    calendar_test_fixture_t input;
++    CHECK(calendar_test_prepare(&input,4U,3U)==0);
++    competition_t *c=NULL;CHECK(competition_create(&input.input,&c)==0);
++    calendar_options_t options=calendar_options_default();
++    options.method=CALENDAR_METHOD_ROUND_SHUFFLE;
++    options.seed=UINT32_C(1301);
++    calendar_generator_t *generator=NULL;
++    CHECK(calendar_generator_create(c,&options,&generator)==0);
++    /* A K4 first cycle has precisely three perfect matchings. Reordering
++     * them produces exactly 3!=6 distinct labeled round sequences. */
++    enum { SAMPLE_COUNT=6000, POSSIBILITIES=6 };
++    uint64_t fingerprints[POSSIBILITIES]={0};
++    unsigned count[POSSIBILITIES]={0};
++    size_t distinct=0U;
++    for(size_t i=0;i<SAMPLE_COUNT;++i) {
++        calendar_t *sample=NULL;
++        CHECK(calendar_generator_next(generator,&sample,NULL)==0);
++        CHECK(calendar_validate(c,sample)==0);
++        uint64_t fingerprint=calendar_fingerprint(sample);
++        size_t j=0;
++        for(;j<distinct;++j) if(fingerprints[j]==fingerprint)break;
++        if(j==distinct) {
++            CHECK(distinct<POSSIBILITIES);
++            fingerprints[distinct++]=fingerprint;
++        }
++        count[j]++;
++        calendar_destroy(sample);
++    }
++    CHECK(distinct==POSSIBILITIES);
++    double chi_square=0.0,expected=(double)SAMPLE_COUNT/(double)POSSIBILITIES;
++    for(size_t j=0;j<distinct;++j) {
++        double error=(double)count[j]-expected;
++        chi_square+=error*error/expected;
++    }
++    printf("K4 baseline shuffle: %zu/6 distinct, chi-square(5 df)=%.3f over %d samples\n",
++           distinct,chi_square,SAMPLE_COUNT);
++    /* A wide deterministic smoke bound catches severe selection mistakes.
++     * It is NOT a statistical guarantee or a CI performance threshold. */
++    CHECK(chi_square<60.0);
++    calendar_generator_destroy(generator);
++    competition_destroy(c);
++    return EXIT_SUCCESS;
++}
++
++static int recombination_diversity(void) {
++    calendar_test_fixture_t input;
++    CHECK(calendar_test_prepare(&input,8U,14U)==0);
++    competition_t *c=NULL;CHECK(competition_create(&input.input,&c)==0);
++    calendar_options_t options=calendar_options_default();
++    options.method=CALENDAR_METHOD_RECOMBINE;options.seed=UINT32_C(2026);
++    options.moves_per_sample=24U;
++    calendar_generator_t *generator=NULL;
++    CHECK(calendar_generator_create(c,&options,&generator)==0);
++    enum { SAMPLES=250 };
++    uint64_t seen[SAMPLES];size_t distinct=0U;
++    uint64_t partial_moves=0U,three_moves=0U;
++    for(size_t i=0;i<SAMPLES;++i) {
++        calendar_t *sample=NULL;
++        calendar_diagnostics_t stats;
++        CHECK(calendar_generator_next(generator,&sample,&stats)==0);
++        CHECK(calendar_validate(c,sample)==0);
++        uint64_t hash=calendar_fingerprint(sample);
++        size_t j=0;
++        for(;j<distinct;++j) if(seen[j]==hash)break;
++        if(j==distinct) seen[distinct++]=hash;
++        partial_moves+=stats.two_round_partial_moves;
++        three_moves+=stats.three_round_moves;
++        calendar_destroy(sample);
++    }
++    printf("K8 recombination: %zu/%d distinct observed, %" PRIu64
++           " proper 2-round moves, %" PRIu64 " 3-round moves\n",
++           distinct,SAMPLES,partial_moves,three_moves);
++    CHECK(distinct>1U && partial_moves+three_moves>0U);
++    calendar_generator_destroy(generator);
++    competition_destroy(c);
++    return EXIT_SUCCESS;
++}
++int main(void) {
++    CHECK(small_exact_reference()==0);
++    CHECK(recombination_diversity()==0);
++    return EXIT_SUCCESS;
++}

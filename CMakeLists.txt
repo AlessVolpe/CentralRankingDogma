@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(leaderboardsystem VERSION 3.0.11 LANGUAGES C)
+project(leaderboardsystem VERSION 3.0.12 LANGUAGES C)
 
 include(CTest)
 include(GNUInstallDirs)
@@ -75,6 +75,9 @@ add_library(leaderboard_domain_obj OBJECT
         src/team.c
         src/competition.c
         src/standings.c
+        src/calendar.c
+        src/calendar_shuffle.c
+        src/calendar_recombine.c
 )
 
 foreach (component IN ITEMS containers ranking legacy domain)
