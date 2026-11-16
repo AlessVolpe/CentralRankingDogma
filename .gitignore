@@ -74,3 +74,34 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+
+# Additional CMake generated state
+/stage/
+CMakeUserPresets.json
+
+# Generated fuzzing corpora and crash artifacts
+/fuzz-corpus/
+/fuzz-artifacts/
+
+# Python documentation tooling and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Python coverage reports
+.coverage
+.coverage.*
+htmlcov/
+
+# Additional Node.js package-manager logs
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Temporary milestone delivery packages
+/LeaderboardSystem-*.zip
+/LeaderboardSystem-*-APPLY.md
