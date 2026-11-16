@@ -152,7 +152,8 @@ int main(void) {
         printf("Added player %s [%s].\n", team->name, id);
     }
 
-    printf("\nFormat: team_name[team_id], championship points, fixed season total\n");
+    printf("\nFormat: team_name[team_id], championship points,"
+           " fixed season total\n");
     player_pool_iterator_t it = player_pool_iter(&pool);
     while (player_pool_iter_valid(&it)) {
         const char *key = player_pool_iter_key(&it);

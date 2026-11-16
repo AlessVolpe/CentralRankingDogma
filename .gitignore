@@ -20,6 +20,18 @@ install_manifest.txt
 # Generated benchmark results
 /benchmark-*
 
+# Local development patches
+*.patch
+*.diff
+*.rej
+*.orig
+
+# Node.js dependencies
+node_modules/
+
+# npm debug logs
+npm-debug.log*
+
 # C / C++ compiled outputs
 *.o
 *.obj
