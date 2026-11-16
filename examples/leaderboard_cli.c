@@ -14,15 +14,23 @@
 #include "commons.h"
 #include "hashmap_typed.h"
 #include "mtwister.h"
-#include "player.h"
+#include "team.h"
 
-HASHMAP_TYPED_DEFINE(player_pool, char, player_t)
+typedef struct demo_standing {
+    team_t *team;
+    uint32_t championship_points;
+} demo_standing_t;
 
-_Static_assert(MAX_NAME_SIZE == 25, "Keep the input width synchronized with MAX_NAME_SIZE");
+HASHMAP_TYPED_DEFINE(player_pool, char, demo_standing_t)
 
-/* Names are owned by player_names; the tree owns only player_t allocations. */
+/* The legacy CLI alone retains its short interactive input limit. */
+#define LEGACY_CLI_NAME_CAP 25U
+
+/* Team names are deep-copied; the tree owns its demo_standing_t values. */
 static void _tree_free(BOSNode *node) {
-    player_destroy(bostree_node_data(node));
+    demo_standing_t *entry = bostree_node_data(node);
+    team_destroy(entry->team);
+    free(entry);
 }
 
 static int _compare_names(const void *lhs, const void *rhs) {
@@ -54,7 +62,7 @@ static char **_name_players(size_t count) {
     while ((ch = getchar()) != '\n' && ch != EOF) {}
 
     for (size_t i = 0; i < count; ++i) {
-        names[i] = malloc(MAX_NAME_SIZE);
+        names[i] = malloc(LEGACY_CLI_NAME_CAP);
         if (names[i] == NULL) {
             _free_player_names(count, names);
             return NULL;
@@ -63,7 +71,7 @@ static char **_name_players(size_t count) {
         /* fgets preserves spaces in team names (e.g. Brigate Ebosse).
          * Detect and reject overlong lines rather than treating the remainder
          * as the next team's name. */
-        char line[MAX_NAME_SIZE + 2U];
+        char line[LEGACY_CLI_NAME_CAP + 2U];
         if (fgets(line, sizeof(line), stdin) == NULL) {
             _free_player_names(count, names);
             return NULL;
@@ -77,7 +85,7 @@ static char **_name_players(size_t count) {
             return NULL;
         }
         size_t len = strlen(line);
-        if (len == 0U || len >= MAX_NAME_SIZE) {
+        if (len == 0U || len >= LEGACY_CLI_NAME_CAP) {
             _free_player_names(count, names);
             return NULL;
         }
@@ -119,62 +127,68 @@ int main(void) {
         char *id = uuid_generate();
         /* Synthetic season aggregate is fixed for this demo fixture.
          * The real Python orchestrator will supply recorded season totals. */
-        player_t *player = player_create_with_total(
-            names[i], UINT32_C(20000) + genRandLong(random) % UINT32_C(10000));
-        if (id == NULL || player == NULL) {
+        team_t *team = id == NULL ? NULL : team_create(
+            id, names[i], UINT32_C(20000) + genRandLong(random) % UINT32_C(10000));
+        demo_standing_t *entry = team == NULL ? NULL : malloc(sizeof(*entry));
+        if (id == NULL || team == NULL || entry == NULL) {
             free(id);
-            player_destroy(player);
+            team_destroy(team);
+            free(entry);
             fprintf(stderr, "Unable to allocate player.\n");
             goto cleanup;
         }
 
-        const int status = player_pool_put(&pool, id, player);
+        entry->team = team;
+        entry->championship_points = 0U;
+        const int status = player_pool_put(&pool, id, entry);
         if (status != 0) {
             fprintf(stderr, "Unable to store player %s (error %d).\n", names[i], status);
-            player_destroy(player);
+            team_destroy(team);
+            free(entry);
             free(id);
             goto cleanup;
         }
         ids[i] = id;
-        printf("Added player %s [%s].\n", player->name, id);
+        printf("Added player %s [%s].\n", team->name, id);
     }
 
     printf("\nFormat: team_name[team_id], championship points, fixed season total\n");
     player_pool_iterator_t it = player_pool_iter(&pool);
     while (player_pool_iter_valid(&it)) {
         const char *key = player_pool_iter_key(&it);
-        player_t *data = player_pool_iter_value(&it);
+        demo_standing_t *data = player_pool_iter_value(&it);
         /* One illustrative match result: win (3), draw (1), loss (0). */
         const uint32_t outcome = genRandLong(random) % 3U;
         const uint32_t award = outcome == 0U ? 3U : (outcome == 1U ? 1U : 0U);
-        if (player_add_championship_points(data, award) != 0) {
-            fprintf(stderr, "Unable to update championship points.\n");
-            goto cleanup;
-        }
+        /* Demonstration only. Match-result calculation belongs to 3.1.0. */
+        data->championship_points += award;
         printf("Team: %s[%s] with %" PRIu32
                " championship points; season fantasy total %" PRIu32 ".%" PRIu32 "\n",
-               data->name, key, data->championship_points,
-               data->total_points_tenths / 10U, data->total_points_tenths % 10U);
+               data->team->name, key, data->championship_points,
+               data->team->total_points_tenths / 10U,
+               data->team->total_points_tenths % 10U);
         (void)player_pool_iter_next(&it);
     }
 
     /* Removing transfers player ownership from the pool to the tree. */
     it = player_pool_iter(&pool);
     while (player_pool_iter_valid(&it)) {
-        player_t *player = player_pool_iter_value(&it);
+        demo_standing_t *entry = player_pool_iter_value(&it);
         (void)player_pool_iter_remove(&it);
-        BOSNode *node = bostree_insert(leaderboard, player->name, player);
+        BOSNode *node = bostree_insert(leaderboard, entry->team->name, entry);
         if (node == NULL) {
-            player_destroy(player);
+            team_destroy(entry->team);
+            free(entry);
             fprintf(stderr, "Unable to insert leaderboard node.\n");
             goto cleanup;
         }
-        if (bostree_node_data(node) != player) {
+        if (bostree_node_data(node) != entry) {
             /* Comparator-equal names share a ranking entry. */
-            printf("Duplicate player name %s ignored.\n", player->name);
-            player_destroy(player);
+            printf("Duplicate player name %s ignored.\n", entry->team->name);
+            team_destroy(entry->team);
+            free(entry);
         } else {
-            printf("Inserted player %s with %" PRIu32 " points.\n", player->name, player->championship_points);
+            printf("Inserted player %s with %" PRIu32 " points.\n", entry->team->name, entry->championship_points);
         }
     }
 
@@ -187,9 +201,10 @@ cleanup:
     /* These are the values still in the hashmap, not the ones in the tree. */
     it = player_pool_iter(&pool);
     while (player_pool_iter_valid(&it)) {
-        player_t *player = player_pool_iter_value(&it);
+        demo_standing_t *entry = player_pool_iter_value(&it);
         (void)player_pool_iter_remove(&it);
-        player_destroy(player);
+        team_destroy(entry->team);
+        free(entry);
     }
     player_pool_cleanup(&pool);
     bostree_destroy(leaderboard);

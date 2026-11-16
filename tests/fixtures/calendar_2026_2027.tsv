@@ -1,0 +1,177 @@
+# From user-provided Calendario_2026-2027.xlsx (fixture/provenance, 2026-11-16).
+# round	serie_a_matchday	home_name	away_name	home_score_x10	away_score_x10	F(final)/P(pending)
+1	4	Schalke 104	Goodfellas fc	645	680	F
+1	4	Paralympiakos	fc paros	635	665	F
+1	4	Racing de SanDeAndre	VolevoMalen	710	720	F
+1	4	Fortuna Duxeldorf	Boh	940	680	F
+1	4	CIRCO MASSIMO FC	Brigate Ebosse	755	770	F
+2	5	fc paros	Schalke 104	630	650	F
+2	5	Boh	CIRCO MASSIMO FC	745	765	F
+2	5	VolevoMalen	Fortuna Duxeldorf	765	765	F
+2	5	Goodfellas fc	Racing de SanDeAndre	745	725	F
+2	5	Brigate Ebosse	Paralympiakos	725	635	F
+3	6	Schalke 104	Brigate Ebosse	790	635	F
+3	6	Paralympiakos	Boh	695	680	F
+3	6	Racing de SanDeAndre	fc paros	690	685	F
+3	6	Goodfellas fc	VolevoMalen	710	730	F
+3	6	CIRCO MASSIMO FC	Fortuna Duxeldorf	805	670	F
+4	7	fc paros	Goodfellas fc	815	885	F
+4	7	Fortuna Duxeldorf	Paralympiakos	650	630	F
+4	7	Boh	Schalke 104	635	690	F
+4	7	VolevoMalen	CIRCO MASSIMO FC	720	770	F
+4	7	Brigate Ebosse	Racing de SanDeAndre	535	605	F
+5	8	Schalke 104	Fortuna Duxeldorf	770	650	F
+5	8	Paralympiakos	CIRCO MASSIMO FC	640	770	F
+5	8	fc paros	VolevoMalen	730	725	F
+5	8	Racing de SanDeAndre	Boh	815	820	F
+5	8	Goodfellas fc	Brigate Ebosse	715	640	F
+6	9	Fortuna Duxeldorf	Racing de SanDeAndre	765	715	F
+6	9	Boh	Goodfellas fc	600	905	F
+6	9	VolevoMalen	Paralympiakos	800	625	F
+6	9	Brigate Ebosse	fc paros	665	870	F
+6	9	CIRCO MASSIMO FC	Schalke 104	715	715	F
+7	10	Schalke 104	Paralympiakos	740	625	F
+7	10	fc paros	Boh	750	775	F
+7	10	Racing de SanDeAndre	CIRCO MASSIMO FC	660	725	F
+7	10	Goodfellas fc	Fortuna Duxeldorf	755	715	F
+7	10	Brigate Ebosse	VolevoMalen	845	770	F
+8	11	Schalke 104	VolevoMalen	725	595	F
+8	11	Paralympiakos	Racing de SanDeAndre	675	765	F
+8	11	Fortuna Duxeldorf	fc paros	705	645	F
+8	11	Boh	Brigate Ebosse	825	695	F
+8	11	CIRCO MASSIMO FC	Goodfellas fc	765	765	F
+9	12	fc paros	CIRCO MASSIMO FC	0	0	P
+9	12	Racing de SanDeAndre	Schalke 104	0	0	P
+9	12	VolevoMalen	Boh	0	0	P
+9	12	Goodfellas fc	Paralympiakos	0	0	P
+9	12	Brigate Ebosse	Fortuna Duxeldorf	0	0	P
+10	13	Goodfellas fc	Schalke 104	0	0	P
+10	13	fc paros	Paralympiakos	0	0	P
+10	13	VolevoMalen	Racing de SanDeAndre	0	0	P
+10	13	Boh	Fortuna Duxeldorf	0	0	P
+10	13	Brigate Ebosse	CIRCO MASSIMO FC	0	0	P
+11	14	Schalke 104	fc paros	0	0	P
+11	14	CIRCO MASSIMO FC	Boh	0	0	P
+11	14	Fortuna Duxeldorf	VolevoMalen	0	0	P
+11	14	Racing de SanDeAndre	Goodfellas fc	0	0	P
+11	14	Paralympiakos	Brigate Ebosse	0	0	P
+12	15	Brigate Ebosse	Schalke 104	0	0	P
+12	15	Boh	Paralympiakos	0	0	P
+12	15	fc paros	Racing de SanDeAndre	0	0	P
+12	15	VolevoMalen	Goodfellas fc	0	0	P
+12	15	Fortuna Duxeldorf	CIRCO MASSIMO FC	0	0	P
+13	16	Goodfellas fc	fc paros	0	0	P
+13	16	Paralympiakos	Fortuna Duxeldorf	0	0	P
+13	16	Schalke 104	Boh	0	0	P
+13	16	CIRCO MASSIMO FC	VolevoMalen	0	0	P
+13	16	Racing de SanDeAndre	Brigate Ebosse	0	0	P
+14	17	Fortuna Duxeldorf	Schalke 104	0	0	P
+14	17	CIRCO MASSIMO FC	Paralympiakos	0	0	P
+14	17	VolevoMalen	fc paros	0	0	P
+14	17	Boh	Racing de SanDeAndre	0	0	P
+14	17	Brigate Ebosse	Goodfellas fc	0	0	P
+15	18	Racing de SanDeAndre	Fortuna Duxeldorf	0	0	P
+15	18	Goodfellas fc	Boh	0	0	P
+15	18	Paralympiakos	VolevoMalen	0	0	P
+15	18	fc paros	Brigate Ebosse	0	0	P
+15	18	Schalke 104	CIRCO MASSIMO FC	0	0	P
+16	19	Paralympiakos	Schalke 104	0	0	P
+16	19	Boh	fc paros	0	0	P
+16	19	CIRCO MASSIMO FC	Racing de SanDeAndre	0	0	P
+16	19	Fortuna Duxeldorf	Goodfellas fc	0	0	P
+16	19	VolevoMalen	Brigate Ebosse	0	0	P
+17	20	VolevoMalen	Schalke 104	0	0	P
+17	20	Racing de SanDeAndre	Paralympiakos	0	0	P
+17	20	fc paros	Fortuna Duxeldorf	0	0	P
+17	20	Brigate Ebosse	Boh	0	0	P
+17	20	Goodfellas fc	CIRCO MASSIMO FC	0	0	P
+18	21	CIRCO MASSIMO FC	fc paros	0	0	P
+18	21	Schalke 104	Racing de SanDeAndre	0	0	P
+18	21	Boh	VolevoMalen	0	0	P
+18	21	Paralympiakos	Goodfellas fc	0	0	P
+18	21	Fortuna Duxeldorf	Brigate Ebosse	0	0	P
+19	22	Schalke 104	Goodfellas fc	0	0	P
+19	22	Paralympiakos	fc paros	0	0	P
+19	22	Racing de SanDeAndre	VolevoMalen	0	0	P
+19	22	Fortuna Duxeldorf	Boh	0	0	P
+19	22	CIRCO MASSIMO FC	Brigate Ebosse	0	0	P
+20	23	fc paros	Schalke 104	0	0	P
+20	23	Boh	CIRCO MASSIMO FC	0	0	P
+20	23	VolevoMalen	Fortuna Duxeldorf	0	0	P
+20	23	Goodfellas fc	Racing de SanDeAndre	0	0	P
+20	23	Brigate Ebosse	Paralympiakos	0	0	P
+21	24	Schalke 104	Brigate Ebosse	0	0	P
+21	24	Paralympiakos	Boh	0	0	P
+21	24	Racing de SanDeAndre	fc paros	0	0	P
+21	24	Goodfellas fc	VolevoMalen	0	0	P
+21	24	CIRCO MASSIMO FC	Fortuna Duxeldorf	0	0	P
+22	25	fc paros	Goodfellas fc	0	0	P
+22	25	Fortuna Duxeldorf	Paralympiakos	0	0	P
+22	25	Boh	Schalke 104	0	0	P
+22	25	VolevoMalen	CIRCO MASSIMO FC	0	0	P
+22	25	Brigate Ebosse	Racing de SanDeAndre	0	0	P
+23	26	Schalke 104	Fortuna Duxeldorf	0	0	P
+23	26	Paralympiakos	CIRCO MASSIMO FC	0	0	P
+23	26	fc paros	VolevoMalen	0	0	P
+23	26	Racing de SanDeAndre	Boh	0	0	P
+23	26	Goodfellas fc	Brigate Ebosse	0	0	P
+24	27	Fortuna Duxeldorf	Racing de SanDeAndre	0	0	P
+24	27	Boh	Goodfellas fc	0	0	P
+24	27	VolevoMalen	Paralympiakos	0	0	P
+24	27	Brigate Ebosse	fc paros	0	0	P
+24	27	CIRCO MASSIMO FC	Schalke 104	0	0	P
+25	28	Schalke 104	Paralympiakos	0	0	P
+25	28	fc paros	Boh	0	0	P
+25	28	Racing de SanDeAndre	CIRCO MASSIMO FC	0	0	P
+25	28	Goodfellas fc	Fortuna Duxeldorf	0	0	P
+25	28	Brigate Ebosse	VolevoMalen	0	0	P
+26	29	Schalke 104	VolevoMalen	0	0	P
+26	29	Paralympiakos	Racing de SanDeAndre	0	0	P
+26	29	Fortuna Duxeldorf	fc paros	0	0	P
+26	29	Boh	Brigate Ebosse	0	0	P
+26	29	CIRCO MASSIMO FC	Goodfellas fc	0	0	P
+27	30	fc paros	CIRCO MASSIMO FC	0	0	P
+27	30	Racing de SanDeAndre	Schalke 104	0	0	P
+27	30	VolevoMalen	Boh	0	0	P
+27	30	Goodfellas fc	Paralympiakos	0	0	P
+27	30	Brigate Ebosse	Fortuna Duxeldorf	0	0	P
+28	31	Goodfellas fc	Schalke 104	0	0	P
+28	31	fc paros	Paralympiakos	0	0	P
+28	31	VolevoMalen	Racing de SanDeAndre	0	0	P
+28	31	Boh	Fortuna Duxeldorf	0	0	P
+28	31	Brigate Ebosse	CIRCO MASSIMO FC	0	0	P
+29	32	Schalke 104	fc paros	0	0	P
+29	32	CIRCO MASSIMO FC	Boh	0	0	P
+29	32	Fortuna Duxeldorf	VolevoMalen	0	0	P
+29	32	Racing de SanDeAndre	Goodfellas fc	0	0	P
+29	32	Paralympiakos	Brigate Ebosse	0	0	P
+30	33	Brigate Ebosse	Schalke 104	0	0	P
+30	33	Boh	Paralympiakos	0	0	P
+30	33	fc paros	Racing de SanDeAndre	0	0	P
+30	33	VolevoMalen	Goodfellas fc	0	0	P
+30	33	Fortuna Duxeldorf	CIRCO MASSIMO FC	0	0	P
+31	34	Goodfellas fc	fc paros	0	0	P
+31	34	Paralympiakos	Fortuna Duxeldorf	0	0	P
+31	34	Schalke 104	Boh	0	0	P
+31	34	CIRCO MASSIMO FC	VolevoMalen	0	0	P
+31	34	Racing de SanDeAndre	Brigate Ebosse	0	0	P
+32	35	Fortuna Duxeldorf	Schalke 104	0	0	P
+32	35	CIRCO MASSIMO FC	Paralympiakos	0	0	P
+32	35	VolevoMalen	fc paros	0	0	P
+32	35	Boh	Racing de SanDeAndre	0	0	P
+32	35	Brigate Ebosse	Goodfellas fc	0	0	P
+33	36	Racing de SanDeAndre	Fortuna Duxeldorf	0	0	P
+33	36	Goodfellas fc	Boh	0	0	P
+33	36	Paralympiakos	VolevoMalen	0	0	P
+33	36	fc paros	Brigate Ebosse	0	0	P
+33	36	Schalke 104	CIRCO MASSIMO FC	0	0	P
+34	37	Paralympiakos	Schalke 104	0	0	P
+34	37	Boh	fc paros	0	0	P
+34	37	CIRCO MASSIMO FC	Racing de SanDeAndre	0	0	P
+34	37	Fortuna Duxeldorf	Goodfellas fc	0	0	P
+34	37	VolevoMalen	Brigate Ebosse	0	0	P
+35	38	VolevoMalen	Schalke 104	0	0	P
+35	38	Racing de SanDeAndre	Paralympiakos	0	0	P
+35	38	fc paros	Fortuna Duxeldorf	0	0	P
+35	38	Brigate Ebosse	Boh	0	0	P
+35	38	Goodfellas fc	CIRCO MASSIMO FC	0	0	P

@@ -54,14 +54,16 @@ but it remains a demonstration, not production league logic. See
 
 ## Changes to APIs and documentation
 
-Preserve ownership contracts: `player_t` borrows its `name`, whereas
-`ranking_t` owns copies of its identifiers. The team record uses separate
-simulation-dependent championship points and fixed-point season totals;
-`ranking_t` retains its independent signed 64-bit score semantics. The
-`player_t` struct layout changed and old native clients must be rebuilt.
-Historical milestone documents retain their historical scope; describe the
-current implementation and integration boundaries in
-[docs/current-architecture.md](docs/current-architecture.md).
+Preserve ownership contracts: `team_t` **owns** a copied display name,
+whereas the immutable `competition_t` deep-copies the entire input snapshot.
+Accessors return read-only borrowed name views whose lifetime ends on
+`competition_destroy`. Team UUIDs are supplied by the application, never
+created by the noncryptographic legacy identifier utility. The generic
+`ranking_t` continues to copy its IDs and use independent signed 64-bit
+scores. The 3.0.11 public rename is a source and ABI migration: all previous
+`player_t` consumers must be rewritten and rebuilt. See the
+[current architecture](docs/current-architecture.md) and
+[3.0.11 domain contract](docs/league-fixture-contract-3.0.11.md).
 
 ## What belongs in Git
 

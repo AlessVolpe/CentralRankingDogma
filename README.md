@@ -12,9 +12,24 @@ The [documentation index](docs/index.md) distinguishes current contracts
 from historical milestones. Read [current architecture](docs/current-architecture.md)
 and [verification](docs/verification.md) for implementation and testing.
 
-## Team/player scoring model
+## 3.0.11: Team identities and validated original calendars
 
-The public `player_t` is now a team record with a borrowed `name`, simulation-dependent `uint32_t championship_points`, and a simulation-independent `uint32_t total_points_tenths`. The latter stores a nonnegative one-decimal fantasy score exactly (for example, `24835` represents `2483.5`). New constructors, checked championship-point updates and a reset helper support repeated fixture permutations without changing the season total. The generic `ranking_t` score and ordering contract is unchanged. See [docs/team-player-model.md](docs/team-player-model.md) for ownership, migration, scaling and integration boundaries.
+The public `team_t` has an externally supplied UUID, a deep-owned display name
+and a partial-or-complete historical fantasy sum in exact fixed-point tenths.
+League standings points are simulation-dependent and are NOT stored in the
+team record. The opaque `competition_t` stores a complete original fixture
+calendar and explicit FINAL/PENDING fantasy scores by Serie A matchday; the
+original opponent-pair frequencies are cached for subsequent permutation.
+The 2026/27 10-team, 35-round calendar is included as a regression fixture.
+
+A separate reusable `standings_t` records wins, draws and losses, accumulating
+3/1/0 championship points. It can be reset for each calendar permutation and
+is independent of the immutable competition snapshot. Neither layer imports
+databases, generates permutations, **calculates** match outcomes, or applies
+athlete-level bonus/malus rules. The generic `ranking_t` remains unchanged.
+See the [3.0.11 competition contract](docs/league-fixture-contract-3.0.11.md),
+[standings contract](docs/standings-contract-3.0.11.md), and
+[migration notes](docs/league-3.0.11-CHANGELOG.md).
 
 ## Player pool or hashmap
 
