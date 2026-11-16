@@ -1,0 +1,31 @@
+name: Scientific documentation validation
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate reference links, bibliography, scientific template and milestones
+        run: python3 scripts/check_docs.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned documentation validation tools
+        run: npm install --no-save --package-lock=false markdownlint-cli2@0.20.0 mermaid@11.12.0 jsdom@26.1.0
+      - name: Lint canonical Markdown (historical archive excluded)
+        run: npx --no-install markdownlint-cli2 'README.md' 'CONTRIBUTING.md' 'docs/**/*.md' '#docs/archive/**'
+      - name: Parse current Mermaid diagrams
+        run: node scripts/check_mermaid.mjs

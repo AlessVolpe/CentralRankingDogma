@@ -1,38 +1,44 @@
-# LeaderboardSystem documentation
+# Scientific documentation and developer reference
 
-The current CMake package version is **3.0.12**. This index separates the
-implemented interfaces from historical milestone descriptions.
+This repository's GitHub Markdown is the canonical documentation source for the **3.0.12** C11 implementation. The connected Python application and documentation website are future work. The library is the research instrument; the documentation describes its mathematics, tested behavior, limitations and historical development.
 
-## Current reference
+## Research reading path
 
-- [Current architecture](current-architecture.md): native modules, public
-  interfaces, ownership and future Python/fixture integration boundaries.
-- [Verification](verification.md): CMake, CTest, CI, installed consumer,
-  sanitizers and optional benchmarks.
-- [Calendar permutation engine (3.0.12)](calendar-permutation-3.0.12.md):
-  strict rematch periodicity, edge recoloring algorithms, unbiased bounded
-  randomness and scientific sampling limitations.
-- [League/fixture contract (3.0.11)](league-fixture-contract-3.0.11.md):
-  team UUID identity, snapshot creation, scores, fixtures and pair frequencies.
-- [Standings contract (3.0.11)](standings-contract-3.0.11.md):
-  reusable mutable championship points and W/D/L counters; reset and lookup API.
-- [3.0.11 migration](league-3.0.11-CHANGELOG.md): public API compatibility.
-- [Historical team/player model (3.0.10.5)](team-player-model.md):
-  superseded player struct and compatibility notes.
-- [Contributing](../CONTRIBUTING.md): toolchains and development practices.
+1. [Research objective and experimental method](research/methodology.md)
+2. [Common notation and units](notation.md)
+3. [Internal C architecture](architecture/internal-c.md) and [data flow](architecture/data-flow.md)
+4. [Competition](reference/competition.md), [calendar](reference/calendar.md), and [standings](reference/standings.md) sub-papers
+5. [Performance methodology](research/performance.md), [known limitations](research/limitations.md), and [bibliography](bibliography.md)
+6. [Roadmap and implementation milestones](roadmap.md)
 
-## Historical milestone contracts
+## Developer reading path
 
-- [3.0.2 Hashmap stabilization](hashmap-contract.md)
-- [3.0.3 BOSTree invariants](bostree-contract.md)
-- [3.0.4 BOSTree deletion and lifecycle](bostree-deletion-contract.md)
-- [3.0.5 Generic ranking](ranking-contract.md)
-- [3.0.6 API encapsulation](api-encapsulation-contract.md)
-- [3.0.7 Portable callbacks and packaging](portable-callbacks-failures-packaging.md)
-- [3.0.8 Adversarial testing](failure-adversarial-contract.md)
-- [3.0.9 MT19937 and integration](portability-prng-3.0.9.md)
-- [3.0.10 Benchmark and release readiness](performance-release-3.0.10.md)
+1. [Build instructions](development/building.md) and [installed consumers](development/packaging.md)
+2. [System boundary](architecture/system.md), [internal C architecture](architecture/internal-c.md)
+3. [API-level reference](#module-sub-papers) and [failure contracts](reference/failure-safety.md)
+4. [Verification procedures](development/verification.md) and [contribution style](STYLE_GUIDE.md)
 
-Deferred work and compatibility remarks in these documents are relative to
-the named milestone, not necessarily to the current codebase. Consult the
-current public headers, architecture guide and tests for present behavior.
+## Module sub-papers
+
+| Generic infrastructure | Domain and simulation foundation |
+| --- | --- |
+| [Hashmap](reference/hashmap.md) | [Team identity](reference/team.md) |
+| [BOSTree](reference/bostree.md) | [Competition snapshot](reference/competition.md) |
+| [Ranking](reference/ranking.md) | [Calendar permutation](reference/calendar.md) |
+| [MT19937](reference/prng.md) | [Championship standings](reference/standings.md) |
+| [Failure safety](reference/failure-safety.md) | [Not-yet-implemented match resolution](milestones/3.1.0.md) |
+
+## Architecture
+
+- [Internal native C design](architecture/internal-c.md), the primary architecture document
+- [Future system and Python boundary](architecture/system.md)
+- [Scientific data flow and temporal validity](architecture/data-flow.md)
+
+## Development and source provenance
+
+- [Canonical roadmap](roadmap.md) and [individual milestones](milestones/)
+- [Documentation standards](STYLE_GUIDE.md) and [CI instructions](development/documentation.md)
+- [Human-readable references](bibliography.md) and [central BibTeX](references.bib)
+- [Unmodified historical snapshots](archive/README.md), retained to prevent silent loss of earlier scientific and implementation material
+
+**Interpretation rule:** a proof establishes its stated assumptions; a test establishes its observed cases; neither implies statistical uniformity or general correctness beyond the documented contract. See [limitations](research/limitations.md).
