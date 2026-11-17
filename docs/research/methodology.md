@@ -8,9 +8,9 @@ How sensitive are championship outcomes to the allocation of a fixed set of hist
 
 1. Import an immutable full calendar and team-by-Serie-A-day FINAL/PENDING score matrix through `competition_t`.
 2. Validate the strict rematch schedule. Generate alternatives using seeded `calendar_t` with preserved directed encounters and fixed real-day mappings.
-3. For full-season outcome experiments, require all scores FINAL. Automatic goal conversion and match resolution are planned in [3.1.0](../milestones/3.1.0.md), not implemented today.
+3. For full-season outcome experiments, require all scores FINAL. Automatic goal conversion and deterministic single-calendar match resolution are implemented in [3.1.0](../milestones/3.1.0.md). A finalized-prefix analysis is also possible; it must be labelled provisional.
 4. Produce batches with separately recorded random seeds, independent or chain mode, algorithm settings, attempt budgets and software commit.
-5. Estimate outcome sensitivity (league points, ranks, champion identity) only when 3.1.0–3.1.2 are implemented; do not infer them from fixture diagnostics alone.
+5. Evaluate single-calendar outcomes with 3.1.0; estimate outcome sensitivity over *batches* only after 3.1.1–3.1.2 are implemented. Do not infer population probabilities from fixture diagnostics alone.
 
 ## Metrics and reproducibility
 

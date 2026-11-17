@@ -13,6 +13,7 @@ struct standings {
     size_t team_count;
     team_uuid_t *ids;       /* UUID-sorted, private copy */
     standing_entry_t *entries;
+    standings_goal_stats_t *goals;
 };
 
 #endif /* LEADERBOARD_STANDINGS_INTERNAL_H */

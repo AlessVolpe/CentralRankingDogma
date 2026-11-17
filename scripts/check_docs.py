@@ -157,13 +157,16 @@ def check_structure() -> None:
         path = DOCS / "milestones" / f"{version}.md"
         if not path.exists() or f"`{version}`" not in ledger:
             fail("roadmap", f"missing {version} milestone/ledger entry")
-    for version in ("3.1.0", "3.1.1", "3.1.2", "3.1.3"):
+    for version in ("3.1.1", "3.1.2", "3.1.3"):
         path = DOCS / "milestones" / f"{version}.md"
         if not path.exists() or f"`{version}`" not in ledger:
             fail("roadmap", f"missing {version} planned milestone/ledger entry")
         elif "**Status:** Planned" not in path.read_text(encoding="utf-8"):
             fail(str(path), "planned milestone status absent")
-    if "3.0.12" not in (ROOT / "README.md").read_text(encoding="utf-8"):
+    implemented = DOCS / "milestones" / "3.1.0.md"
+    if "`3.1.0`" not in ledger or "**Status:** Implemented" not in implemented.read_text(encoding="utf-8"):
+        fail("roadmap", "3.1.0 must have implemented status and a ledger entry")
+    if "3.1.0" not in (ROOT / "README.md").read_text(encoding="utf-8"):
         fail("README", "current implemented version missing")
     if "```mermaid" not in (ROOT / "README.md").read_text(encoding="utf-8"):
         fail("README", "missing central internal C diagram")

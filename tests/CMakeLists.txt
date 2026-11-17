@@ -113,6 +113,8 @@ add_library(leaderboard_fault_test STATIC
     ${PROJECT_SOURCE_DIR}/src/calendar.c
     ${PROJECT_SOURCE_DIR}/src/calendar_shuffle.c
     ${PROJECT_SOURCE_DIR}/src/calendar_recombine.c
+    ${PROJECT_SOURCE_DIR}/src/match.c
+    ${PROJECT_SOURCE_DIR}/src/season_resolution.c
     ${PROJECT_SOURCE_DIR}/src/mtwister.c
     ${PROJECT_SOURCE_DIR}/src/alloc.c)
 target_include_directories(leaderboard_fault_test PRIVATE
@@ -238,7 +240,7 @@ add_test(NAME ranking_batch_example COMMAND leaderboard_ranking_batch)
 # Standalone ISO C11 translation units for installed public headers.
 # In contrast to a combined include test, this also catches missing headers.
 foreach (header IN ITEMS
-        bostree commons hashmap_base hashmap_typed mtwister team competition standings calendar ranking)
+        bostree commons hashmap_base hashmap_typed mtwister team competition standings calendar ranking match season_resolution)
     add_library(header_c11_${header} OBJECT test_public_header_c11.c)
     target_include_directories(header_c11_${header} PRIVATE ${PROJECT_SOURCE_DIR}/include)
     target_compile_definitions(header_c11_${header} PRIVATE
@@ -324,3 +326,28 @@ target_link_libraries(test_calendar_sampling PRIVATE Leaderboard::leaderboard)
 leaderboard_apply_dev_options(test_calendar_sampling)
 set_target_properties(test_calendar_sampling PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME calendar_sampling_diagnostics COMMAND test_calendar_sampling)
+
+# 3.1.0: public pure rules and match-by-match scientific regression.
+add_executable(test_match test_match.c)
+target_link_libraries(test_match PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_match)
+set_target_properties(test_match PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME match_contract COMMAND test_match)
+
+add_executable(test_season_resolution test_season_resolution.c)
+target_link_libraries(test_season_resolution PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_season_resolution)
+set_target_properties(test_season_resolution PROPERTIES C_EXTENSIONS OFF)
+target_compile_definitions(test_season_resolution PRIVATE
+    "LEADERBOARD_CALENDAR_TSV=\"${CMAKE_CURRENT_SOURCE_DIR}/fixtures/calendar_2026_2027.tsv\"")
+add_test(NAME season_resolution_contract COMMAND test_season_resolution)
+
+# Full fault-injection version of the resolver must use the dedicated archive.
+add_executable(test_resolution_failures test_resolution_failures.c)
+target_include_directories(test_resolution_failures PRIVATE
+    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+target_compile_definitions(test_resolution_failures PRIVATE LEADERBOARD_TEST_ALLOCATION_FAULTS)
+target_link_libraries(test_resolution_failures PRIVATE leaderboard_fault_test)
+leaderboard_apply_dev_options(test_resolution_failures)
+set_target_properties(test_resolution_failures PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME season_resolution_failures COMMAND test_resolution_failures)

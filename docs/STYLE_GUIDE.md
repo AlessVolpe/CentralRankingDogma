@@ -38,4 +38,4 @@ Do not describe seed reproducibility as uniform sampling. Attribute external sci
 
 ## Maintenance and migration
 
-When editing a module, update its canonical reference; when a milestone changes, update its ledger record and `roadmap.md`. A historical snapshot in `archive/` must not be silently rewritten. The compatibility pointers left at former URLs keep old links navigable. Run the [documentation checks](development/documentation.md) locally and in CI before merging. The documentation-only migration does **not** change CMake's `3.0.12` version or public ABI.
+When editing a module, update its canonical reference; when a milestone changes, update its ledger record and `roadmap.md`. A historical snapshot in `archive/` must not be silently rewritten. The compatibility pointers left at former URLs keep old links navigable. Run the [documentation checks](development/documentation.md) locally and in CI before merging. The 3.1.0 feature implementation updates CMake to `3.1.0` while retaining the existing `standing_entry_t` layout, API contracts and immutable historical documentation.

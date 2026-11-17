@@ -14,6 +14,7 @@
 
 void standings_destroy(standings_t *s) {
     if (s == NULL) return;
+    free(s->goals);
     free(s->entries);
     free(s->ids);
     free(s);
@@ -27,14 +28,16 @@ int standings_create(const competition_t *competition, standings_t **out) {
     const size_t n = competition_team_count(competition);
     if (n == 0U || n > UINT32_MAX ||
         n > SIZE_MAX / sizeof(team_uuid_t) ||
-        n > SIZE_MAX / sizeof(standing_entry_t)) return -EOVERFLOW;
+        n > SIZE_MAX / sizeof(standing_entry_t) ||
+        n > SIZE_MAX / sizeof(standings_goal_stats_t)) return -EOVERFLOW;
 
     standings_t *s = leaderboard_alloc_calloc(1U, sizeof(*s));
     if (s == NULL) return -ENOMEM;
     s->team_count = n;
     s->ids = leaderboard_alloc_calloc(n, sizeof(*s->ids));
     s->entries = leaderboard_alloc_calloc(n, sizeof(*s->entries));
-    if (s->ids == NULL || s->entries == NULL) {
+    s->goals = leaderboard_alloc_calloc(n, sizeof(*s->goals));
+    if (s->ids == NULL || s->entries == NULL || s->goals == NULL) {
         standings_destroy(s);
         return -ENOMEM;
     }
@@ -95,6 +98,7 @@ int standings_entry_for_uuid(const standings_t *s, const char *uuid_text,
 void standings_reset(standings_t *s) {
     if (s == NULL) return;
     memset(s->entries, 0, s->team_count * sizeof(*s->entries));
+    memset(s->goals, 0, s->team_count * sizeof(*s->goals));
     for (size_t i = 0U; i < s->team_count; ++i)
         s->entries[i].team_index = (team_index_t)i;
 }
@@ -161,5 +165,61 @@ int standings_record_match(standings_t *s, team_index_t home,
     if (status != 0) return status;
     s->entries[home] = home_next;
     s->entries[away] = away_next;
+    return 0;
+}
+
+/* An update is committed only if all four counter families for BOTH teams
+ * can be represented. Goal statistics are separate from the legacy ABI. */
+static int updated_goals(const standings_goal_stats_t *old,
+                         uint32_t gf, uint32_t ga,
+                         standings_goal_stats_t *next) {
+    if (old->scored_matches == UINT32_MAX ||
+        gf > UINT32_MAX - old->goals_for ||
+        ga > UINT32_MAX - old->goals_against) return -EOVERFLOW;
+    *next = *old;
+    next->scored_matches++;
+    next->goals_for += gf;
+    next->goals_against += ga;
+    /* The public accessor derives 'complete' from the associated entry. */
+    next->complete = false;
+    return 0;
+}
+
+int standings_record_scored_match(standings_t *s, team_index_t home,
+                                  team_index_t away, uint32_t hg,
+                                  uint32_t ag) {
+    if (s == NULL || home == away) return -EINVAL;
+    if ((size_t)home >= s->team_count || (size_t)away >= s->team_count)
+        return -ERANGE;
+    const standings_result_t result = hg > ag ? STANDINGS_WIN :
+                                       hg < ag ? STANDINGS_LOSS : STANDINGS_DRAW;
+    const standings_result_t other = result == STANDINGS_WIN ? STANDINGS_LOSS :
+                                      result == STANDINGS_LOSS ? STANDINGS_WIN : STANDINGS_DRAW;
+    standing_entry_t h, a;
+    standings_goal_stats_t hs, as;
+    int status = updated_entry(&s->entries[home], result, &h);
+    if (status != 0) return status;
+    status = updated_entry(&s->entries[away], other, &a);
+    if (status != 0) return status;
+    status = updated_goals(&s->goals[home], hg, ag, &hs);
+    if (status != 0) return status;
+    status = updated_goals(&s->goals[away], ag, hg, &as);
+    if (status != 0) return status;
+    s->entries[home] = h;
+    s->entries[away] = a;
+    s->goals[home] = hs;
+    s->goals[away] = as;
+    return 0;
+}
+
+int standings_goal_stats_at(const standings_t *s, team_index_t idx,
+                            standings_goal_stats_t *out) {
+    if (s == NULL || out == NULL) return -EINVAL;
+    if ((size_t)idx >= s->team_count) return -ERANGE;
+    standings_goal_stats_t copy = s->goals[idx];
+    const standing_entry_t *e = &s->entries[idx];
+    const uint64_t games = (uint64_t)e->wins + (uint64_t)e->draws + e->losses;
+    copy.complete = (uint64_t)copy.scored_matches == games;
+    *out = copy;
     return 0;
 }

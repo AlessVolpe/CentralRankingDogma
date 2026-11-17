@@ -12,6 +12,8 @@
 #include "competition.h"
 #include "standings.h"
 #include "calendar.h"
+#include "match.h"
+#include "season_resolution.h"
 #include "hashmap_typed.h"
 
 HASHMAP_TYPED_DEFINE(external_score_map, char, int)
@@ -73,6 +75,28 @@ int main(void) {
     ok = competition_is_simulation_ready(competition) &&
          competition_pair_count(competition,0U,1U,&pair_count) == 0 &&
          pair_count == 1U;
+    if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
+
+    /* The installed library resolves the original championship without
+     * private headers or calendar generation. */
+    match_rules_t rules;
+    match_result_t scored;
+    season_resolution_t *season = NULL;
+    ok = match_rules_default(&rules) == 0 &&
+         match_resolve_scores(&rules, 745U, 680U, &scored) == 0 &&
+         scored.home_goals == 3U && scored.away_goals == 1U &&
+         season_resolve(competition, NULL, &rules,
+                        SEASON_RESOLVE_FULL_SEASON, &season) == 0;
+    if (!ok) {
+        season_resolution_destroy(season);
+        competition_destroy(competition);
+        return EXIT_FAILURE;
+    }
+    season_rank_entry_t first;
+    ok = season_resolution_rank_at(season, 0U, &first) == 0 &&
+         first.standings.championship_points == 3U &&
+         first.goal_stats.complete;
+    season_resolution_destroy(season);
     if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
 
     /* An installed consumer can generate and validate a calendar without
