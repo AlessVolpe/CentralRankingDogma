@@ -17,7 +17,7 @@ This file is the **canonical documentation status ledger**, not a package releas
 | `3.0.11` | Team, competition and standings model | Implemented in master | [Details](milestones/3.0.11.md) |
 | `3.0.12` | Calendar permutation engine | Implemented in master | [Details](milestones/3.0.12.md) |
 | `3.1.0` | Match resolution and standings integration | Implemented in current source | [Details](milestones/3.1.0.md) |
-| `3.1.1` | Monte Carlo simulation engine | Planned | [Contract](milestones/3.1.1.md) |
+| `3.1.1` | Monte Carlo simulation engine | Implementation patch; verification pending | [Details](milestones/3.1.1.md) |
 | `3.1.2` | Scientific evaluation framework | Planned | [Contract](milestones/3.1.2.md) |
 | `3.1.3` | External integration contract | Planned | [Contract](milestones/3.1.3.md) |
 

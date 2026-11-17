@@ -4,11 +4,11 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native baseline:** 3.1.0. Deterministic match and season resolution are implemented. Monte Carlo orchestration (3.1.1), scientific evaluation (3.1.2), and the external integration contract (3.1.3) remain planned.
+**Current native baseline:** 3.1.1. Deterministic match/season resolution and reproducible Monte Carlo batches are implemented. Scientific evaluation (3.1.2) and the external integration contract (3.1.3) remain planned; this patch requires merge-time verification.
 
 ## Read the research or use the library
 
-- **Research path:** [Scientific documentation](docs/index.md#research-reading-path), [notation](docs/notation.md), [calendar mathematics](docs/reference/calendar.md), [match scoring](docs/reference/match.md), [season resolution](docs/reference/season-resolution.md), [methodology](docs/research/methodology.md), [bibliography](docs/bibliography.md).
+- **Research path:** [Scientific documentation](docs/index.md#research-reading-path), [notation](docs/notation.md), [calendar mathematics](docs/reference/calendar.md), [match scoring](docs/reference/match.md), [season resolution](docs/reference/season-resolution.md), [Monte Carlo experiments](docs/reference/monte-carlo.md), [methodology](docs/research/methodology.md), [bibliography](docs/bibliography.md).
 - **Developer path:** [Library reference](docs/index.md#developer-reading-path), [build and test](docs/development/building.md), [packaging](docs/development/packaging.md), [public headers](include/), [current C architecture](docs/architecture/internal-c.md).
 - **Development record:** [Roadmap and milestone ledger](docs/roadmap.md); the original documentation is [archived](docs/archive/README.md), not discarded.
 
@@ -30,6 +30,9 @@ flowchart TB
         MATCH --> COMP
         MATCH --> CAL
         MATCH --> ST
+        MC["3.1.1 Monte Carlo batches"]
+        MC --> CAL
+        MC --> MATCH
     end
     subgraph CORE["Generic infrastructure"]
         HASH["Hashmap"]
@@ -58,6 +61,20 @@ and [season paper](docs/reference/season-resolution.md) specify the proofs,
 errors, complexity and empirical baseline independently of the future
 Monte Carlo orchestration.
 
+## Monte Carlo experiments (3.1.1)
+
+`monte_carlo_run()` evaluates seeded batches of generated calendars, retaining
+an independently resolved historical baseline and online team-by-rank statistics.
+It supports complete seasons or a nonempty finalized prefix, duplicate-inclusive
+sampling (default), optional exact directed-prefix uniqueness, finite generation
+budgets, cooperative cancellation, and raw plus aggregate CSV. The configured
+sampler is **not proven uniform** and observed frequencies must not be labelled
+population championship-winning probabilities. See the [Monte Carlo research
+paper](docs/reference/monte-carlo.md) and [milestone](docs/milestones/3.1.1.md).
+
+Optional home-field fantasy-score bonuses are off by default and can be
+suppressed throughout the final, potentially partial round-robin cycle.
+
 ## Mathematical foundation
 
 For an even number of teams $N$, a league round is a perfect matching $M_r$ of the team set $V$. The strict no-rematch-until-all-opponents rule implies an unordered fixture period $P=N-1$:
@@ -80,7 +97,7 @@ Separate standings have the invariant $P_{\mathrm{league}}=3W+D$, whereas the or
 <details>
 <summary>What the library does not yet do</summary>
 
-It does not compute footballer bonus/malus, decide fantasy match outcomes, simulate final league standings automatically, run Monte Carlo batches, or communicate with a database. `standings_t` records supplied results; `calendar_t` generates fixture assignments. No statistical-uniformity guarantee is made about the calendar sampler.
+It does not reconstruct footballer bonus/malus, integrate with a database, provide a Python web application, guarantee uniform scheduling samples, or produce thesis-level statistical inference. `calendar_t` generates fixtures, `season_resolve()` evaluates them, and `monte_carlo_run()` aggregates batches. JSON/external integration remains planned for 3.1.3.
 
 </details>
 

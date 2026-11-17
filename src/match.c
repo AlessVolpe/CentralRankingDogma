@@ -33,6 +33,8 @@ int match_rules_validate(const match_rules_t *r) {
             return -EINVAL;
     /* An enabled modifier with a zero difference threshold is meaningful:
      * <=0 for victory and >=0 for draw, when goal bands qualify. */
+    if (r->home_advantage_enabled && r->home_advantage_tenths == 0U)
+        return -EINVAL;
     return 0;
 }
 
@@ -49,12 +51,16 @@ static uint32_t basic_goals(const match_rules_t *r, uint32_t score) {
 int match_resolve_scores(const match_rules_t *rules, uint32_t hs,
                          uint32_t as, match_result_t *out) {
     if (out == NULL || match_rules_validate(rules) != 0) return -EINVAL;
-    const uint32_t home = basic_goals(rules, hs);
+    const uint32_t bonus = rules->home_advantage_enabled ?
+                           rules->home_advantage_tenths : 0U;
+    if (hs > UINT32_MAX - bonus) return -EOVERFLOW;
+    const uint32_t effective_home = hs + bonus;
+    const uint32_t home = basic_goals(rules, effective_home);
     const uint32_t away = basic_goals(rules, as);
     match_result_t next = {hs, as, home, away, MATCH_ADJUST_NONE};
-    if (hs != as) {
-        const bool higher_home = hs > as;
-        const uint32_t gap = higher_home ? hs - as : as - hs;
+    if (effective_home != as) {
+        const bool higher_home = effective_home > as;
+        const uint32_t gap = higher_home ? effective_home - as : as - effective_home;
         const uint32_t higher_goals = higher_home ? home : away;
         const uint32_t lower_goals = higher_home ? away : home;
         if (rules->limit_victory_enabled &&

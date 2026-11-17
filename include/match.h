@@ -22,6 +22,9 @@ typedef struct match_rules {
     bool limit_draw_enabled;
     uint32_t limit_draw_min_gap_tenths;
     bool limit_draw_include_subthreshold;
+    bool home_advantage_enabled; /* bonus to home score, disabled by default */
+    uint32_t home_advantage_tenths;
+    bool home_advantage_exclude_final_cycle; /* including partial final cycle */
 } match_rules_t;
 
 typedef enum match_adjustment {
@@ -31,8 +34,8 @@ typedef enum match_adjustment {
 } match_adjustment_t;
 
 typedef struct match_result {
-    uint32_t home_fantasy_tenths;
-    uint32_t away_fantasy_tenths;
+    uint32_t home_fantasy_tenths; /* raw, before home advantage */
+    uint32_t away_fantasy_tenths; /* raw */
     uint32_t home_goals;
     uint32_t away_goals;
     match_adjustment_t adjustment;
@@ -48,7 +51,10 @@ int match_rules_uniform(uint32_t step_through_eighth_tenths,
                         match_rules_t *out);
 /* Enforces valid thresholds and enabled modifier options. */
 int match_rules_validate(const match_rules_t *rules);
-/* Allocation-free, non-mutating, error-atomic. Scores must be FINAL values;
+/* Home bonus applies before goals and match corrections, without changing
+ * the raw fantasy scores stored in match_result_t. Scored home overflow
+ * returns -EOVERFLOW without altering *out.
+ * Allocation-free, non-mutating, error-atomic. Scores must be FINAL values;
  * no score status can be represented by this low-level API. */
 int match_resolve_scores(const match_rules_t *rules,
                          uint32_t home_score_tenths,

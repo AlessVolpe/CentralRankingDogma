@@ -1,6 +1,6 @@
 # Native verification and evidence levels
 
-The existing CTest matrix checks structural invariants, differential workloads, allocation injection, public headers, CLI regressions, installed-package consumption, MT19937 vectors, team snapshots, scored-match standings, calendar permutations and 3.1.0 season resolution. The full test roster must be read from the configured build with `ctest --test-dir build -N`; avoid hardcoding a count into future documentation.
+The existing CTest matrix checks structural invariants, differential workloads, allocation injection, public headers, CLI regressions, installed-package consumption, MT19937 vectors, team snapshots, scored-match standings, calendar permutations, 3.1.0 season resolution and 3.1.1 Monte Carlo experiments. The full test roster must be read from the configured build with `ctest --test-dir build -N`; avoid hardcoding a count into future documentation.
 
 ## Recommended sequence
 

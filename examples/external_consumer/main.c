@@ -14,6 +14,7 @@
 #include "calendar.h"
 #include "match.h"
 #include "season_resolution.h"
+#include "monte_carlo.h"
 #include "hashmap_typed.h"
 
 HASHMAP_TYPED_DEFINE(external_score_map, char, int)
@@ -115,6 +116,20 @@ int main(void) {
     }
     calendar_generator_destroy(generator);
     calendar_destroy(permuted);
+
+    /* Confirm installed-package availability of the 3.1.1 batch API. */
+    monte_carlo_options_t mc_options = monte_carlo_options_default();
+    mc_options.scope = SEASON_RESOLVE_FULL_SEASON;
+    mc_options.requested_samples = 2U;
+    mc_options.max_generation_attempts = 2U;
+    monte_carlo_result_t *experiment = NULL;
+    ok = monte_carlo_run(competition, &rules, &mc_options,
+                         NULL, NULL, NULL, &experiment) == 0 &&
+         monte_carlo_result_completion(experiment) == MONTE_CARLO_COMPLETED &&
+         monte_carlo_result_accepted(experiment) == 2U &&
+         monte_carlo_result_baseline(experiment) != NULL;
+    monte_carlo_result_destroy(experiment);
+    if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
 
     standings_t *standings = NULL;
     if (standings_create(competition, &standings) != 0) {
