@@ -19,7 +19,7 @@ a\prec b\iff(s_a>s_b)\lor (s_a=s_b\land id_a<id_b).
 Zero-based rank is the number of strictly preceding records:
 
 ```math
-\operatorname{rank}(a)=\sum_{b\ne a}{\bf1}[b\prec a].
+\mathrm{rank}(a)=\sum_{b\ne a}\mathbf{1}[b\prec a].
 ```
 
 ## 3. Algorithm and design
