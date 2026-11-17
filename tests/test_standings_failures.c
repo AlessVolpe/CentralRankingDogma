@@ -29,13 +29,13 @@ int main(void) {
     competition_t *c = NULL;
     CHECK(competition_create(&input,&c) == 0);
 
-    /* Three allocations: owning struct, UUID array, entry array. */
-    for (size_t target = 0U; target < 4U; ++target) {
+    /* Four allocations: owning struct, UUIDs, entries and goal-statistics. */
+    for (size_t target = 0U; target < 5U; ++target) {
         standings_t *s = (standings_t *)(uintptr_t)1U;
         leaderboard_alloc_fail_after(target);
         int status = standings_create(c,&s);
         leaderboard_alloc_reset();
-        if (target < 3U) CHECK(status == -ENOMEM && s == NULL);
+        if (target < 4U) CHECK(status == -ENOMEM && s == NULL);
         else { CHECK(status == 0 && s != NULL); standings_destroy(s); }
     }
 

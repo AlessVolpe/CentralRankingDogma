@@ -1,13 +1,13 @@
 # Scientific documentation and developer reference
 
-This repository's GitHub Markdown is the canonical documentation source for the **3.0.12** C11 implementation. The connected Python application and documentation website are future work. The library is the research instrument; the documentation describes its mathematics, tested behavior, limitations and historical development.
+This repository's GitHub Markdown is the canonical documentation source for the **3.1.0** C11 implementation. The connected Python application and documentation website are future work. The library is the research instrument; the documentation describes its mathematics, tested behavior, limitations and historical development.
 
 ## Research reading path
 
 1. [Research objective and experimental method](research/methodology.md)
 2. [Common notation and units](notation.md)
 3. [Internal C architecture](architecture/internal-c.md) and [data flow](architecture/data-flow.md)
-4. [Competition](reference/competition.md), [calendar](reference/calendar.md), and [standings](reference/standings.md) sub-papers
+4. [Competition](reference/competition.md), [calendar](reference/calendar.md), [match scoring](reference/match.md), and [season resolution](reference/season-resolution.md) sub-papers
 5. [Performance methodology](research/performance.md), [known limitations](research/limitations.md), and [bibliography](bibliography.md)
 6. [Roadmap and implementation milestones](roadmap.md)
 
@@ -26,7 +26,8 @@ This repository's GitHub Markdown is the canonical documentation source for the 
 | [BOSTree](reference/bostree.md) | [Competition snapshot](reference/competition.md) |
 | [Ranking](reference/ranking.md) | [Calendar permutation](reference/calendar.md) |
 | [MT19937](reference/prng.md) | [Championship standings](reference/standings.md) |
-| [Failure safety](reference/failure-safety.md) | [Not-yet-implemented match resolution](milestones/3.1.0.md) |
+| [Failure safety](reference/failure-safety.md) | [Match scoring](reference/match.md) |
+| | [Season resolution](reference/season-resolution.md) |
 
 ## Architecture
 

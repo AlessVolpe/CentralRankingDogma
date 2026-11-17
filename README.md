@@ -4,11 +4,11 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native baseline:** 3.0.12. Match resolution (3.1.0), Monte Carlo orchestration (3.1.1), statistical evaluation (3.1.2), and the external integration contract (3.1.3) are planned, not implemented.
+**Current native baseline:** 3.1.0. Deterministic match and season resolution are implemented. Monte Carlo orchestration (3.1.1), scientific evaluation (3.1.2), and the external integration contract (3.1.3) remain planned.
 
 ## Read the research or use the library
 
-- **Research path:** [Scientific documentation](docs/index.md#research-reading-path), [notation](docs/notation.md), [calendar mathematics](docs/reference/calendar.md), [methodology](docs/research/methodology.md), [bibliography](docs/bibliography.md).
+- **Research path:** [Scientific documentation](docs/index.md#research-reading-path), [notation](docs/notation.md), [calendar mathematics](docs/reference/calendar.md), [match scoring](docs/reference/match.md), [season resolution](docs/reference/season-resolution.md), [methodology](docs/research/methodology.md), [bibliography](docs/bibliography.md).
 - **Developer path:** [Library reference](docs/index.md#developer-reading-path), [build and test](docs/development/building.md), [packaging](docs/development/packaging.md), [public headers](include/), [current C architecture](docs/architecture/internal-c.md).
 - **Development record:** [Roadmap and milestone ledger](docs/roadmap.md); the original documentation is [archived](docs/archive/README.md), not discarded.
 
@@ -23,13 +23,13 @@ flowchart TB
         COMP["competition_t / immutable snapshot"]
         CAL["calendar_t / generator"]
         ST["standings_t / mutable results"]
-        MATCH["3.1.0 match resolution (planned)"]
+        MATCH["3.1.0 deterministic match and season resolution"]
         COMP --> TEAM
         CAL --> COMP
         ST --> COMP
-        MATCH -.-> COMP
-        MATCH -.-> CAL
-        MATCH -.-> ST
+        MATCH --> COMP
+        MATCH --> CAL
+        MATCH --> ST
     end
     subgraph CORE["Generic infrastructure"]
         HASH["Hashmap"]
@@ -42,7 +42,21 @@ flowchart TB
     CAL --> RNG
 ```
 
-Explore the additional [system boundary](docs/architecture/system.md) and [scientific data-flow](docs/architecture/data-flow.md) diagrams. Dashed relationships indicate planned functionality only.
+Explore the additional [system boundary](docs/architecture/system.md) and [scientific data-flow](docs/architecture/data-flow.md) diagrams. Solid arrows indicate implemented module relationships. Future Python and Monte Carlo integration remains separate.
+
+## Deterministic match and season resolution (3.1.0)
+
+The original fixture schedule is the essential research baseline. `match_rules_default()`
+uses the league's thresholds 66, 70, ..., 94 and an additional goal every four
+points after the eighth, with optional victory/draw limitations disabled.
+`season_resolve()` evaluates either the original schedule or a validated
+alternative, using the same immutable matchday scores. It supports complete
+seasons and the maximal contiguous prefix of finalized rounds, then publishes
+owned fixture results and ranked standings (league points, resolved-round
+fantasy totals, goal difference, shared exact ties). The [match paper](docs/reference/match.md)
+and [season paper](docs/reference/season-resolution.md) specify the proofs,
+errors, complexity and empirical baseline independently of the future
+Monte Carlo orchestration.
 
 ## Mathematical foundation
 

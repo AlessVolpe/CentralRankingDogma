@@ -1,6 +1,6 @@
 # Native verification and evidence levels
 
-The existing CTest matrix checks structural invariants, differential workloads, allocation injection, public headers, CLI regressions, installed-package consumption, MT19937 vectors, team snapshots, standings and calendar permutations. The full test roster must be read from the configured build with `ctest --test-dir build -N`; avoid hardcoding a count into future documentation.
+The existing CTest matrix checks structural invariants, differential workloads, allocation injection, public headers, CLI regressions, installed-package consumption, MT19937 vectors, team snapshots, scored-match standings, calendar permutations and 3.1.0 season resolution. The full test roster must be read from the configured build with `ctest --test-dir build -N`; avoid hardcoding a count into future documentation.
 
 ## Recommended sequence
 
@@ -10,6 +10,10 @@ The existing CTest matrix checks structural invariants, differential workloads, 
 4. Run a Release build and the isolated installed consumer.
 5. Review Windows MSYS2 UCRT64 and Linux GitHub Actions CI.
 6. Run [documentation lint and link checks](documentation.md).
+
+## 3.1.0 regression evidence
+
+The reproducible ten-team fixture has 40 FINAL matches and the remaining season pending. `match_contract` checks exact goal-band and modifier boundaries; `season_resolution_contract` checks the 40 observed fixture outcomes, the derived league totals and original/generated-calendar controls. `season_resolution_failures` covers allocation rollback, scored/legacy goal-stat completeness and arithmetic atomicity. These are code-level CTests, not claims about future matches or sampling uniformity.
 
 ## Evidence interpretation
 

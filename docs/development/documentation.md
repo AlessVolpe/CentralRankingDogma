@@ -25,4 +25,4 @@ node scripts/check_mermaid.mjs
 - **Mermaid parser:** semantic diagram syntax via Mermaid's `parse()` API, bootstrapped with JSDOM for Node-based label sanitization; does not render screenshots.
 - **External DOI URLs:** checked in a separate, non-blocking manual/scheduled audit, not on every PR.
 
-These checks cannot validate mathematical proof correctness or statistical validity. Any claim of *proof*, *observation* or *hypothesis* must still be reviewed scientifically. Current C library version remains **3.0.12** because this migration is documentation-only.
+These checks cannot validate mathematical proof correctness or statistical validity. Any claim of *proof*, *observation* or *hypothesis* must still be reviewed scientifically. The current C library version is **3.1.0**; module and milestone scientific documentation must be updated together with implementation, and historical archives remain immutable.

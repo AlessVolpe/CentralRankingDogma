@@ -6,6 +6,7 @@
 #ifndef LEADERBOARD_STANDINGS_H
 #define LEADERBOARD_STANDINGS_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "competition.h"
@@ -30,6 +31,15 @@ typedef struct standing_entry {
 } standing_entry_t;
 
 typedef struct standings standings_t;
+
+/* Goal values describe only scored matches. Complete is true only when
+ * scored_matches equals the corresponding W+D+L count. */
+typedef struct standings_goal_stats {
+    uint32_t goals_for;
+    uint32_t goals_against;
+    uint32_t scored_matches;
+    bool complete;
+} standings_goal_stats_t;
 
 /* Creates zeroed standings with the same UUID-sorted indices as competition.
  * Copies the team UUIDs; the source competition can be destroyed afterwards.
@@ -68,6 +78,16 @@ int standings_record_result(standings_t *standings, team_index_t team_index,
 int standings_record_match(standings_t *standings,
                            team_index_t home, team_index_t away,
                            standings_result_t home_result);
+
+/* Atomic across both participants, including goal and result counters.
+ * Does not deduplicate fixtures or validate season scheduling. */
+int standings_record_scored_match(standings_t *standings,
+                                  team_index_t home, team_index_t away,
+                                  uint32_t home_goals, uint32_t away_goals);
+/* Copies goal statistics for scored matches; the boolean reports whether
+ * any legacy result-only updates prevent complete goal accounting. */
+int standings_goal_stats_at(const standings_t *standings,
+                            team_index_t index, standings_goal_stats_t *out);
 
 #ifdef __cplusplus
 }

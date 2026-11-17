@@ -25,3 +25,7 @@ Richard Durstenfeld (1964). *Algorithm 235: Random permutation*. Communications 
 ## Knuth (1998)
 
 Donald E. Knuth (1998). *The Art of Computer Programming, Volume 3: Sorting and Searching*, 2nd edition. Addison-Wesley. Citation key: `knuth1998`.
+
+## Fantacalcio (n.d.)
+
+Fantacalcio (n.d.). *Impostazione delle Opzioni Calcolo*. Leghe Fantacalcio official rules guide. [Source](https://leghe.fantacalcio.it/guide-leghe-fantacalcio/gestione-lega/impostazione-delle-opzioni-calcolo-79). Citation key: `fantacalcioOptions`.
