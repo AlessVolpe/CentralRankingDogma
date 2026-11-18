@@ -6,7 +6,7 @@ Milestone 3.1.0 resolves one original or validated alternative calendar using im
 
 ## 1. Introduction and scientific motivation
 
-The research question is how a fixed set of fantasy performances changes sporting results when the opponent schedule changes. Unlike the stochastic sampling engine planned for 3.1.1, this module **does not** generate calendars or draw random numbers. It evaluates one fully specified schedule. The unpermuted original competition is an indispensable reference and does **not** require meeting the stronger one-factorization constraints imposed on alternative calendars.
+The research question is how a fixed set of fantasy performances changes sporting results when the opponent schedule changes. Unlike the separately implemented 3.1.1 Monte Carlo batch engine, this module **does not** generate calendars or draw random numbers. It evaluates one fully specified schedule. The unpermuted original competition is an indispensable reference and does **not** require meeting the stronger one-factorization constraints imposed on alternative calendars. Ranked entries currently use in-place heapsort; the generic `ranking_t` is not yet integrated (planned for 3.1.2).
 
 ## 2. Mathematical model
 

@@ -4,7 +4,7 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native baseline:** 3.1.1. Deterministic match/season resolution and reproducible Monte Carlo batches are implemented. Scientific evaluation (3.1.2) and the external integration contract (3.1.3) remain planned; this patch requires merge-time verification.
+**Current native baseline:** 3.1.1. Deterministic match/season resolution and reproducible Monte Carlo batches are implemented in `master` and have passed the recorded CI checks. Ranking-backend integration and scientific evaluation (3.1.2), followed by external integration contracts (3.1.3), remain planned.
 
 ## Read the research or use the library
 
@@ -45,7 +45,7 @@ flowchart TB
     CAL --> RNG
 ```
 
-Explore the additional [system boundary](docs/architecture/system.md) and [scientific data-flow](docs/architecture/data-flow.md) diagrams. Solid arrows indicate implemented module relationships. Future Python and Monte Carlo integration remains separate.
+Explore the additional [system boundary](docs/architecture/system.md) and [scientific data-flow](docs/architecture/data-flow.md) diagrams. Solid arrows indicate implemented module relationships. The intentionally absent `MATCH --> RANK` arrow reflects current code: `season_resolve()` uses an in-place heapsort, while the existing `ranking_t` (hashmap + BOSTree) remains independent. Connecting them via an optional ranking backend is required in [3.1.2](docs/milestones/3.1.2.md); the Python application remains separate.
 
 ## Deterministic match and season resolution (3.1.0)
 
@@ -58,8 +58,8 @@ seasons and the maximal contiguous prefix of finalized rounds, then publishes
 owned fixture results and ranked standings (league points, resolved-round
 fantasy totals, goal difference, shared exact ties). The [match paper](docs/reference/match.md)
 and [season paper](docs/reference/season-resolution.md) specify the proofs,
-errors, complexity and empirical baseline independently of the future
-Monte Carlo orchestration.
+errors, complexity and empirical baseline. The implemented Monte Carlo
+orchestrator calls this deterministic resolver for each accepted calendar.
 
 ## Monte Carlo experiments (3.1.1)
 
@@ -74,6 +74,18 @@ paper](docs/reference/monte-carlo.md) and [milestone](docs/milestones/3.1.1.md).
 
 Optional home-field fantasy-score bonuses are off by default and can be
 suppressed throughout the final, potentially partial round-robin cycle.
+
+## Next: composite ranking and scientific evaluation (3.1.2)
+
+The existing `ranking_t` implements a hashmap-backed order-statistics AVL tree
+for signed scores; it is **not yet a sporting-ranking backend**. Milestone
+[3.1.2](docs/milestones/3.1.2.md) requires a backwards-compatible composite-key
+extension and a selectable ranking backend that preserves the current sporting
+order `(championship_points, fantasy_total_tenths, goal_difference)` and shared
+ranks. The existing heapsort remains the correctness reference. A separate
+evaluation PR will compare batch ranking and incremental-update performance,
+including memory, independently of calendar-generation and match-resolution
+costs. Performance claims will follow measurement, not precede it.
 
 ## Mathematical foundation
 

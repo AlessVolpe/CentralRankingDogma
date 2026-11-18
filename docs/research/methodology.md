@@ -2,7 +2,7 @@
 
 ## Research question
 
-How sensitive are championship outcomes to the allocation of a fixed set of historical team performances to alternative **valid** fixture calendars? A separate research axis studies generator runtime and memory cost. This file is a **methodological plan**, not a completed empirical results section.
+How sensitive are championship outcomes to the allocation of a fixed set of historical team performances to alternative **valid** fixture calendars? A separate research axis studies the time and memory costs of fixture generation **and the ranking backend**. Milestone 3.1.2 will compare array/heapsort against composite-key hashmap/BOSTree rankings on equivalent workloads. This file is a **methodological plan**, not a completed empirical results section.
 
 ## Experimental controls
 
@@ -24,7 +24,7 @@ The empirical measure $\hat{p}(A)=k_A/n$ is descriptive for observed sampled cal
 - **Reproducibility:** does a fixed seed/configuration replay the same output? Check via deterministic tests.
 - **Exploration:** how many different fixture assignments are visited? Measure fingerprints and structural distances.
 - **Representativeness:** does the sampling mechanism explore its state space fairly? This remains an open scientific question; finite diversity tests are insufficient.
-- **Performance:** what are time/memory costs on controlled workloads? See [performance](performance.md).
+- **Performance:** how do comparable heapsort and composite-key hashmap/BOSTree rank backends perform for completed seasons versus incremental standings updates? Keep ranking, generator, match-resolution and aggregation costs separate; see [performance](performance.md).
 
 ## Validity threats
 
