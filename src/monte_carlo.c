@@ -5,6 +5,7 @@
  */
 #include "monte_carlo.h"
 #include "alloc_internal.h"
+#include "research_profile_internal.h"
 
 #include <errno.h>
 #include <inttypes.h>
@@ -328,8 +329,10 @@ int monte_carlo_run(const competition_t *competition,
         options->scope, options->ranking_backend
     };
     season_resolution_t *baseline = NULL;
+    LB_PROFILE_BEGIN(LEADERBOARD_PROFILE_RESOLUTION);
     int status = season_resolve_with_options(competition, NULL, rules,
                                              &resolution_options, &baseline);
+    LB_PROFILE_END(LEADERBOARD_PROFILE_RESOLUTION);
     if (status != 0) return status;
     if (season_resolution_round_count(baseline) == 0U) {
         season_resolution_destroy(baseline);
@@ -367,13 +370,17 @@ int monte_carlo_run(const competition_t *competition,
         calendar_t *calendar = NULL;
         season_resolution_t *resolution = NULL;
         calendar_diagnostics_t draw_diagnostics = {0};
+        LB_PROFILE_BEGIN(LEADERBOARD_PROFILE_GENERATION);
         status = calendar_generator_next(generator, &calendar, &draw_diagnostics);
+        LB_PROFILE_END(LEADERBOARD_PROFILE_GENERATION);
         if (status != 0) goto loop_failure;
         result->attempted++;
         status = accumulate_generation(&result->generation, &draw_diagnostics);
         if (status != 0) { calendar_destroy(calendar); goto loop_failure; }
         uint64_t hash = 0U;
+        LB_PROFILE_BEGIN(LEADERBOARD_PROFILE_UNIQUENESS);
         status = canonicalize(calendar, result->rounds, result->teams, canonical, &hash);
+        LB_PROFILE_END(LEADERBOARD_PROFILE_UNIQUENESS);
         if (status != 0) { calendar_destroy(calendar); goto loop_failure; }
         bool duplicate = false;
         if (options->track_uniqueness) {
@@ -396,12 +403,16 @@ int monte_carlo_run(const competition_t *competition,
             }
         }
         if (!duplicate || !options->unique_only) {
+            LB_PROFILE_BEGIN(LEADERBOARD_PROFILE_RESOLUTION);
             status = season_resolve_with_options(competition, calendar, rules,
                                                  &resolution_options, &resolution);
+            LB_PROFILE_END(LEADERBOARD_PROFILE_RESOLUTION);
             calendar_destroy(calendar);
             calendar = NULL;
             if (status != 0) goto loop_failure;
+            LB_PROFILE_BEGIN(LEADERBOARD_PROFILE_AGGREGATION);
             status = add_observation(result, resolution);
+            LB_PROFILE_END(LEADERBOARD_PROFILE_AGGREGATION);
             if (status == 0 && observation_csv != NULL)
                 status = write_observation_csv(observation_csv, result, resolution,
                                                hash, result->attempted);

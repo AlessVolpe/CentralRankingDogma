@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 #include "alloc_internal.h"
+#include "research_profile_internal.h"
 #include <stdlib.h>
 
 #ifdef LEADERBOARD_TEST_ALLOCATION_FAULTS
@@ -29,9 +30,17 @@ static int should_fail(void) { return 0; }
 #endif
 
 void *leaderboard_alloc_malloc(size_t size) {
-    return should_fail() ? NULL : malloc(size);
+    void *value = should_fail() ? NULL : malloc(size);
+#ifdef LEADERBOARD_RESEARCH_PROFILE
+    if (value != NULL) leaderboard_profile_record_wrapper_allocation(size);
+#endif
+    return value;
 }
 
 void *leaderboard_alloc_calloc(size_t count, size_t size) {
-    return should_fail() ? NULL : calloc(count, size);
+    void *value = should_fail() ? NULL : calloc(count, size);
+#ifdef LEADERBOARD_RESEARCH_PROFILE
+    if (value != NULL) leaderboard_profile_record_wrapper_allocation(count * size);
+#endif
+    return value;
 }

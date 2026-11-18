@@ -1,0 +1,77 @@
+name: Research methodology smoke
+
+on:
+  push:
+    paths:
+      - 'benchmarks/**'
+      - 'research/**'
+      - 'src/**'
+      - 'include/**'
+      - 'tests/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/research.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/**'
+      - 'research/**'
+      - 'src/**'
+      - 'include/**'
+      - 'tests/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/research.yml'
+
+jobs:
+  native-profile-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure native instrumented benchmark
+        run: >-
+          cmake -S . -B build-profile -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DLEADERBOARD_BUILD_BENCHMARKS=ON
+          -DLEADERBOARD_RESEARCH_PROFILE=ON
+          -DLEADERBOARD_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        run: cmake --build build-profile --parallel
+      - name: Regression suite (no timing thresholds)
+        run: ctest --test-dir build-profile --output-on-failure
+  python-methodology:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned research dependencies
+        run: python -m pip install -r research/requirements.txt
+      - name: Static analysis smoke and example
+        run: |
+          python -m pytest -q research/tests
+          python research/analyze.py --pair research/examples/observations.csv research/examples/summary.csv --output research/output/demo
+  massif-memory-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install full-process heap profiler
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+      - name: Configure ranking memory comparison
+        run: >-
+          cmake -S . -B build-memory -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DLEADERBOARD_BUILD_BENCHMARKS=ON
+          -DLEADERBOARD_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        run: cmake --build build-memory --parallel
+      - name: Capture actual heap peaks for both backends
+        run: |
+          python research/memory_profile.py --output research/output/ci-heap -- ./build-memory/leaderboard_memory_compare 8 heap 5489
+          python research/memory_profile.py --output research/output/ci-avl -- ./build-memory/leaderboard_memory_compare 8 avl 5489
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+          left = list(csv.DictReader((Path('research/output/ci-heap/stdout.csv')).open()))
+          right = list(csv.DictReader((Path('research/output/ci-avl/stdout.csv')).open()))
+          assert len(left) == len(right) == 1
+          assert left[0]['checksum'] == right[0]['checksum']
+          PY

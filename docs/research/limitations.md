@@ -1,10 +1,13 @@
 # Known limitations and boundaries of scientific inference
 
-## Native C scope as of 3.0.12
+## Native C scope as of 3.1.2 research development
 
-- The full original calendar is imported and validated; incomplete historical score matrices are allowed but cannot support completed-season match experiments.
-- Calendars can be generated; automatic match goals, standings simulation, Monte Carlo orchestration, statistical evaluation, and Python bindings are **not** implemented.
-- The strict no-rematch-until-all-opponents rule excludes legitimate alternative league formats. It is deliberately stronger than the 3.0.11 snapshot importer.
+- Imported original fixtures, generated alternative calendars, deterministic match and season resolution (3.1.0), and reproducible Monte Carlo batches (3.1.1) are implemented.
+- The optional composite-key AVL sporting-ranking backend was introduced in 3.1.2 PR A. Heapsort remains the default and correctness reference.
+- Completed-season evaluation requires all scores FINAL. A finalized-prefix calculation is provisional, and later finalized scores after a gap cannot be silently incorporated.
+- The experimental toolkit can compare ranking methods and summarize sampled outcomes, but no uniform-sampling proof, automatic causal inference or Python bindings exist.
+- The strict no-rematch-until-all-opponents rule excludes legitimate alternative league formats. It is deliberately stronger than the original snapshot importer.
+- The optional internal profiler counts allocations through library wrappers, not direct third-party allocations or frees. Separate Linux/WSL Massif runs can measure peak instrumented whole-process heap usage (including third-party allocator calls); those peaks are not per-stage or equivalent to process RSS. Sampled RSS is only an observed lower bound on peak RSS; Massif may omit unmapped allocations or allocations outside its supported heap interception.
 
 ## Mathematical and statistical uncertainty
 

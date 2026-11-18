@@ -20,6 +20,12 @@ install_manifest.txt
 # Generated benchmark results
 /benchmark-*
 
+# Private historical datasets, secrets and generated research output
+/research/private/
+/research/output/
+/research/datasets/private/
+/research/.venv/
+
 # Local development patches
 *.patch
 *.diff

@@ -1,5 +1,8 @@
 # Research methodology: controlled calendar counterfactuals
 
+The experimental procedures, private-data rules, run manifests and analysis
+commands are maintained in the [3.1.2 research toolkit](../../research/README.md).
+
 ## Research question
 
 How sensitive are championship outcomes to the allocation of a fixed set of historical team performances to alternative **valid** fixture calendars? A separate research axis studies the time and memory costs of fixture generation **and the ranking backend**. Milestone 3.1.2 will compare array/heapsort against composite-key hashmap/BOSTree rankings on equivalent workloads. This file is a **methodological plan**, not a completed empirical results section.

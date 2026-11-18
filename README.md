@@ -4,7 +4,7 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native baseline:** 3.1.1. Deterministic match/season resolution and reproducible Monte Carlo batches are implemented in `master` and have passed the recorded CI checks. Ranking-backend integration and scientific evaluation (3.1.2), followed by external integration contracts (3.1.3), remain planned.
+**Current native baseline:** 3.1.1. The merged 3.1.2 PR A adds opt-in composite-key ranking backed by hashmap/BOSTree. PR B introduces a [research toolkit](research/README.md) for controlled benchmarks and statistical analysis; experimental results and their verification must still be recorded before completing milestone 3.1.2. External integration contracts remain planned for 3.1.3.
 
 ## Read the research or use the library
 

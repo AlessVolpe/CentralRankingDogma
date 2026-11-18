@@ -1,6 +1,11 @@
 # Performance methodology and interpretation
 
-This document distinguishes the **existing performance benchmark machinery** introduced in 3.0.10 from the planned sporting-outcome evaluation of 3.1.2. It does not report unmeasured speedups.
+This document distinguishes the existing 3.0.10 benchmark machinery from the
+3.1.2 experimental harness. The [research toolkit](../../research/README.md)
+includes reproducible paired ranking workloads, public-API stage measurements,
+separate Linux/WSL whole-process heap profiling via Valgrind Massif, a strict
+experimental-evidence audit and descriptive outcome analysis. No unmeasured performance advantage is
+asserted; the research tools require independent empirical validation.
 
 ## Existing experiments
 

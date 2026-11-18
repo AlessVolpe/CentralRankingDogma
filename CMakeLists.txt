@@ -9,6 +9,10 @@ option(LEADERBOARD_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehav
 option(LEADERBOARD_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 option(LEADERBOARD_BUILD_FUZZERS "Build Clang/libFuzzer harnesses (requires BUILD_TESTING)" OFF)
 option(LEADERBOARD_BUILD_BENCHMARKS "Build deterministic performance benchmarks" OFF)
+option(LEADERBOARD_RESEARCH_PROFILE "Enable opt-in internal research timing and wrapper-allocation statistics" OFF)
+if (LEADERBOARD_RESEARCH_PROFILE AND NOT LEADERBOARD_BUILD_BENCHMARKS)
+    message(FATAL_ERROR "LEADERBOARD_RESEARCH_PROFILE requires LEADERBOARD_BUILD_BENCHMARKS=ON")
+endif ()
 
 # Check compile AND link, because some GCC distributions accept sanitizer
 # flags but do not ship the corresponding runtime libraries (notably UCRT64).
@@ -63,6 +67,7 @@ add_library(leaderboard_containers_obj OBJECT
         src/hashmap.c
         src/bostree.c
         src/alloc.c
+        src/research_profile.c
 )
 add_library(leaderboard_ranking_obj OBJECT
         src/ranking.c
@@ -96,6 +101,10 @@ target_include_directories(leaderboard_ranking_obj PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
 target_include_directories(leaderboard_domain_obj PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
+if (LEADERBOARD_RESEARCH_PROFILE)
+    target_compile_definitions(leaderboard_containers_obj PRIVATE LEADERBOARD_RESEARCH_PROFILE)
+    target_compile_definitions(leaderboard_domain_obj PRIVATE LEADERBOARD_RESEARCH_PROFILE)
+endif ()
 
 add_library(leaderboard STATIC
         $<TARGET_OBJECTS:leaderboard_containers_obj>
@@ -135,13 +144,52 @@ if (LEADERBOARD_BUILD_BENCHMARKS)
     if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(leaderboard_bench PRIVATE -pedantic-errors)
     endif ()
+
+    # 3.1.2 research tools are optional, C11-only public-API consumers.
+    foreach (name IN ITEMS ranking_compare season_experiment memory_compare)
+        add_executable(leaderboard_${name} benchmarks/${name}.c)
+        target_link_libraries(leaderboard_${name} PRIVATE Leaderboard::leaderboard)
+        leaderboard_apply_dev_options(leaderboard_${name})
+        set_target_properties(leaderboard_${name} PROPERTIES C_EXTENSIONS OFF)
+        if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+            target_compile_options(leaderboard_${name} PRIVATE -pedantic-errors)
+        endif ()
+    endforeach ()
+    if (LEADERBOARD_RESEARCH_PROFILE)
+        target_compile_definitions(leaderboard_season_experiment PRIVATE LEADERBOARD_RESEARCH_PROFILE)
+        target_include_directories(leaderboard_season_experiment PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
+    endif ()
 endif ()
 
 if (BUILD_TESTING)
     add_subdirectory(tests)
+    if (LEADERBOARD_RESEARCH_PROFILE)
+        add_executable(test_research_profile tests/test_research_profile.c)
+        target_include_directories(test_research_profile PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
+        target_compile_definitions(test_research_profile PRIVATE LEADERBOARD_RESEARCH_PROFILE)
+        target_link_libraries(test_research_profile PRIVATE Leaderboard::leaderboard)
+        leaderboard_apply_dev_options(test_research_profile)
+        add_test(NAME research_profile_contract COMMAND test_research_profile)
+    endif ()
     if (LEADERBOARD_BUILD_BENCHMARKS)
         # Correctness-only smoke check. Never gate CI on wall/CPU times.
         add_test(NAME benchmark_smoke COMMAND leaderboard_bench 1000 1)
+        add_test(NAME ranking_compare_smoke
+                 COMMAND leaderboard_ranking_compare 8 1 5489 3)
+        add_test(NAME memory_compare_heap_smoke
+                 COMMAND leaderboard_memory_compare 8 heap 5489)
+        add_test(NAME memory_compare_avl_smoke
+                 COMMAND leaderboard_memory_compare 8 avl 5489)
+        add_test(NAME season_experiment_heap_smoke
+                 COMMAND leaderboard_season_experiment 8 5489 3 heap shuffle independent
+                 "${CMAKE_CURRENT_BINARY_DIR}/research_smoke_heap_obs.csv"
+                 "${CMAKE_CURRENT_BINARY_DIR}/research_smoke_heap_summary.csv")
+        add_test(NAME season_experiment_avl_smoke
+                 COMMAND leaderboard_season_experiment 8 5489 3 avl shuffle independent
+                 "${CMAKE_CURRENT_BINARY_DIR}/research_smoke_avl_obs.csv"
+                 "${CMAKE_CURRENT_BINARY_DIR}/research_smoke_avl_summary.csv")
     endif ()
 endif ()
 
