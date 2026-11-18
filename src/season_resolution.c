@@ -4,11 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 #include "season_resolution.h"
+#include "ranking.h"
 #include "alloc_internal.h"
 
 #include <errno.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 struct season_resolution {
@@ -75,6 +79,62 @@ static void sort_ranks(season_rank_entry_t *r, size_t n) {
     }
 }
 
+/* A domain-specific key; unlike the generic ranking's ID tiebreak, equality
+ * here means a genuine sporting tie. Never pack into one signed integer. */
+typedef struct sporting_order_key {
+    uint32_t points;
+    uint32_t fantasy_tenths;
+    int64_t goal_difference;
+} sporting_order_key_t;
+
+static int sporting_key_compare(const void *lhs, const void *rhs, void *unused) {
+    (void)unused;
+    const sporting_order_key_t *a = lhs;
+    const sporting_order_key_t *b = rhs;
+    if (a->points != b->points) return a->points > b->points ? -1 : 1;
+    if (a->fantasy_tenths != b->fantasy_tenths)
+        return a->fantasy_tenths > b->fantasy_tenths ? -1 : 1;
+    if (a->goal_difference != b->goal_difference)
+        return a->goal_difference > b->goal_difference ? -1 : 1;
+    return 0;
+}
+
+/* The original team index is UUID-sorted. Its fixed-width hexadecimal text
+ * is consequently a portable ID-order tiebreak that exactly matches the
+ * reference heapsort, without relying on host byte order or UUID padding. */
+static int sort_ranks_avl(season_rank_entry_t *ranks, size_t n) {
+    ranking_t *tree = ranking_new_custom(sizeof(sporting_order_key_t),
+                                        sporting_key_compare, NULL);
+    if (tree == NULL) return -ENOMEM;
+    int status = 0;
+    for (size_t i = 0U; i < n; ++i) {
+        const sporting_order_key_t key = {
+            ranks[i].standings.championship_points,
+            ranks[i].fantasy_total_tenths,
+            ranks[i].goal_difference
+        };
+        char id[9];
+        (void)snprintf(id, sizeof(id), "%08" PRIx32, (uint32_t)ranks[i].team_index);
+        status = ranking_upsert_key(tree, id, &key);
+        if (status != 0) goto done;
+    }
+    season_rank_entry_t *sorted = leaderboard_alloc_malloc(n * sizeof(*sorted));
+    if (sorted == NULL) { status = -ENOMEM; goto done; }
+    for (size_t pos = 0U; pos < n; ++pos) {
+        const char *id = NULL;
+        status = ranking_at_key(tree, pos, &id, NULL);
+        if (status != 0) break;
+        const unsigned long index = strtoul(id, NULL, 16);
+        if (index >= n) { status = -EINVAL; break; }
+        sorted[pos] = ranks[index];
+    }
+    if (status == 0) memcpy(ranks, sorted, n * sizeof(*sorted));
+    free(sorted);
+done:
+    ranking_destroy(tree);
+    return status;
+}
+
 static bool sporting_tie(const season_rank_entry_t *a,
                          const season_rank_entry_t *b) {
     return a->standings.championship_points == b->standings.championship_points &&
@@ -104,16 +164,19 @@ static int finalized_prefix(const competition_t *c, size_t n, size_t r,
     return 0;
 }
 
-int season_resolve(const competition_t *competition,
-                   const calendar_t *selected_calendar,
-                   const match_rules_t *rules,
-                   season_resolution_scope_t scope,
-                   season_resolution_t **out) {
+int season_resolve_with_options(const competition_t *competition,
+                                const calendar_t *selected_calendar,
+                                const match_rules_t *rules,
+                                const season_resolution_options_t *options,
+                                season_resolution_t **out) {
     if (out == NULL) return -EINVAL;
     *out = NULL;
     if (competition == NULL || match_rules_validate(rules) != 0 ||
-        (scope != SEASON_RESOLVE_FULL_SEASON &&
-         scope != SEASON_RESOLVE_FINALIZED_PREFIX)) return -EINVAL;
+        options == NULL ||
+        (options->scope != SEASON_RESOLVE_FULL_SEASON &&
+         options->scope != SEASON_RESOLVE_FINALIZED_PREFIX) ||
+        (options->ranking_backend != SEASON_RANKING_HEAPSORT &&
+         options->ranking_backend != SEASON_RANKING_AVL)) return -EINVAL;
     const size_t n = competition_team_count(competition);
     const size_t r = competition_round_count(competition);
     if (n == 0U || n > UINT32_MAX || (n & 1U) != 0U ||
@@ -126,7 +189,7 @@ int season_resolve(const competition_t *competition,
         if (status != 0) return status;
     }
     size_t rounds = 0U;
-    int status = finalized_prefix(competition, n, r, scope, &rounds);
+    int status = finalized_prefix(competition, n, r, options->scope, &rounds);
     if (status != 0) return status;
     const size_t fixtures_per_round = n / 2U;
     if (rounds > SIZE_MAX / fixtures_per_round) return -EOVERFLOW;
@@ -224,7 +287,12 @@ int season_resolve(const competition_t *competition,
         entry->goal_difference = (int64_t)entry->goal_stats.goals_for -
                                  (int64_t)entry->goal_stats.goals_against;
     }
-    sort_ranks(result->ranks, n);
+    if (options->ranking_backend == SEASON_RANKING_AVL) {
+        status = sort_ranks_avl(result->ranks, n);
+        if (status != 0) goto fail;
+    } else {
+        sort_ranks(result->ranks, n);
+    }
     for (size_t i = 0U; i < n; ++i) {
         if (i > 0U && sporting_tie(&result->ranks[i-1U], &result->ranks[i]))
             result->ranks[i].sporting_rank = result->ranks[i-1U].sporting_rank;
@@ -235,6 +303,18 @@ int season_resolve(const competition_t *competition,
 fail:
     season_resolution_destroy(result);
     return status;
+}
+
+int season_resolve(const competition_t *competition,
+                   const calendar_t *selected_calendar,
+                   const match_rules_t *rules,
+                   season_resolution_scope_t scope,
+                   season_resolution_t **out) {
+    const season_resolution_options_t options = {
+        scope, SEASON_RANKING_HEAPSORT
+    };
+    return season_resolve_with_options(competition, selected_calendar,
+                                       rules, &options, out);
 }
 
 size_t season_resolution_round_count(const season_resolution_t *r) {

@@ -195,6 +195,7 @@ monte_carlo_options_t monte_carlo_options_default(void) {
     monte_carlo_options_t options = {0};
     options.calendar = calendar_options_default();
     options.scope = SEASON_RESOLVE_FINALIZED_PREFIX;
+    options.ranking_backend = SEASON_RANKING_HEAPSORT;
     options.requested_samples = 1000U;
     options.max_generation_attempts = 1000U;
     options.progress_every_attempts = 1000U;
@@ -316,13 +317,19 @@ int monte_carlo_run(const competition_t *competition,
     if (competition == NULL || match_rules_validate(rules) != 0 ||
         (options->scope != SEASON_RESOLVE_FULL_SEASON &&
          options->scope != SEASON_RESOLVE_FINALIZED_PREFIX) ||
+        (options->ranking_backend != SEASON_RANKING_HEAPSORT &&
+         options->ranking_backend != SEASON_RANKING_AVL) ||
         options->requested_samples == 0U || options->max_generation_attempts == 0U ||
         (options->unique_only && !options->track_uniqueness) ||
         (options->track_uniqueness && options->uniqueness_memory_limit_bytes == 0U))
         return -EINVAL;
 
+    const season_resolution_options_t resolution_options = {
+        options->scope, options->ranking_backend
+    };
     season_resolution_t *baseline = NULL;
-    int status = season_resolve(competition, NULL, rules, options->scope, &baseline);
+    int status = season_resolve_with_options(competition, NULL, rules,
+                                             &resolution_options, &baseline);
     if (status != 0) return status;
     if (season_resolution_round_count(baseline) == 0U) {
         season_resolution_destroy(baseline);
@@ -389,7 +396,8 @@ int monte_carlo_run(const competition_t *competition,
             }
         }
         if (!duplicate || !options->unique_only) {
-            status = season_resolve(competition, calendar, rules, options->scope, &resolution);
+            status = season_resolve_with_options(competition, calendar, rules,
+                                                 &resolution_options, &resolution);
             calendar_destroy(calendar);
             calendar = NULL;
             if (status != 0) goto loop_failure;

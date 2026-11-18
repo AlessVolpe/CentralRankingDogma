@@ -21,17 +21,23 @@
 typedef struct ranking_entry {
     int64_t score;
     BOSNode *node;
+    unsigned char *key; /* non-NULL only for custom rankings */
     char id[];
 } ranking_entry_t;
 
 typedef struct ranking_order_key {
     int64_t score;
     const char *id;
+    const unsigned char *key;
+    const ranking_t *owner;
 } ranking_order_key_t;
 
 typedef struct ranking {
     hashmap_base_t *by_id;
     BOSTree *by_rank;
+    size_t key_size;  /* zero selects legacy signed-score mode */
+    ranking_key_compare_fn compare;
+    void *compare_context; /* borrowed */
 } ranking_t;
 
 static size_t ranking_hash_id(const void *id) {
@@ -47,8 +53,14 @@ static int ranking_compare_id(const void *lhs, const void *rhs) {
 static int ranking_compare_score(const void *lhs, const void *rhs) {
     const ranking_order_key_t *a = lhs;
     const ranking_order_key_t *b = rhs;
-    if (a->score > b->score) return -1;
-    if (a->score < b->score) return 1;
+    if (a->owner->key_size != 0U) {
+        const int order = a->owner->compare(a->key, b->key,
+                                            a->owner->compare_context);
+        if (order != 0) return order < 0 ? -1 : 1;
+    } else {
+        if (a->score > b->score) return -1;
+        if (a->score < b->score) return 1;
+    }
     return strcmp(a->id, b->id);
 }
 
@@ -56,18 +68,26 @@ static void ranking_free_order_key(BOSNode *node) {
     free((void *)bostree_node_key(node));
 }
 
-static ranking_order_key_t *ranking_make_key(const char *id, int64_t score) {
+static ranking_order_key_t *ranking_make_key(const ranking_t *owner,
+                                              const char *id, int64_t score,
+                                              const unsigned char *value) {
     ranking_order_key_t *key = leaderboard_alloc_malloc(sizeof(*key));
     if (key != NULL) {
         key->id = id;
         key->score = score;
+        key->key = value;
+        key->owner = owner;
     }
     return key;
 }
 
-ranking_t *ranking_new(void) {
+static ranking_t *ranking_create(size_t key_size,
+                                 ranking_key_compare_fn compare, void *context) {
     ranking_t *ranking = leaderboard_alloc_malloc(sizeof(*ranking));
     if (ranking == NULL) return NULL;
+    ranking->key_size = key_size;
+    ranking->compare = compare;
+    ranking->compare_context = context;
     ranking->by_id = hashmap_base_new(ranking_hash_id, ranking_compare_id);
     if (ranking->by_id == NULL) {
         free(ranking);
@@ -82,13 +102,25 @@ ranking_t *ranking_new(void) {
     return ranking;
 }
 
+ranking_t *ranking_new(void) {
+    return ranking_create(0U, NULL, NULL);
+}
+
+ranking_t *ranking_new_custom(size_t key_size,
+                              ranking_key_compare_fn compare, void *context) {
+    if (key_size == 0U || compare == NULL) return NULL;
+    return ranking_create(key_size, compare, context);
+}
+
 void ranking_destroy(ranking_t *ranking) {
     if (ranking == NULL) return;
     /* Finalizes tree-owned order keys before releasing their borrowed IDs. */
     bostree_destroy(ranking->by_rank);
     for (hashmap_entry *it = hashmap_base_iter(ranking->by_id, NULL);
          it != NULL; (void)hashmap_base_iter_next(ranking->by_id, &it)) {
-        free(hashmap_base_iter_get_data(it));
+        ranking_entry_t *entry = hashmap_base_iter_get_data(it);
+        free(entry->key);
+        free(entry);
     }
     hashmap_base_destroy(ranking->by_id);
     free(ranking);
@@ -99,7 +131,8 @@ size_t ranking_size(const ranking_t *ranking) {
 }
 
 int ranking_upsert(ranking_t *ranking, const char *id, int64_t score) {
-    if (ranking == NULL || id == NULL || id[0] == '\0') return -EINVAL;
+    if (ranking == NULL || ranking->key_size != 0U ||
+        id == NULL || id[0] == '\0') return -EINVAL;
 
     ranking_entry_t *entry = hashmap_base_get(ranking->by_id, id);
     if (entry != NULL) {
@@ -108,7 +141,7 @@ int ranking_upsert(ranking_t *ranking, const char *id, int64_t score) {
          * score makes its composite ordering key distinct. The old node
          * remains untouched if either allocation fails. */
         if (bostree_node_count(ranking->by_rank) == UINT_MAX) return -EOVERFLOW;
-        ranking_order_key_t *key = ranking_make_key(entry->id, score);
+        ranking_order_key_t *key = ranking_make_key(ranking, entry->id, score, NULL);
         if (key == NULL) return -ENOMEM;
         BOSNode *replacement = bostree_insert(ranking->by_rank, key, entry);
         if (replacement == NULL) {
@@ -128,9 +161,10 @@ int ranking_upsert(ranking_t *ranking, const char *id, int64_t score) {
     entry = leaderboard_alloc_malloc(sizeof(*entry) + len + 1U);
     if (entry == NULL) return -ENOMEM;
     entry->score = score;
+    entry->key = NULL;
     memcpy(entry->id, id, len + 1U);
 
-    ranking_order_key_t *key = ranking_make_key(entry->id, score);
+    ranking_order_key_t *key = ranking_make_key(ranking, entry->id, score, NULL);
     if (key == NULL) {
         free(entry);
         return -ENOMEM;
@@ -158,13 +192,15 @@ int ranking_remove(ranking_t *ranking, const char *id) {
     ranking_entry_t *entry = hashmap_base_remove(ranking->by_id, id);
     if (entry == NULL) return -ENOENT;
     bostree_remove(ranking->by_rank, entry->node);
+    free(entry->key);
     free(entry);
     return 0;
 }
 
 int ranking_get(const ranking_t *ranking, const char *id,
                 int64_t *score, size_t *rank) {
-    if (ranking == NULL || id == NULL || id[0] == '\0') return -EINVAL;
+    if (ranking == NULL || ranking->key_size != 0U ||
+        id == NULL || id[0] == '\0') return -EINVAL;
     const ranking_entry_t *entry = hashmap_base_get(ranking->by_id, id);
     if (entry == NULL) return -ENOENT;
     if (score != NULL) *score = entry->score;
@@ -174,12 +210,99 @@ int ranking_get(const ranking_t *ranking, const char *id,
 
 int ranking_at(const ranking_t *ranking, size_t rank,
                const char **id, int64_t *score) {
-    if (ranking == NULL) return -EINVAL;
+    if (ranking == NULL || ranking->key_size != 0U) return -EINVAL;
     if (rank >= ranking_size(ranking)) return -ENOENT;
     const BOSNode *node = bostree_select(ranking->by_rank, (unsigned int)rank);
     if (node == NULL) return -ENOENT;
     const ranking_entry_t *entry = bostree_node_data(node);
     if (id != NULL) *id = entry->id;
     if (score != NULL) *score = entry->score;
+    return 0;
+}
+
+/* A successful update of an existing key first inserts a new BOSTree node.
+ * The old node remains in place until insertion succeeds; its key bytes and
+ * borrowed identifier are still valid for the whole insertion operation. */
+int ranking_upsert_key(ranking_t *ranking, const char *id, const void *key) {
+    if (ranking == NULL || ranking->key_size == 0U ||
+        id == NULL || id[0] == '\0' || key == NULL) return -EINVAL;
+    ranking_entry_t *entry = hashmap_base_get(ranking->by_id, id);
+    if (entry != NULL) {
+        /* Equivalent comparator values preserve position and update the
+         * supplied raw key bytes. This path is allocation-free. */
+        if (ranking->compare(entry->key, key, ranking->compare_context) == 0) {
+            if ((const void *)entry->key != key)
+                memcpy(entry->key, key, ranking->key_size);
+            return 0;
+        }
+    }
+    if (bostree_node_count(ranking->by_rank) == UINT_MAX) return -EOVERFLOW;
+    unsigned char *copy = leaderboard_alloc_malloc(ranking->key_size);
+    if (copy == NULL) return -ENOMEM;
+    memcpy(copy, key, ranking->key_size);
+    if (entry != NULL) {
+        ranking_order_key_t *order = ranking_make_key(ranking, entry->id, 0, copy);
+        if (order == NULL) { free(copy); return -ENOMEM; }
+        BOSNode *replacement = bostree_insert(ranking->by_rank, order, entry);
+        if (replacement == NULL) {
+            free(order);
+            free(copy);
+            return -ENOMEM;
+        }
+        bostree_remove(ranking->by_rank, entry->node);
+        free(entry->key);
+        entry->key = copy;
+        entry->node = replacement;
+        return 0;
+    }
+    const size_t len = strlen(id);
+    if (len > SIZE_MAX - sizeof(ranking_entry_t) - 1U) {
+        free(copy);
+        return -EOVERFLOW;
+    }
+    entry = leaderboard_alloc_malloc(sizeof(*entry) + len + 1U);
+    if (entry == NULL) { free(copy); return -ENOMEM; }
+    entry->score = 0;
+    entry->key = copy;
+    memcpy(entry->id, id, len + 1U);
+    ranking_order_key_t *order = ranking_make_key(ranking, entry->id, 0, copy);
+    if (order == NULL) { free(copy); free(entry); return -ENOMEM; }
+    entry->node = bostree_insert(ranking->by_rank, order, entry);
+    if (entry->node == NULL) {
+        free(order);
+        free(copy);
+        free(entry);
+        return -ENOMEM;
+    }
+    const int result = hashmap_base_put(ranking->by_id, entry->id, entry);
+    if (result != 0) {
+        bostree_remove(ranking->by_rank, entry->node);
+        free(copy);
+        free(entry);
+        return result;
+    }
+    return 0;
+}
+
+int ranking_get_key(const ranking_t *ranking, const char *id,
+                    void *key_out, size_t *rank) {
+    if (ranking == NULL || ranking->key_size == 0U ||
+        id == NULL || id[0] == '\0') return -EINVAL;
+    const ranking_entry_t *entry = hashmap_base_get(ranking->by_id, id);
+    if (entry == NULL) return -ENOENT;
+    if (key_out != NULL) memcpy(key_out, entry->key, ranking->key_size);
+    if (rank != NULL) *rank = (size_t)bostree_rank(entry->node);
+    return 0;
+}
+
+int ranking_at_key(const ranking_t *ranking, size_t rank,
+                   const char **id, void *key_out) {
+    if (ranking == NULL || ranking->key_size == 0U) return -EINVAL;
+    if (rank >= ranking_size(ranking)) return -ENOENT;
+    const BOSNode *node = bostree_select(ranking->by_rank, (unsigned int)rank);
+    if (node == NULL) return -ENOENT;
+    const ranking_entry_t *entry = bostree_node_data(node);
+    if (id != NULL) *id = entry->id;
+    if (key_out != NULL) memcpy(key_out, entry->key, ranking->key_size);
     return 0;
 }

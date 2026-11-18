@@ -152,6 +152,10 @@ UUID-indexed team summaries, and a team-by-rank frequency table. The source
 competition and match rules are never modified. The historical baseline
 is not included in the accepted sample count.
 
+`monte_carlo_options_t.ranking_backend` selects heapsort (default) or AVL
+for both the independent historical baseline and every accepted sample.
+The selection changes neither draws, seed handling nor sporting rules.
+
 An optional progress callback receives attempted/accepted counts at its
 configured attempt interval and can cancel synchronously. Interval zero
 means a terminal notification only, not cancellable interim progress.

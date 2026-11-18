@@ -44,6 +44,7 @@ typedef struct monte_carlo_options {
     bool track_uniqueness;            /* exact diagnostics; required if unique_only */
     size_t uniqueness_memory_limit_bytes; /* >0 if tracking enabled */
     size_t progress_every_attempts;   /* 0: callback only at end; otherwise interval */
+    season_ranking_backend_t ranking_backend; /* default HEAPSORT; baseline + draws */
 } monte_carlo_options_t;
 
 typedef struct monte_carlo_team_stats {

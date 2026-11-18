@@ -7,7 +7,7 @@ The principal Mermaid dependency diagram is in the [root README](../../README.md
 | Layer | Exported interface | Dependency and purpose |
 | --- | --- | --- |
 | Generic containers | `hashmap_base.h`, `hashmap_typed.h`, `bostree.h` | Generic indexed lookup and order statistics |
-| Ranking | `ranking.h` | Maintains independent signed scores over hashmap and BOSTree; **not currently used by season resolution** |
+| Ranking | `ranking.h` | Generic scalar or owned composite keys over hashmap and BOSTree; optional season backend |
 | Randomness | `mtwister.h` | Deterministic, noncryptographic MT19937 generation |
 | Team identity | `team.h` | Externally assigned UUID, owned display name, fixed-point aggregate |
 | Historical competition | `competition.h` | Validates and deep-copies teams, fixtures, mapped Serie A days and score cells |
@@ -27,10 +27,10 @@ The CMake build combines distinct object modules into a single installed static 
 - `standings_t` copies the UUID mapping and owns per-team goal statistics; its entries are mutable per experiment.
 - `season_resolution_t` owns copied UUIDs, ranked entries, fixture outcomes and private standings; it outlives competition/calendar/rules source objects.
 - `monte_carlo_result_t` owns the historical baseline and online aggregates; temporary generated calendars and season outputs are destroyed after each draw. CSV streams remain caller-owned.
-- The opaque generic `ranking_t` owns copied identifier strings and stores signed scalar scores. Its hashmap/BOSTree representation is independent from `season_resolve()`, which currently ranks finished standings via heapsort.
+- The opaque `ranking_t` owns IDs and either scalar scores or copied fixed-size composite keys. Comparator context is borrowed. `season_resolve_with_options()` can use it for sporting order, while `season_resolve()` keeps heapsort by default.
 
 ## Future boundary
 
-The 3.1.0 resolver and 3.1.1 Monte Carlo layer are implemented in `master`: the latter composes the seeded generator with the deterministic resolver and streams descriptive CSV output. Season-resolution rankings currently use in-place heapsort; they do not call the independent `ranking_t`. The mandatory [3.1.2](../milestones/3.1.2.md) integration PR will introduce an optional composite-key hashmap/BOSTree backend, followed by a separate scientific evaluation PR. External Python and database concerns remain outside this repository; see the [system diagram](system.md).
+The 3.1.0 resolver and 3.1.1 Monte Carlo layer remain unchanged by default. PR A introduces an optional hashmap/BOSTree-backed ranking, not a different sporting rule. The separate [3.1.2](../milestones/3.1.2.md) evaluation PR will benchmark backend efficiency. External Python and database concerns remain outside this repository; see the [system diagram](system.md).
 
 **See also:** [failure guarantees](../reference/failure-safety.md), [data flow](data-flow.md), and [API reference index](../index.md#module-sub-papers).
