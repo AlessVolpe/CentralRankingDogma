@@ -5,13 +5,13 @@ This document distinguishes the existing 3.0.10 benchmark machinery from the
 includes reproducible paired ranking workloads, public-API stage measurements,
 separate Linux/WSL whole-process heap profiling via Valgrind Massif, a strict
 experimental-evidence audit and descriptive outcome analysis. No unmeasured performance advantage is
-asserted; the research tools require independent empirical validation.
+asserted; the research tools require full measured evidence and scientific review.
 
 ## Existing experiments
 
 `leaderboard_bench` exercises deterministic public hashmap, BOSTree and ranking workloads; configuration requires `LEADERBOARD_BUILD_BENCHMARKS=ON`. The existing CSV reports `clock()`-based process CPU time and runs a correctness smoke test without failing solely on a timing threshold.
 
-## Proposed 3.1.2 comparisons
+## 3.1.2 evaluation protocol (results pending)
 
 For fixture generation, vary $N\in\{8,10,12\}$, round count, seed, sample count, independent/chain mode and three-round budgets. Record elapsed/CPU time, peak memory, accepted/rejected moves, search limits and diversity. Compare the constrained shuffle baseline with two-/three-round recombination under **identical input and hardware**.
 

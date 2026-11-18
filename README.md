@@ -4,7 +4,7 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native baseline:** 3.1.1. The merged 3.1.2 PR A adds opt-in composite-key ranking backed by hashmap/BOSTree. PR B introduces a [research toolkit](research/README.md) for controlled benchmarks and statistical analysis; experimental results and their verification must still be recorded before completing milestone 3.1.2. External integration contracts remain planned for 3.1.3.
+**Current native development version:** 3.1.2. PR A provides the optional composite-key AVL backend, and PR B implements the [research toolkit](research/README.md) for controlled comparisons, memory profiling and statistical analysis. Full experimental evidence is still pending independent review; version 3.1.2 is not yet a claim that the scientific evaluation is complete. External integration contracts are planned for 3.1.3.
 
 ## Read the research or use the library
 
@@ -76,7 +76,7 @@ paper](docs/reference/monte-carlo.md) and [milestone](docs/milestones/3.1.1.md).
 Optional home-field fantasy-score bonuses are off by default and can be
 suppressed throughout the final, potentially partial round-robin cycle.
 
-## Next: composite ranking and scientific evaluation (3.1.2)
+## Composite ranking and scientific evaluation (3.1.2)
 
 `ranking_t` retains its signed-score API and supports copied fixed-size keys
 with a caller-provided comparator and borrowed context. The optional AVL-backed
@@ -85,10 +85,11 @@ season resolver uses the sporting key
 shared competition positions and UUID display order. The original heapsort is
 still the default and correctness reference. `monte_carlo_options_t` selects
 one backend for both its historical baseline and all sampled calendars.
-The separate [3.1.2](docs/milestones/3.1.2.md) scientific evaluation PR will
-compare batch ranking and incremental-update performance, including memory,
-independently of calendar-generation and match-resolution costs. No performance
-advantage is assumed.
+The [3.1.2 research framework](research/README.md) implements paired static
+and incremental ranking benchmarks, separately instrumented stage measurements,
+whole-process Massif heap profiles and reproducible Monte Carlo analysis.
+Performance and statistical findings require full recorded experiments and
+scientific review; no performance advantage or uniform sampling is assumed.
 
 ## Mathematical foundation
 

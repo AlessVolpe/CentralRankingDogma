@@ -1,6 +1,6 @@
 # Known limitations and boundaries of scientific inference
 
-## Native C scope as of 3.1.2 research development
+## Native C scope of the 3.1.2 implementation candidate
 
 - Imported original fixtures, generated alternative calendars, deterministic match and season resolution (3.1.0), and reproducible Monte Carlo batches (3.1.1) are implemented.
 - The optional composite-key AVL sporting-ranking backend was introduced in 3.1.2 PR A. Heapsort remains the default and correctness reference.

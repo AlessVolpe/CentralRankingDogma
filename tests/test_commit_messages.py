@@ -94,6 +94,57 @@ class CommitMessagePolicyTests(unittest.TestCase):
             self.assertEqual(commits[0].subject,
                              "fix(core): preserve historical records")
 
+    def test_revision_range_excludes_only_real_merge_commits(self) -> None:
+        # A merge message does not need to follow Conventional Commits, but
+        # an ordinary bad commit reachable from the PR must still be reported.
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+
+            def git(*args: str) -> str:
+                return subprocess.run(
+                    ["git", *args], cwd=root, check=True, capture_output=True,
+                    text=True, encoding="utf-8",
+                ).stdout.strip()
+
+            git("init", "-q")
+            git("config", "user.email", "ci@example.invalid")
+            git("config", "user.name", "CI Test")
+            (root / "base.txt").write_text("base\n", encoding="utf-8")
+            git("add", "base.txt")
+            git("commit", "-q", "-m", "legacy pre-policy subject")
+            base = git("rev-parse", "HEAD")
+
+            git("switch", "-q", "-c", "topic")
+            (root / "topic.txt").write_text("topic\n", encoding="utf-8")
+            git("add", "topic.txt")
+            git("commit", "-q", "-m", "fix(core): keep valid changes")
+
+            git("switch", "-q", "-c", "side", base)
+            (root / "side.txt").write_text("side\n", encoding="utf-8")
+            git("add", "side.txt")
+            git("commit", "-q", "-m", "ordinary invalid subject")
+
+            git("switch", "-q", "topic")
+            git("merge", "-q", "--no-ff", "side", "-m",
+                "Merge branch 'side' into topic")
+            head = git("rev-parse", "HEAD")
+            old_cwd = Path.cwd()
+            try:
+                import os
+                os.chdir(root)
+                commits = git_commits(f"{base}..{head}")
+            finally:
+                os.chdir(old_cwd)
+
+            subjects = [commit.subject for commit in commits]
+            self.assertEqual(set(subjects), {
+                "fix(core): keep valid changes", "ordinary invalid subject"
+            })
+            self.assertNotIn("Merge branch 'side' into topic", subjects)
+            self.assertIsNotNone(validate_subject(
+                "ordinary invalid subject", self.types, self.scopes
+            ))
+
 
 if __name__ == "__main__":
     unittest.main()
