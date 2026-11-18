@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Offline checks for canonical GitHub Markdown documentation (stdlib only).
 
-Historical docs/archive/ files are immutable pre-migration snapshots; old
-links in those files are not interpreted as new-style navigation contracts.
+Historical docs/archive/ preserve pre-migration content with rendering errata;
+old links there are not interpreted as new-style navigation contracts.
 """
 from __future__ import annotations
 
@@ -122,6 +122,14 @@ def check_inline_math(path: Path, content: str) -> None:
                  f"line {lineno}: unsupported TeX-style inline math delimiter; use $...$ on GitHub")
 
 
+def check_unsupported_math_macros(path: Path, content: str) -> None:
+    """Avoid renderer-rejected macros, including in historical documents."""
+    for lineno, line in enumerate(content.splitlines(), 1):
+        if re.search(r"\\operatorname\b", line):
+            fail(str(path.relative_to(ROOT)),
+                 f"line {lineno}: unsupported \\operatorname macro; use \\mathrm{{...}}")
+
+
 def check_references() -> None:
     bib = (DOCS / "references.bib").read_text(encoding="utf-8")
     keys = re.findall(r"(?m)^@\w+\{([\w-]+)\s*,", bib)
@@ -161,6 +169,12 @@ def check_structure() -> None:
         path = DOCS / "milestones" / f"{version}.md"
         if not path.exists() or f"`{version}`" not in ledger:
             fail("roadmap", f"missing {version} planned milestone/ledger entry")
+        elif version == "3.1.1":
+            status = path.read_text(encoding="utf-8")
+            if not any(marker in status for marker in (
+                "**Status:** Planned", "**Status:** Implementation patch prepared",
+                "**Status:** Implemented")):
+                fail(str(path), "3.1.1 milestone status unrecognized")
         elif "**Status:** Planned" not in path.read_text(encoding="utf-8"):
             fail(str(path), "planned milestone status absent")
     implemented = DOCS / "milestones" / "3.1.0.md"
@@ -178,9 +192,12 @@ def check_structure() -> None:
 def main() -> int:
     for path in docs_files():
         content = path.read_text(encoding="utf-8")
+        check_unsupported_math_macros(path, content)
         check_fences(path, content)
         check_links(path, content)
         check_inline_math(path, content)
+    for path in sorted((DOCS / "archive").rglob("*.md")):
+        check_unsupported_math_macros(path, path.read_text(encoding="utf-8"))
     check_references()
     check_structure()
     if ERRORS:

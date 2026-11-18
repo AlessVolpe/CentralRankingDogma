@@ -1,6 +1,6 @@
 # Scientific documentation and developer reference
 
-This repository's GitHub Markdown is the canonical documentation source for the **3.1.0** C11 implementation. The connected Python application and documentation website are future work. The library is the research instrument; the documentation describes its mathematics, tested behavior, limitations and historical development.
+This repository's GitHub Markdown is the canonical documentation source for the **3.1.1** C11 implementation. The connected Python application and documentation website are future work. The library is the research instrument; the documentation describes its mathematics, tested behavior, limitations and historical development.
 
 ## Research reading path
 
@@ -28,6 +28,7 @@ This repository's GitHub Markdown is the canonical documentation source for the 
 | [MT19937](reference/prng.md) | [Championship standings](reference/standings.md) |
 | [Failure safety](reference/failure-safety.md) | [Match scoring](reference/match.md) |
 | | [Season resolution](reference/season-resolution.md) |
+| | [Monte Carlo experiments](reference/monte-carlo.md) |
 
 ## Architecture
 

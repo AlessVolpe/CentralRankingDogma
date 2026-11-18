@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Configure optimized library and benchmarks
         run: >-
           cmake -S . -B build-release -G Ninja
@@ -40,7 +40,7 @@ jobs:
           ctest --test-dir build-consumer --output-on-failure
       - name: Upload benchmark CSV
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: leaderboard-release-benchmarks
           path: benchmark-*.csv

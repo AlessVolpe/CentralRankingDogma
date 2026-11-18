@@ -119,6 +119,8 @@ int season_resolve(const competition_t *competition,
     if (n == 0U || n > UINT32_MAX || (n & 1U) != 0U ||
         n > SIZE_MAX / sizeof(team_uuid_t) ||
         n > SIZE_MAX / sizeof(season_rank_entry_t)) return -EOVERFLOW;
+    /* The final (possibly partial) N-1-round scheduling cycle starts here. */
+    const size_t final_cycle_start = ((r - 1U) / (n - 1U)) * (n - 1U);
     if (selected_calendar != NULL) {
         int status = calendar_validate(competition, selected_calendar);
         if (status != 0) return status;
@@ -193,7 +195,11 @@ int season_resolve(const competition_t *competition,
                 away.status != FANTASY_SCORE_FINAL) { status = -EINVAL; goto fail; }
             season_fixture_result_t *record =
                 &result->fixtures[ri * fixtures_per_round + fi];
-            status = match_resolve_scores(rules, home.points_tenths,
+            match_rules_t round_rules = *rules;
+            if (round_rules.home_advantage_exclude_final_cycle &&
+                ri >= final_cycle_start)
+                round_rules.home_advantage_enabled = false;
+            status = match_resolve_scores(&round_rules, home.points_tenths,
                                          away.points_tenths, &record->result);
             if (status != 0) goto fail;
             status = standings_record_scored_match(result->standings,

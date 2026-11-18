@@ -52,7 +52,7 @@ Write `R=mP+q` with `0 <= q < P`. Pairings assigned to base slots
 `m` times. Hence for each unordered pair `{a,b}`:
 
 ```math
-C(a,b)=m+\mathbf{1}[\operatorname{slot}(a,b)<q].
+C(a,b)=m+\mathbf{1}[\mathrm{slot}(a,b)<q].
 ```
 
 The `q` high-frequency slots and `P-q` low-frequency slots **cannot mix**
@@ -151,7 +151,7 @@ To choose uniformly among the integers `0,...,b-1`, for `1<b<=2^32-1`:
 
 ```math
 M=2^{32},\qquad t=M\bmod b;\qquad
-X\sim\operatorname{Uniform}\{0,...,M-1\}.
+X\sim\mathrm{Uniform}(\{0,\ldots,M-1\}).
 ```
 
 Reject `X<t` and output `X mod b`. Since `M-t` is divisible by `b`,
