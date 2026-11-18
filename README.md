@@ -4,7 +4,7 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native baseline:** 3.1.1. Deterministic match/season resolution and reproducible Monte Carlo batches are implemented in `master` and have passed the recorded CI checks. Ranking-backend integration and scientific evaluation (3.1.2), followed by external integration contracts (3.1.3), remain planned.
+**Current native version:** 3.1.2. The composite-key AVL backend and [controlled research toolkit](research/README.md) are implemented. The [published 3.1.2 evaluation](docs/research/results-3.1.2.md) records ranking, process-wide memory, and synthetic-calendar outcomes from a clean Release build, with limitations stated explicitly. The original heapsort remains the default. External integration contracts are planned for 3.1.3.
 
 ## Read the research or use the library
 
@@ -76,7 +76,7 @@ paper](docs/reference/monte-carlo.md) and [milestone](docs/milestones/3.1.1.md).
 Optional home-field fantasy-score bonuses are off by default and can be
 suppressed throughout the final, potentially partial round-robin cycle.
 
-## Next: composite ranking and scientific evaluation (3.1.2)
+## Composite ranking and scientific evaluation (3.1.2)
 
 `ranking_t` retains its signed-score API and supports copied fixed-size keys
 with a caller-provided comparator and borrowed context. The optional AVL-backed
@@ -85,10 +85,14 @@ season resolver uses the sporting key
 shared competition positions and UUID display order. The original heapsort is
 still the default and correctness reference. `monte_carlo_options_t` selects
 one backend for both its historical baseline and all sampled calendars.
-The separate [3.1.2](docs/milestones/3.1.2.md) scientific evaluation PR will
-compare batch ranking and incremental-update performance, including memory,
-independently of calendar-generation and match-resolution costs. No performance
-advantage is assumed.
+The [3.1.2 research framework](research/README.md) implements paired static
+and incremental ranking benchmarks, separately instrumented stage measurements,
+whole-process Massif heap profiles and reproducible Monte Carlo analysis.
+The [measured 3.1.2 results](docs/research/results-3.1.2.md) provide the
+scientific interpretation and evidence hashes. Heapsort is faster for batch
+construction at all recorded sizes; AVL becomes advantageous for larger
+incremental-update workloads at a memory cost. Only synthetic, independent
+recombination sampling was evaluated, not uniform-calendar probabilities.
 
 ## Mathematical foundation
 

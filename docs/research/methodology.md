@@ -1,8 +1,16 @@
 # Research methodology: controlled calendar counterfactuals
 
+The experimental procedures, private-data rules, run manifests and analysis
+commands are maintained in the [3.1.2 research toolkit](../../research/README.md).
+
 ## Research question
 
-How sensitive are championship outcomes to the allocation of a fixed set of historical team performances to alternative **valid** fixture calendars? A separate research axis studies the time and memory costs of fixture generation **and the ranking backend**. Milestone 3.1.2 will compare array/heapsort against composite-key hashmap/BOSTree rankings on equivalent workloads. This file is a **methodological plan**, not a completed empirical results section.
+How sensitive are championship outcomes to the allocation of a fixed set of historical team performances to alternative **valid** fixture calendars? A separate research axis studies the time and memory costs of fixture generation **and the ranking backend**. The 3.1.2 toolkit implements equivalent array/heapsort, maintained-sorted-array
+and composite-key hashmap/BOSTree research workloads. This document specifies
+the experimental protocol. The [completed 3.1.2 results](results-3.1.2.md)
+report the measured **synthetic, one-period, independent-recombination**
+workloads. Alternative samplers, chain dependence and historical data remain
+outside that recorded experiment rather than being inferred from it.
 
 ## Experimental controls
 

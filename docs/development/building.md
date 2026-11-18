@@ -43,4 +43,7 @@ Do not reuse old Visual Studio/NMake CMake caches. Sanitizer runtimes on Windows
 
 ## Installed-package validation
 
-See [packaging](packaging.md). The native sources and tests remain unchanged by this documentation-only restructuring.
+See [packaging](packaging.md). Benchmark consumers remain optional and do not
+add runtime dependencies to the installed native library. For reproducible
+research workloads and the separate pinned Python environment, follow the
+[3.1.2 research guide](../../research/README.md).

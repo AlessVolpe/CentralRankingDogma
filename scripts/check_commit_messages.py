@@ -55,11 +55,11 @@ def validate_subject(subject: str, types: frozenset[str],
 
 
 def git_commits(revision: str) -> list[Commit]:
-    """Read subjects without inspecting unrelated history or invoking a shell."""
+    """Read authored subjects, excluding genuine Git merge commits by topology."""
     if not revision or revision.startswith("-"):
         raise ValueError("invalid git revision")
     result = subprocess.run(
-        ["git", "log", "--reverse", "--format=%H%x09%s", revision],
+        ["git", "log", "--no-merges", "--reverse", "--format=%H%x09%s", revision],
         check=True, capture_output=True, text=True, encoding="utf-8",
     )
     commits: list[Commit] = []

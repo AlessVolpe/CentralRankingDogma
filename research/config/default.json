@@ -1,0 +1,36 @@
+{
+  "base_seed": 5489,
+  "ranking_repetitions": 30,
+  "ranking_sizes": [
+    8,
+    10,
+    12,
+    100,
+    1000,
+    10000,
+    100000
+  ],
+  "incremental_operations": 200,
+  "league_sizes": [
+    8,
+    10,
+    12
+  ],
+  "independent_seeds": 10,
+  "samples_per_seed": 1000,
+  "calendar_method": "recombine",
+  "sampling_mode": "independent",
+  "memory_profile_ranking_sizes": [
+    8,
+    10,
+    12,
+    1000,
+    10000
+  ],
+  "memory_profile_league_sizes": [
+    8,
+    10,
+    12
+  ],
+  "memory_profile_samples": 100
+}

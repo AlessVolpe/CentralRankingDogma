@@ -1,0 +1,15 @@
+{
+  "ranking_sizes": [
+    8,
+    10,
+    12,
+    100,
+    1000,
+    10000,
+    100000
+  ],
+  "ranking_rows": 2520,
+  "independent_seed_pairs": 30,
+  "memory_workloads_verified": 16,
+  "status": "evidence_integrity_verified_not_a_performance_conclusion"
+}

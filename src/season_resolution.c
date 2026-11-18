@@ -6,6 +6,7 @@
 #include "season_resolution.h"
 #include "ranking.h"
 #include "alloc_internal.h"
+#include "research_profile_internal.h"
 
 #include <errno.h>
 #include <inttypes.h>
@@ -287,9 +288,13 @@ int season_resolve_with_options(const competition_t *competition,
         entry->goal_difference = (int64_t)entry->goal_stats.goals_for -
                                  (int64_t)entry->goal_stats.goals_against;
     }
+    LB_PROFILE_BEGIN(LEADERBOARD_PROFILE_RANKING);
     if (options->ranking_backend == SEASON_RANKING_AVL) {
         status = sort_ranks_avl(result->ranks, n);
-        if (status != 0) goto fail;
+        if (status != 0) {
+            LB_PROFILE_END(LEADERBOARD_PROFILE_RANKING);
+            goto fail;
+        }
     } else {
         sort_ranks(result->ranks, n);
     }
@@ -298,6 +303,7 @@ int season_resolve_with_options(const competition_t *competition,
             result->ranks[i].sporting_rank = result->ranks[i-1U].sporting_rank;
         else result->ranks[i].sporting_rank = (uint32_t)(i + 1U);
     }
+    LB_PROFILE_END(LEADERBOARD_PROFILE_RANKING);
     *out = result;
     return 0;
 fail:

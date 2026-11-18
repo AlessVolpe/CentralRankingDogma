@@ -175,6 +175,12 @@ def check_structure() -> None:
                 "**Status:** Planned", "**Status:** Implementation patch prepared",
                 "**Status:** Implemented")):
                 fail(str(path), "3.1.1 milestone status unrecognized")
+        elif version == "3.1.2":
+            status = path.read_text(encoding="utf-8")
+            if not any(marker in status for marker in (
+                "**Status:** Planned", "**Status:** Evaluation in progress",
+                "**Status:** Implemented")):
+                fail(str(path), "3.1.2 milestone status unrecognized")
         elif "**Status:** Planned" not in path.read_text(encoding="utf-8"):
             fail(str(path), "planned milestone status absent")
     implemented = DOCS / "milestones" / "3.1.0.md"

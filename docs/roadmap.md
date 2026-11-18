@@ -18,12 +18,12 @@ This file is the **canonical documentation status ledger**, not a package releas
 | `3.0.12` | Calendar permutation engine | Implemented in master | [Details](milestones/3.0.12.md) |
 | `3.1.0` | Match resolution and standings integration | Implemented in current source | [Details](milestones/3.1.0.md) |
 | `3.1.1` | Monte Carlo simulation engine | Implemented in master; CI verified | [Details](milestones/3.1.1.md) |
-| `3.1.2` | Ranking integration and scientific evaluation | Planned; PR A in this patch, PR B pending | [Contract](milestones/3.1.2.md) |
+| `3.1.2` | Ranking integration and scientific evaluation | Implemented in current source; scoped synthetic evidence verified (PR #23) | [Details](milestones/3.1.2.md) |
 | `3.1.3` | External integration contract | Planned | [Contract](milestones/3.1.3.md) |
 
 ## Evidence and change policy
 
-- The **current** native API includes 3.1.1 Monte Carlo orchestration and the legacy heapsort season resolver. The PR A implementation introduces opt-in composite-key `ranking_t` integration without changing these defaults; see [reference papers](index.md#module-sub-papers).
+- The 3.1.2 native source preserves 3.1.1 Monte Carlo defaults and the heapsort resolver, with PR A's optional composite-key AVL backend. PR B implements and empirically evaluates controlled ranking and synthetic-calendar workloads. The [published results](research/results-3.1.2.md) describe the measured trade-offs and scope limits; the complete external research archive is identified by SHA-256, not committed to Git. See the [research protocol](../research/README.md) and [reference papers](index.md#module-sub-papers).
 - Original contracts, README milestone sections and migration notes are preserved **unchanged** in [archive](archive/README.md).
 - Tests and CI are evidence for specific commits, workloads and toolchains; they do not prove all possible executions correct.
 - On future releases, update this ledger and the affected milestone *in the same PR*. Record the commit, tests/CI results, breaking changes, and scientific assumptions when verified.
