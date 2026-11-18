@@ -85,7 +85,7 @@ def profile(command: list[str], destination: Path) -> dict:
     stdout = destination / "stdout.csv"
     stderr = destination / "valgrind.log"
     arguments = [executable, "--tool=massif", "--stacks=no", "--time-unit=B",
-                 "--max-snapshots=2000", "--detailed-freq=1",
+                 "--max-snapshots=1000", "--detailed-freq=1",
                  "--massif-out-file=" + str(massif.resolve()), *command]
     with stdout.open("wb") as captured, stderr.open("wb") as diagnostic:
         result = subprocess.run(arguments, stdout=captured, stderr=diagnostic, check=False)
