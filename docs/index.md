@@ -7,7 +7,7 @@ This repository's GitHub Markdown is the canonical documentation source for the 
 1. [Research objective and experimental method](research/methodology.md)
 2. [Common notation and units](notation.md)
 3. [Internal C architecture](architecture/internal-c.md) and [data flow](architecture/data-flow.md)
-4. [Competition](reference/competition.md), [calendar](reference/calendar.md), [match scoring](reference/match.md), and [season resolution](reference/season-resolution.md) sub-papers
+4. [Competition](reference/competition.md), [calendar](reference/calendar.md), [match scoring](reference/match.md), [season resolution](reference/season-resolution.md), and [Monte Carlo](reference/monte-carlo.md) sub-papers
 5. [Performance methodology](research/performance.md), [known limitations](research/limitations.md), and [bibliography](bibliography.md)
 6. [Roadmap and implementation milestones](roadmap.md)
 
