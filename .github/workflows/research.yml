@@ -1,24 +1,21 @@
 name: Research methodology smoke
 
+# These job IDs are required branch-protection checks. Never path-filter this
+# entire workflow: GitHub leaves required checks pending when it is skipped.
+# Feature branches run only for pull requests; master runs once after merge.
 on:
   push:
-    paths:
-      - 'benchmarks/**'
-      - 'research/**'
-      - 'src/**'
-      - 'include/**'
-      - 'tests/**'
-      - 'CMakeLists.txt'
-      - '.github/workflows/research.yml'
+    branches: [ master ]
   pull_request:
-    paths:
-      - 'benchmarks/**'
-      - 'research/**'
-      - 'src/**'
-      - 'include/**'
-      - 'tests/**'
-      - 'CMakeLists.txt'
-      - '.github/workflows/research.yml'
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: research-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   native-profile-smoke:
@@ -49,46 +46,3 @@ jobs:
         run: |
           python -m pytest -q research/tests
           python research/analyze.py --pair research/examples/observations.csv research/examples/summary.csv --output research/output/demo
-  massif-memory-smoke:
-    # Keep a stable Valgrind/glibc pairing. Ubuntu 26.04/glibc 2.43 may
-    # require upstream Valgrind fixes not present in distribution packages.
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install full-process heap profiler
-        run: sudo apt-get update && sudo apt-get install -y valgrind
-      - name: Validate Massif availability
-        run: |
-          valgrind --version
-          ldd --version | head -n 1
-          valgrind --tool=massif --massif-out-file=/tmp/massif-preflight.out /bin/true
-      - name: Configure ranking memory comparison
-        run: >-
-          cmake -S . -B build-memory -G Ninja
-          -DCMAKE_BUILD_TYPE=Release
-          -DLEADERBOARD_BUILD_BENCHMARKS=ON
-          -DLEADERBOARD_WARNINGS_AS_ERRORS=ON
-      - name: Build
-        run: cmake --build build-memory --parallel
-      - name: Capture actual heap peaks for both backends
-        run: |
-          python research/memory_profile.py --output research/output/ci-heap -- ./build-memory/leaderboard_memory_compare 8 heap 5489
-          python research/memory_profile.py --output research/output/ci-avl -- ./build-memory/leaderboard_memory_compare 8 avl 5489
-          python - <<'PY'
-          import csv
-          from pathlib import Path
-          left = list(csv.DictReader((Path('research/output/ci-heap/stdout.csv')).open()))
-          right = list(csv.DictReader((Path('research/output/ci-avl/stdout.csv')).open()))
-          assert len(left) == len(right) == 1
-          assert left[0]['checksum'] == right[0]['checksum']
-          PY
-      - name: Upload Massif failure diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: massif-failure-diagnostics
-          path: |
-            research/output/ci-heap/
-            research/output/ci-avl/
-          if-no-files-found: warn
-          retention-days: 7

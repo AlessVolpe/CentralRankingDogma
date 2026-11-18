@@ -43,6 +43,26 @@ The importers support only complete score matrices, including explicit
 PENDING cells. The C runner supports up to 12 teams and 40 rounds; the native
 competition library applies additional fixture and cooldown validation.
 
+## Research CI policy
+
+The **required**, short checks are `Research methodology smoke / native-profile-smoke`
+and `Research methodology smoke / python-methodology`. Configure these two job
+contexts as required in the `master` branch protection rule or repository
+ruleset. Their workflow runs for every pull request, regardless of changed
+paths, and on pushes to `master` after merge. Feature-branch pushes do not
+start redundant runs. Merge-queue events are supported. An outdated PR run
+may be cancelled when newer commits arrive.
+
+`Research memory profiling / massif-memory-smoke` is a **non-required**,
+separate workflow. It runs for PRs touching the native implementation,
+benchmark memory runner, memory analysis/protocol, or its own workflow;
+`workflow_dispatch` also allows an explicit manual run. This path-filtered
+check must **not** be added to GitHub's required status checks: it may not be
+scheduled for unrelated documentation-only pull requests. The PR 3.1.2
+acceptance checklist still requires a successful Massif check and review of
+its archived evidence before merging. A smoke profile is not itself the full
+replicated scientific experiment.
+
 ## Build and run
 
 ```sh
