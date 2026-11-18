@@ -1,0 +1,15 @@
+{
+  "types": [
+    "feat", "fix", "refactor", "perf", "test", "docs", "build", "ci",
+    "chore", "style", "revert"
+  ],
+  "scopes": [
+    "actions", "api", "benchmarks", "bostree", "calendar", "cli", "cmake",
+    "commits", "competition", "contributing", "core", "deps", "docs",
+    "domain", "evaluation", "fuzzing", "hashmap", "integration", "license",
+    "linux", "match", "packaging", "prng", "ranking", "readme", "release",
+    "repo", "research", "sampling", "security", "serialization",
+    "simulation", "standings", "statistics", "team", "testing", "tooling",
+    "windows"
+  ]
+}
