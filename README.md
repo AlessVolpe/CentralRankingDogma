@@ -43,9 +43,10 @@ flowchart TB
         RANK --> AVL
     end
     CAL --> RNG
+    MATCH --> RANK
 ```
 
-Explore the additional [system boundary](docs/architecture/system.md) and [scientific data-flow](docs/architecture/data-flow.md) diagrams. Solid arrows indicate implemented module relationships. The intentionally absent `MATCH --> RANK` arrow reflects current code: `season_resolve()` uses an in-place heapsort, while the existing `ranking_t` (hashmap + BOSTree) remains independent. Connecting them via an optional ranking backend is required in [3.1.2](docs/milestones/3.1.2.md); the Python application remains separate.
+Explore the additional [system boundary](docs/architecture/system.md) and [scientific data-flow](docs/architecture/data-flow.md) diagrams. Solid arrows indicate implemented module relationships. The new `MATCH --> RANK` arrow identifies the optional, composite-key AVL backend in `season_resolve_with_options()`; legacy `season_resolve()` still uses heapsort. The Python application remains separate.
 
 ## Deterministic match and season resolution (3.1.0)
 
@@ -77,15 +78,17 @@ suppressed throughout the final, potentially partial round-robin cycle.
 
 ## Next: composite ranking and scientific evaluation (3.1.2)
 
-The existing `ranking_t` implements a hashmap-backed order-statistics AVL tree
-for signed scores; it is **not yet a sporting-ranking backend**. Milestone
-[3.1.2](docs/milestones/3.1.2.md) requires a backwards-compatible composite-key
-extension and a selectable ranking backend that preserves the current sporting
-order `(championship_points, fantasy_total_tenths, goal_difference)` and shared
-ranks. The existing heapsort remains the correctness reference. A separate
-evaluation PR will compare batch ranking and incremental-update performance,
-including memory, independently of calendar-generation and match-resolution
-costs. Performance claims will follow measurement, not precede it.
+`ranking_t` retains its signed-score API and supports copied fixed-size keys
+with a caller-provided comparator and borrowed context. The optional AVL-backed
+season resolver uses the sporting key
+`(championship_points, fantasy_total_tenths, goal_difference)` while preserving
+shared competition positions and UUID display order. The original heapsort is
+still the default and correctness reference. `monte_carlo_options_t` selects
+one backend for both its historical baseline and all sampled calendars.
+The separate [3.1.2](docs/milestones/3.1.2.md) scientific evaluation PR will
+compare batch ranking and incremental-update performance, including memory,
+independently of calendar-generation and match-resolution costs. No performance
+advantage is assumed.
 
 ## Mathematical foundation
 

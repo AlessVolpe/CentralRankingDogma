@@ -26,6 +26,10 @@ Zero-based rank is the number of strictly preceding records:
 
 A hashmap resolves IDs to records. The augmented AVL tree orders the score-ID pairs and supports selection by subtree cardinality. Updating an existing score removes and reinserts the ordered key when necessary while keeping the index and ordered structure consistent.
 
+Custom rankings store owned fixed-size key copies. Their comparator receives a
+borrowed context, which must outlive the ranking. Equal keys are ordered by
+identifier bytes, while a domain adapter computes any shared sporting ranks.
+
 ## 4. Invariants and correctness
 
 Every stored ID has exactly one hashmap entry and one ordered tree entry. The score and ID tie-break agree between structures. Failed allocation paths must leave the published logical ranking unchanged.
@@ -37,6 +41,13 @@ AVL order queries are $O(\log n)$ worst-case, after ID lookup. Hashmap lookup is
 ## 6. Public C11 interface and ownership
 
 Use [`ranking.h`](../../include/ranking.h): `ranking_new`, `ranking_upsert`, `ranking_get`, `ranking_at`, `ranking_remove` and `ranking_destroy`. Identifiers are copied by the ranking implementation. Signed 64-bit ranking scores are **not** implicitly championship points or fantasy scores.
+
+`ranking_new_custom(key_size, compare, context)` enables a custom key type.
+`ranking_upsert_key`, `ranking_get_key` and `ranking_at_key` transfer key bytes
+by copy; their outputs are caller-provided buffers of at least `key_size` bytes.
+Legacy scalar operations reject custom rankings with `-EINVAL` and conversely.
+The comparator must remain deterministic, must not mutate or reenter the tree,
+and must impose a stable ordering. `context` remains borrowed until destruction.
 
 ## 7. Verification
 

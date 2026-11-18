@@ -353,6 +353,37 @@ leaderboard_apply_dev_options(test_resolution_failures)
 set_target_properties(test_resolution_failures PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME season_resolution_failures COMMAND test_resolution_failures)
 
+# 3.1.2 PR A: scalar API compatibility and custom-key reference model.
+add_executable(test_ranking_custom test_ranking_custom.c)
+target_link_libraries(test_ranking_custom PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_ranking_custom)
+set_target_properties(test_ranking_custom PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME ranking_custom_differential COMMAND test_ranking_custom)
+
+add_executable(test_ranking_custom_failures test_ranking_custom_failures.c)
+target_include_directories(test_ranking_custom_failures PRIVATE
+    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+target_compile_definitions(test_ranking_custom_failures PRIVATE LEADERBOARD_TEST_ALLOCATION_FAULTS)
+target_link_libraries(test_ranking_custom_failures PRIVATE leaderboard_fault_test)
+leaderboard_apply_dev_options(test_ranking_custom_failures)
+set_target_properties(test_ranking_custom_failures PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME ranking_custom_failures COMMAND test_ranking_custom_failures)
+
+add_executable(test_ranking_backends test_ranking_backends.c)
+target_link_libraries(test_ranking_backends PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(test_ranking_backends)
+set_target_properties(test_ranking_backends PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME ranking_backend_equivalence COMMAND test_ranking_backends)
+
+add_executable(test_ranking_backends_failures test_ranking_backends_failures.c)
+target_include_directories(test_ranking_backends_failures PRIVATE
+    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+target_compile_definitions(test_ranking_backends_failures PRIVATE LEADERBOARD_TEST_ALLOCATION_FAULTS)
+target_link_libraries(test_ranking_backends_failures PRIVATE leaderboard_fault_test)
+leaderboard_apply_dev_options(test_ranking_backends_failures)
+set_target_properties(test_ranking_backends_failures PROPERTIES C_EXTENSIONS OFF)
+add_test(NAME ranking_backend_failures COMMAND test_ranking_backends_failures)
+
 # 3.1.1: reproducible batches, directed prefix uniqueness, CSV, cancellation.
 add_executable(test_monte_carlo test_monte_carlo.c)
 target_link_libraries(test_monte_carlo PRIVATE Leaderboard::leaderboard)

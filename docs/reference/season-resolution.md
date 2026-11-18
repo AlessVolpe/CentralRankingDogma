@@ -38,6 +38,11 @@ Teams with identical $K$ share their **sporting rank**; UUID order is used only 
 
 After validation, the resolver creates privately owned standings, fixture records, UUID values and ranking entries. It reads original fantasy scores by `(team_index, round_index)` even when the selected fixtures are permuted. At the end, entries are sorted and shared sporting ranks assigned. All published outputs are copies and survive source-object destruction. No partial results are exposed on failure.
 
+`season_resolve_with_options()` adds a selectable backend. HEAPSORT retains the
+legacy path; AVL constructs a domain-specific composite key for each team and
+uses the generic hashmap/BOSTree `ranking_t` to enumerate sorted entries.
+Shared sporting ranks are assigned after sorting, independently of UUID order.
+
 ## 4. Invariants and correctness
 
 **Score invariance.** Each team contributes exactly one observed score for each selected round, so $F_i(k)$ is independent of the selected fixture matching. The implementation adds these scores in a separate team-major step, not via opponents; this prevents double-counting and links the invariant directly to the algorithm.
@@ -56,9 +61,16 @@ After validation, the resolver creates privately owned standings, fixture record
 
 For $N$ teams and $k$ resolved rounds, fixture processing, copying and the fixed eight-threshold score conversion cost $\Theta(kN)$ time; ranking costs $O(N\log N)$ through the explicit in-place heapsort. The result owns $\Theta(kN+N)$ memory (fixture records, standings, UUIDs and sorted entries). A non-NULL candidate incurs additional `calendar_validate` work and temporary space; its independent complexity is specified in the [calendar paper](calendar.md). Lookup by rank index or fixture index is constant time, excluding caller-side formatting.
 
+The alternative backend inserts $N$ keys in $O(N\log N)$ tree work, with
+expected hashmap lookup and additional key copies and tree storage. The cost
+of allocation and cache locality is reserved for the 3.1.2 evaluation PR.
+
 ## 6. Public C11 interface and ownership
 
 [`include/season_resolution.h`](../../include/season_resolution.h) defines `season_resolution_scope_t`, `season_fixture_result_t`, `season_rank_entry_t` and the opaque `season_resolution_t`. `season_resolve` creates an owned result or sets the output pointer to NULL on failure; `season_resolution_destroy` releases every owned resource. Accessors return copies. Public indexes always use the same UUID-sorted team-index mapping as the source competition. The mutable `standings_t` remains internal to the completed season output; its public scored-match and goal-statistics APIs are covered in [standings](standings.md).
+
+`season_resolution_options_t` selects `SEASON_RANKING_HEAPSORT` (default)
+or `SEASON_RANKING_AVL`. Invalid options return `-EINVAL` and a NULL output.
 
 Results are single-threaded immutable snapshots after publication. Neither selected calendars nor scoring rules are modified or retained by reference.
 

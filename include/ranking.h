@@ -17,6 +17,38 @@ extern "C" {
 /* Opaque, single-threaded ranking. Scores are signed, exact integers. */
 typedef struct ranking ranking_t;
 
+/* Custom keys are opaque, fixed-size byte sequences copied by the ranking.
+ * compare(a,b,context) must implement a stable strict total preorder on the
+ * key VALUES: negative if a sorts first, zero if equivalent, positive if b
+ * sorts first. The ranking applies strcmp(id) as the final deterministic
+ * tiebreak. No comparator callbacks may mutate/reenter the ranking.
+ * context is borrowed, can be NULL, and must outlive ranking_destroy().
+ * The key layout and size must stay fixed for the entire ranking lifetime.
+ * A custom ranking has zero-based physical positions even for equal keys;
+ * domain-specific shared sporting positions must be computed separately. */
+typedef int (*ranking_key_compare_fn)(const void *a, const void *b, void *context);
+
+/* Returns NULL for key_size == 0, compare == NULL, or allocation failure.
+ * A custom ranking rejects the legacy scalar operations with -EINVAL. */
+ranking_t *ranking_new_custom(size_t key_size, ranking_key_compare_fn compare,
+                              void *context);
+
+/* Both operations copy key_size bytes, never borrowing the caller's key.
+ * The first insertion owns a copy of id; updates preserve id pointer identity.
+ * Equal comparator values may update stored key bytes in place without
+ * changing the order. Failed updates preserve the previous key and rank.
+ * Return 0, -EINVAL, -ENOMEM, or -EOVERFLOW as appropriate. */
+int ranking_upsert_key(ranking_t *ranking, const char *id, const void *key);
+
+/* key_out is optional; if not NULL it must point to at least key_size writable
+ * bytes and receives a COPY. rank is optional and zero-based. In the select
+ * operation id is a borrowed pointer with the same lifetime as ranking_at.
+ * Return 0, -EINVAL for wrong mode/arguments, -ENOENT if not found. */
+int ranking_get_key(const ranking_t *ranking, const char *id,
+                    void *key_out, size_t *rank);
+int ranking_at_key(const ranking_t *ranking, size_t rank,
+                   const char **id, void *key_out);
+
 /* Returns NULL on allocation failure. */
 ranking_t *ranking_new(void);
 

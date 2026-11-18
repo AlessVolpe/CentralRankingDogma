@@ -19,6 +19,12 @@
 
 HASHMAP_TYPED_DEFINE(external_score_map, char, int)
 
+static int external_key_compare(const void *lhs, const void *rhs, void *ctx) {
+    (void)ctx;
+    const uint32_t a=*(const uint32_t *)lhs,b=*(const uint32_t *)rhs;
+    return a>b ? -1 : a<b ? 1 : 0;
+}
+
 int main(void) {
     ranking_t *ranking = ranking_new();
     if (ranking == NULL) return EXIT_FAILURE;
@@ -28,6 +34,19 @@ int main(void) {
              ranking_upsert(ranking, "a", 12) == 0 &&
              ranking_get(ranking, "a", &score, &position) == 0 &&
              score == 12 && position == 0;
+    ranking_destroy(ranking);
+    if (!ok) return EXIT_FAILURE;
+
+    /* Exercise the new installed generic composite ranking symbols. */
+    ranking = ranking_new_custom(sizeof(uint32_t),external_key_compare,NULL);
+    if (ranking == NULL) return EXIT_FAILURE;
+    const uint32_t score_a=10U,score_b=20U;
+    uint32_t selected=0U;
+    ok = ranking_upsert_key(ranking,"a",&score_a)==0 &&
+         ranking_upsert_key(ranking,"b",&score_b)==0 &&
+         ranking_get_key(ranking,"b",&selected,&position)==0 &&
+         selected==20U && position==0U &&
+         ranking_at_key(ranking,1U,NULL,&selected)==0 && selected==10U;
     ranking_destroy(ranking);
     if (!ok) return EXIT_FAILURE;
 
@@ -100,6 +119,18 @@ int main(void) {
     season_resolution_destroy(season);
     if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
 
+    /* The alternative AVL backend is available to installed consumers. */
+    const season_resolution_options_t resolution_options = {
+        SEASON_RESOLVE_FULL_SEASON,SEASON_RANKING_AVL
+    };
+    season = NULL;
+    ok = season_resolve_with_options(competition,NULL,&rules,
+                                     &resolution_options,&season)==0 &&
+         season_resolution_rank_at(season,0U,&first)==0 &&
+         first.standings.championship_points==3U;
+    season_resolution_destroy(season);
+    if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
+
     /* An installed consumer can generate and validate a calendar without
      * depending on private headers or the repository source tree. */
     calendar_options_t options = calendar_options_default();
@@ -128,6 +159,13 @@ int main(void) {
          monte_carlo_result_completion(experiment) == MONTE_CARLO_COMPLETED &&
          monte_carlo_result_accepted(experiment) == 2U &&
          monte_carlo_result_baseline(experiment) != NULL;
+    monte_carlo_result_destroy(experiment);
+    if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
+    mc_options.ranking_backend=SEASON_RANKING_AVL;
+    experiment=NULL;
+    ok = monte_carlo_run(competition,&rules,&mc_options,
+                         NULL,NULL,NULL,&experiment)==0 &&
+         monte_carlo_result_accepted(experiment)==2U;
     monte_carlo_result_destroy(experiment);
     if (!ok) { competition_destroy(competition); return EXIT_FAILURE; }
 
