@@ -1,6 +1,6 @@
 # Scientific documentation and developer reference
 
-This repository's GitHub Markdown is the canonical documentation source for the **3.1.1** C11 implementation. The connected Python application and documentation website are future work. The library is the research instrument; the documentation describes its mathematics, tested behavior, limitations and historical development.
+This repository's GitHub Markdown is the canonical documentation source for the **3.1.2** C11 implementation. The connected Python application and documentation website are future work. The library is the research instrument; the documentation describes its mathematics, tested behavior, limitations and historical development.
 
 ## Research reading path
 
@@ -8,7 +8,7 @@ This repository's GitHub Markdown is the canonical documentation source for the 
 2. [Common notation and units](notation.md)
 3. [Internal C architecture](architecture/internal-c.md) and [data flow](architecture/data-flow.md)
 4. [Competition](reference/competition.md), [calendar](reference/calendar.md), [match scoring](reference/match.md), [season resolution](reference/season-resolution.md), and [Monte Carlo](reference/monte-carlo.md) sub-papers
-5. [Performance methodology](research/performance.md), [known limitations](research/limitations.md), and [bibliography](bibliography.md)
+5. [Measured 3.1.2 results](research/results-3.1.2.md), [performance methodology](research/performance.md), [known limitations](research/limitations.md), and [bibliography](bibliography.md)
 6. [Roadmap and implementation milestones](roadmap.md)
 
 ## Developer reading path

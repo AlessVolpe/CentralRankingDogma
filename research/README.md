@@ -1,9 +1,10 @@
 # Milestone 3.1.2: reproducible scientific experiments
 
-**Status:** Native 3.1.2 research tooling is implemented; the full experimental
-package and its independent interpretation remain pending. Version numbers and
-CI smoke checks alone do not demonstrate algorithmic superiority or sampler
-representativeness.
+**Status:** 3.1.2 research tooling and the **scoped** synthetic evaluation
+are complete. The [scientific results](../docs/research/results-3.1.2.md) and
+[public machine-readable summaries](results/3.1.2/) record the experimental
+findings and evidence hashes. No universal algorithm advantage or uniform
+calendar-sampling claim is made; chain/shuffle comparisons remain future work.
 
 This directory contains **research tooling**, not the future Python web service.
 The C11 library and installed `Leaderboard::leaderboard` package have no Python

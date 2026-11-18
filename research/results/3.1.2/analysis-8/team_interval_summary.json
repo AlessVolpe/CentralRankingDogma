@@ -1,0 +1,194 @@
+[
+  {
+    "team_uuid": "00000000-0000-4000-8000-000000000001",
+    "first_place_frequency": {
+      "mean": 0.6695,
+      "ci_low": 0.6600974999999999,
+      "ci_high": 0.6796,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_rank": {
+      "mean": 1.6993000000000003,
+      "ci_low": 1.6741974999999998,
+      "ci_high": 1.7197,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_points": {
+      "mean": 13.999600000000001,
+      "ci_low": 13.9328975,
+      "ci_high": 14.0658025,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  },
+  {
+    "team_uuid": "00000000-0000-4000-8000-000000000002",
+    "first_place_frequency": {
+      "mean": 0.0503,
+      "ci_low": 0.0469,
+      "ci_high": 0.053599999999999995,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_rank": {
+      "mean": 4.8149,
+      "ci_low": 4.783697499999999,
+      "ci_high": 4.850499999999999,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_points": {
+      "mean": 9.4123,
+      "ci_low": 9.367295,
+      "ci_high": 9.460405,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  },
+  {
+    "team_uuid": "00000000-0000-4000-8000-000000000003",
+    "first_place_frequency": {
+      "mean": 0.002,
+      "ci_low": 0.0013000000000000002,
+      "ci_high": 0.0029000000000000002,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_rank": {
+      "mean": 6.690600000000001,
+      "ci_low": 6.664297499999999,
+      "ci_high": 6.7211,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_points": {
+      "mean": 6.808300000000001,
+      "ci_low": 6.7643,
+      "ci_high": 6.8518,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  },
+  {
+    "team_uuid": "00000000-0000-4000-8000-000000000004",
+    "first_place_frequency": {
+      "mean": 0.0726,
+      "ci_low": 0.06649999999999999,
+      "ci_high": 0.0782,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_rank": {
+      "mean": 3.8151999999999995,
+      "ci_low": 3.7755,
+      "ci_high": 3.8571025,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_points": {
+      "mean": 10.4631,
+      "ci_low": 10.4193,
+      "ci_high": 10.504605,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  },
+  {
+    "team_uuid": "00000000-0000-4000-8000-000000000005",
+    "first_place_frequency": {
+      "mean": 0.021599999999999998,
+      "ci_low": 0.019799999999999995,
+      "ci_high": 0.024,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_rank": {
+      "mean": 4.952,
+      "ci_low": 4.921,
+      "ci_high": 4.9831,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_points": {
+      "mean": 8.9978,
+      "ci_low": 8.943999999999999,
+      "ci_high": 9.048602500000001,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  },
+  {
+    "team_uuid": "00000000-0000-4000-8000-000000000006",
+    "first_place_frequency": {
+      "mean": 0.0014000000000000002,
+      "ci_low": 0.0005,
+      "ci_high": 0.0027,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_rank": {
+      "mean": 5.844400000000001,
+      "ci_low": 5.8277,
+      "ci_high": 5.8638,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_points": {
+      "mean": 8.273700000000002,
+      "ci_low": 8.2392,
+      "ci_high": 8.3051,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  },
+  {
+    "team_uuid": "00000000-0000-4000-8000-000000000007",
+    "first_place_frequency": {
+      "mean": 0.10900000000000001,
+      "ci_low": 0.10230000000000002,
+      "ci_high": 0.11620000000000001,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_rank": {
+      "mean": 3.3101,
+      "ci_low": 3.275,
+      "ci_high": 3.3422050000000003,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_points": {
+      "mean": 11.044599999999999,
+      "ci_low": 11.0001,
+      "ci_high": 11.083802500000001,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  },
+  {
+    "team_uuid": "00000000-0000-4000-8000-000000000008",
+    "first_place_frequency": {
+      "mean": 0.0736,
+      "ci_low": 0.0698,
+      "ci_high": 0.0774,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_rank": {
+      "mean": 4.8735,
+      "ci_low": 4.8381,
+      "ci_high": 4.9033999999999995,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_points": {
+      "mean": 9.5932,
+      "ci_low": 9.546897499999998,
+      "ci_high": 9.646899999999999,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  }
+]

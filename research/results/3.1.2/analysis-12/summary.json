@@ -1,0 +1,42 @@
+{
+  "scope": "descriptive sampling from configured generator, not uniform calendar probabilities",
+  "sampling_mode": 0,
+  "seed_replicates": 10,
+  "bootstrap_seed": 5489,
+  "metrics": {
+    "acceptance_fraction": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "observed_fingerprint_diversity": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_absolute_points_change": {
+      "mean": 3.6770416666666668,
+      "ci_low": 3.6640997916666667,
+      "ci_high": 3.6896999999999998,
+      "unit": "independent_seed",
+      "replications": 10
+    },
+    "mean_absolute_rank_displacement": {
+      "mean": 3.3329166666666667,
+      "ci_low": 3.320299166666667,
+      "ci_high": 3.344383333333334,
+      "unit": "independent_seed",
+      "replications": 10
+    }
+  },
+  "warnings": [
+    "Draws within chain-mode runs may be autocorrelated.",
+    "Independent seeds do not imply uniform samples.",
+    "Fingerprints are diagnostics, not collision-proof identities.",
+    "Reported intervals are seed-level bootstrap intervals, not finite-calendar-population CIs."
+  ]
+}

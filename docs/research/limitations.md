@@ -1,6 +1,6 @@
 # Known limitations and boundaries of scientific inference
 
-## Native C scope of the 3.1.2 implementation candidate
+## Native C scope of the evaluated 3.1.2 implementation
 
 - Imported original fixtures, generated alternative calendars, deterministic match and season resolution (3.1.0), and reproducible Monte Carlo batches (3.1.1) are implemented.
 - The optional composite-key AVL sporting-ranking backend was introduced in 3.1.2 PR A. Heapsort remains the default and correctness reference.
@@ -20,6 +20,23 @@
 ## Data and external systems
 
 Historical performances are fixed across simulated calendars by design. This is a counterfactual assumption, not a model of psychological reactions to different opponents. Imported scores already contain bonus/malus; applying those modifiers a second time would be incorrect. UUID creation and database storage belong to the future Python layer.
+
+## Limitations of the recorded 3.1.2 experiment
+
+- Results cover only `recombine` + `independent` sampling with fixed synthetic
+  scores and one round-robin period of 7, 9 or 11 rounds; chain/shuffle modes,
+  multi-period seasons, historical observations, and sampler mixing were not
+  experimentally compared.
+- The sorted-array query harness uses dense numeric indexing, whereas the AVL
+  harness resolves string IDs; their direct query timing ratio is not a fair
+  common-interface performance comparison.
+- Thirty ranking replications share a process; Massif records one heap-peak
+  run per configuration. Very short timings and memory ratios do not support
+  hardware-independent or tight uncertainty claims.
+- No exact shared sporting rank occurred in the 30,000 sampled calendars;
+  deterministic differential tests cover sporting-tie correctness separately.
+- [Published results and evidence record](results-3.1.2.md) explicitly bound
+  the conclusions; a green CI job is not a scientific result by itself.
 
 ## Evidence standard
 
