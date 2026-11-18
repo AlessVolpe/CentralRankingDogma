@@ -50,11 +50,18 @@ jobs:
           python -m pytest -q research/tests
           python research/analyze.py --pair research/examples/observations.csv research/examples/summary.csv --output research/output/demo
   massif-memory-smoke:
-    runs-on: ubuntu-latest
+    # Keep a stable Valgrind/glibc pairing. Ubuntu 26.04/glibc 2.43 may
+    # require upstream Valgrind fixes not present in distribution packages.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install full-process heap profiler
         run: sudo apt-get update && sudo apt-get install -y valgrind
+      - name: Validate Massif availability
+        run: |
+          valgrind --version
+          ldd --version | head -n 1
+          valgrind --tool=massif --massif-out-file=/tmp/massif-preflight.out /bin/true
       - name: Configure ranking memory comparison
         run: >-
           cmake -S . -B build-memory -G Ninja
@@ -75,3 +82,13 @@ jobs:
           assert len(left) == len(right) == 1
           assert left[0]['checksum'] == right[0]['checksum']
           PY
+      - name: Upload Massif failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: massif-failure-diagnostics
+          path: |
+            research/output/ci-heap/
+            research/output/ci-avl/
+          if-no-files-found: warn
+          retention-days: 7

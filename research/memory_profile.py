@@ -90,7 +90,14 @@ def profile(command: list[str], destination: Path) -> dict:
     with stdout.open("wb") as captured, stderr.open("wb") as diagnostic:
         result = subprocess.run(arguments, stdout=captured, stderr=diagnostic, check=False)
     if result.returncode != 0:
-        raise RuntimeError(f"Massif run failed (exit {result.returncode}); see {stderr}")
+        # CI previously hid the only actionable error in an unuploaded file.
+        # Show a bounded diagnostic excerpt while retaining the full log.
+        lines = stderr.read_text(encoding="utf-8", errors="replace").splitlines()
+        excerpt = "\n".join(lines[-60:]) if lines else "(empty Valgrind log)"
+        raise RuntimeError(
+            f"Massif run failed (exit {result.returncode}); full log: {stderr}\n"
+            f"--- Valgrind diagnostic tail ---\n{excerpt}"
+        )
     parsed = parse_massif(massif)
     version = subprocess.run([executable, "--version"], capture_output=True,
                              text=True, check=True).stdout.strip()
