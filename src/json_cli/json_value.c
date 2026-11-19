@@ -30,6 +30,7 @@ typedef struct parser {
 typedef struct writer { char *data; size_t size, capacity, limit; } writer_t;
 
 static char *copy_text(const char *s) {
+    if (s == NULL) return NULL;
     size_t length = strlen(s);
     char *result = malloc(length + 1U);
     if (result) memcpy(result, s, length + 1U);
