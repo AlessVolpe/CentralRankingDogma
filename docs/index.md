@@ -16,7 +16,7 @@ This repository's GitHub Markdown is the canonical documentation source for the 
 1. [Build instructions](development/building.md) and [installed consumers](development/packaging.md)
 2. [System boundary](architecture/system.md), [internal C architecture](architecture/internal-c.md)
 3. [API-level reference](#module-sub-papers) and [failure contracts](reference/failure-safety.md)
-4. [Verification procedures](development/verification.md) and [contribution style](STYLE_GUIDE.md)
+4. [Verification procedures](development/verification.md), [3.1.3 JSON CLI contract](integration/json-cli-v1.md) and [contribution style](STYLE_GUIDE.md)
 
 ## Module sub-papers
 

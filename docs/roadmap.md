@@ -19,7 +19,7 @@ This file is the **canonical documentation status ledger**, not a package releas
 | `3.1.0` | Match resolution and standings integration | Implemented in current source | [Details](milestones/3.1.0.md) |
 | `3.1.1` | Monte Carlo simulation engine | Implemented in master; CI verified | [Details](milestones/3.1.1.md) |
 | `3.1.2` | Ranking integration and scientific evaluation | Implemented in current source; scoped synthetic evidence verified (PR #23) | [Details](milestones/3.1.2.md) |
-| `3.1.3` | External integration contract | Planned | [Contract](milestones/3.1.3.md) |
+| `3.1.3` | External integration contract and JSON CLI | PR A contract/schema specification; native executable pending | [Contract](milestones/3.1.3.md) |
 
 ## Evidence and change policy
 
@@ -28,4 +28,4 @@ This file is the **canonical documentation status ledger**, not a package releas
 - Tests and CI are evidence for specific commits, workloads and toolchains; they do not prove all possible executions correct.
 - On future releases, update this ledger and the affected milestone *in the same PR*. Record the commit, tests/CI results, breaking changes, and scientific assumptions when verified.
 - The 3.1.1 implementation is merged via [PR #19](https://github.com/AlessVolpe/LeaderboardSystem/pull/19); the recorded `master` build, release and documentation checks succeeded. This supports implementation status, not claims of uniform calendar sampling or thesis-level statistical validity.
-- Milestone 3.1.2 requires **two separate PRs** before completion: first a backwards-compatible composite-key `ranking_t` integration with differential correctness tests, then controlled backend benchmarks and scientific Monte Carlo evaluation. The Python web application remains outside this C repository and is not part of 3.1.3.
+- Milestone 3.1.2 completed the composite-key ranking integration and controlled synthetic research evaluation. Milestone 3.1.3 specifies the [versioned JSON CLI boundary](integration/json-cli-v1.md) before native transport and Python consumer implementation. The Python web application remains outside this C repository and is not part of 3.1.3.

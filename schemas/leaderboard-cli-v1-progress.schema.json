@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/AlessVolpe/LeaderboardSystem/blob/master/schemas/leaderboard-cli-v1-progress.schema.json",
+  "title": "LeaderboardSystem JSON CLI v1 progress event",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "event": {
+      "const": "progress"
+    },
+    "attempts": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "accepted_samples": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "event",
+    "attempts",
+    "accepted_samples"
+  ]
+}

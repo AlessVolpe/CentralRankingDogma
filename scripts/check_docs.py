@@ -181,8 +181,12 @@ def check_structure() -> None:
                 "**Status:** Planned", "**Status:** Evaluation in progress",
                 "**Status:** Implemented")):
                 fail(str(path), "3.1.2 milestone status unrecognized")
-        elif "**Status:** Planned" not in path.read_text(encoding="utf-8"):
-            fail(str(path), "planned milestone status absent")
+        elif version == "3.1.3":
+            status = path.read_text(encoding="utf-8")
+            if not any(marker in status for marker in (
+                "**Status:** Planned", "**Status:** Contract-first development",
+                "**Status:** Implementation in progress", "**Status:** Implemented")):
+                fail(str(path), "3.1.3 milestone status unrecognized")
     implemented = DOCS / "milestones" / "3.1.0.md"
     if "`3.1.0`" not in ledger or "**Status:** Implemented" not in implemented.read_text(encoding="utf-8"):
         fail("roadmap", "3.1.0 must have implemented status and a ledger entry")

@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "request_id": "example-001",
+  "competition": {
+    "teams": [
+      {
+        "uuid": "00000000-0000-0000-0000-000000000001",
+        "name": "Home team"
+      },
+      {
+        "uuid": "00000000-0000-0000-0000-000000000002",
+        "name": "Away team"
+      }
+    ],
+    "rounds": [
+      {
+        "serie_a_matchday": 1,
+        "fixtures": [
+          {
+            "home_uuid": "00000000-0000-0000-0000-000000000001",
+            "away_uuid": "00000000-0000-0000-0000-000000000002"
+          }
+        ]
+      }
+    ],
+    "scores": [
+      {
+        "team_uuid": "00000000-0000-0000-0000-000000000001",
+        "serie_a_matchday": 1,
+        "points_tenths": 665,
+        "status": "FINAL"
+      },
+      {
+        "team_uuid": "00000000-0000-0000-0000-000000000002",
+        "serie_a_matchday": 1,
+        "points_tenths": 590,
+        "status": "FINAL"
+      }
+    ]
+  },
+  "operation": "resolve",
+  "scope": "FULL_SEASON",
+  "calendar": {
+    "kind": "generated",
+    "sample_index": 1
+  },
+  "ranking_backend": "heapsort"
+}
