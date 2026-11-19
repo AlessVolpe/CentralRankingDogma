@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "request_id": "example-001",
+  "engine": {
+    "version": "3.1.3",
+    "id": "3.1.3+contract-example"
+  },
+  "ok": false,
+  "error": {
+    "code": "PENDING_SCORES",
+    "message": "Full-season evaluation requires finalized scores",
+    "path": "/competition/scores/1/status"
+  },
+  "result": {}
+}

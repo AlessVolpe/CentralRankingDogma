@@ -1,0 +1,1010 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/AlessVolpe/LeaderboardSystem/blob/master/schemas/leaderboard-cli-v1-response.schema.json",
+  "title": "LeaderboardSystem JSON CLI v1 response",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "engine": {
+          "$ref": "#/$defs/engine"
+        },
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "validate"
+        },
+        "result": {
+          "$ref": "#/$defs/validate_result"
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "engine",
+        "ok",
+        "operation",
+        "result"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "engine": {
+          "$ref": "#/$defs/engine"
+        },
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "generate"
+        },
+        "result": {
+          "$ref": "#/$defs/generate_result"
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "engine",
+        "ok",
+        "operation",
+        "result"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "engine": {
+          "$ref": "#/$defs/engine"
+        },
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "resolve"
+        },
+        "result": {
+          "$ref": "#/$defs/resolve_result"
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "engine",
+        "ok",
+        "operation",
+        "result"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "engine": {
+          "$ref": "#/$defs/engine"
+        },
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "simulate"
+        },
+        "result": {
+          "$ref": "#/$defs/simulate_result"
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "engine",
+        "ok",
+        "operation",
+        "result"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "request_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "engine": {
+          "$ref": "#/$defs/engine"
+        },
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "$ref": "#/$defs/error"
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "engine",
+        "ok",
+        "error"
+      ]
+    }
+  ],
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+    },
+    "u32": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][A-Za-z0-9.-]+)?$"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._+:-]+$"
+        }
+      },
+      "required": [
+        "version",
+        "id"
+      ]
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "home_uuid": {
+          "$ref": "#/$defs/uuid"
+        },
+        "away_uuid": {
+          "$ref": "#/$defs/uuid"
+        }
+      },
+      "required": [
+        "home_uuid",
+        "away_uuid"
+      ]
+    },
+    "round": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serie_a_matchday": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "fixtures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fixture"
+          },
+          "minItems": 1,
+          "maxItems": 10
+        }
+      },
+      "required": [
+        "serie_a_matchday",
+        "fixtures"
+      ]
+    },
+    "replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "generated"
+        },
+        "generator": {
+          "$ref": "#/$defs/effective_generator"
+        },
+        "sample_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "expected_engine_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._+:-]+$"
+        }
+      },
+      "required": [
+        "kind",
+        "generator",
+        "sample_index",
+        "expected_engine_id"
+      ]
+    },
+    "standing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_uuid": {
+          "$ref": "#/$defs/uuid"
+        },
+        "sporting_rank": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "championship_points": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "fantasy_total_tenths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "goal_difference": {
+          "type": "integer"
+        },
+        "played": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "wins": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "draws": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "losses": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "goals_for": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "goals_against": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      },
+      "required": [
+        "team_uuid",
+        "sporting_rank",
+        "championship_points",
+        "fantasy_total_tenths",
+        "goal_difference",
+        "played",
+        "wins",
+        "draws",
+        "losses",
+        "goals_for",
+        "goals_against"
+      ]
+    },
+    "resolved_fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "round_index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 79
+        },
+        "serie_a_matchday": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "home_uuid": {
+          "$ref": "#/$defs/uuid"
+        },
+        "away_uuid": {
+          "$ref": "#/$defs/uuid"
+        },
+        "home_fantasy_tenths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "away_fantasy_tenths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "home_goals": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "away_goals": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "adjustment": {
+          "type": "string",
+          "enum": [
+            "none",
+            "limit_victory",
+            "limit_draw"
+          ]
+        }
+      },
+      "required": [
+        "round_index",
+        "serie_a_matchday",
+        "home_uuid",
+        "away_uuid",
+        "home_fantasy_tenths",
+        "away_fantasy_tenths",
+        "home_goals",
+        "away_goals",
+        "adjustment"
+      ]
+    },
+    "basic_team": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_uuid": {
+          "$ref": "#/$defs/uuid"
+        },
+        "baseline_rank": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "first_place_frequency": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "mean_sporting_rank": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 20
+        },
+        "mean_championship_points": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "required": [
+        "team_uuid",
+        "baseline_rank",
+        "first_place_frequency",
+        "mean_sporting_rank",
+        "mean_championship_points"
+      ]
+    },
+    "advanced_team": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_uuid": {
+          "$ref": "#/$defs/uuid"
+        },
+        "observations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "variance_championship_points": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "mean_goal_difference": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "rank_frequencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "rank": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              }
+            },
+            "required": [
+              "rank",
+              "count"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 20
+        }
+      },
+      "required": [
+        "team_uuid",
+        "observations",
+        "variance_championship_points",
+        "mean_goal_difference",
+        "rank_frequencies"
+      ]
+    },
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "two_round_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "two_round_partial_moves": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "two_round_whole_swaps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "three_round_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "three_round_moves": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "three_round_search_exhaustions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "three_round_nodes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "changed_base_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "changed_season_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      },
+      "required": [
+        "two_round_attempts",
+        "two_round_partial_moves",
+        "two_round_whole_swaps",
+        "three_round_attempts",
+        "three_round_moves",
+        "three_round_search_exhaustions",
+        "three_round_nodes",
+        "changed_base_rounds",
+        "changed_season_rounds"
+      ]
+    },
+    "uniqueness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tracked": {
+          "type": "boolean"
+        },
+        "unique_calendars": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "duplicate_attempts": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "required": [
+        "tracked",
+        "unique_calendars",
+        "duplicate_attempts"
+      ]
+    },
+    "validate_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_count": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 20
+        },
+        "round_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 80
+        },
+        "simulation_ready": {
+          "type": "boolean"
+        },
+        "finalized_prefix_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 80
+        }
+      },
+      "required": [
+        "team_count",
+        "round_count",
+        "simulation_ready",
+        "finalized_prefix_rounds"
+      ]
+    },
+    "generate_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "calendar": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "generated"
+            },
+            "rounds": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/round"
+              },
+              "minItems": 1,
+              "maxItems": 80
+            },
+            "fingerprint": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{16}$"
+            }
+          },
+          "required": [
+            "kind",
+            "rounds",
+            "fingerprint"
+          ]
+        },
+        "replay": {
+          "$ref": "#/$defs/replay"
+        }
+      },
+      "required": [
+        "calendar",
+        "replay"
+      ]
+    },
+    "resolve_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "type": "string",
+          "enum": [
+            "FULL_SEASON",
+            "FINALIZED_PREFIX"
+          ]
+        },
+        "calendar_kind": {
+          "type": "string",
+          "enum": [
+            "original",
+            "generated"
+          ]
+        },
+        "evaluated_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 80
+        },
+        "provisional": {
+          "type": "boolean"
+        },
+        "standings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/standing"
+          },
+          "minItems": 2,
+          "maxItems": 20
+        },
+        "fixtures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resolved_fixture"
+          },
+          "minItems": 0,
+          "maxItems": 800
+        }
+      },
+      "required": [
+        "scope",
+        "calendar_kind",
+        "evaluated_rounds",
+        "provisional",
+        "standings",
+        "fixtures"
+      ]
+    },
+    "basic_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "teams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/basic_team"
+          },
+          "minItems": 2,
+          "maxItems": 20
+        }
+      },
+      "required": [
+        "teams"
+      ]
+    },
+    "advanced_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "teams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/advanced_team"
+          },
+          "minItems": 2,
+          "maxItems": 20
+        },
+        "calendar_diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        },
+        "uniqueness": {
+          "$ref": "#/$defs/uniqueness"
+        }
+      },
+      "required": [
+        "teams",
+        "calendar_diagnostics",
+        "uniqueness"
+      ]
+    },
+    "simulate_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "completion": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "attempt_limit",
+            "cancelled",
+            "uniqueness_memory_limit"
+          ]
+        },
+        "requested_samples": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "accepted_samples": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "evaluated_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 80
+        },
+        "provisional": {
+          "type": "boolean"
+        },
+        "baseline": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/standing"
+          },
+          "minItems": 2,
+          "maxItems": 20
+        },
+        "basic": {
+          "$ref": "#/$defs/basic_results"
+        },
+        "advanced": {
+          "$ref": "#/$defs/advanced_results"
+        },
+        "observations_file": {
+          "type": "boolean"
+        },
+        "statistics_view": {
+          "type": "string",
+          "enum": [
+            "basic",
+            "advanced",
+            "both"
+          ]
+        }
+      },
+      "required": [
+        "completion",
+        "requested_samples",
+        "attempts",
+        "accepted_samples",
+        "evaluated_rounds",
+        "provisional",
+        "baseline",
+        "observations_file",
+        "statistics_view"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "statistics_view": {
+                "const": "basic"
+              }
+            },
+            "required": [
+              "statistics_view"
+            ]
+          },
+          "then": {
+            "required": [
+              "basic"
+            ],
+            "not": {
+              "required": [
+                "advanced"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "statistics_view": {
+                "const": "advanced"
+              }
+            },
+            "required": [
+              "statistics_view"
+            ]
+          },
+          "then": {
+            "required": [
+              "advanced"
+            ],
+            "not": {
+              "required": [
+                "basic"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "statistics_view": {
+                "const": "both"
+              }
+            },
+            "required": [
+              "statistics_view"
+            ]
+          },
+          "then": {
+            "required": [
+              "basic",
+              "advanced"
+            ]
+          }
+        }
+      ]
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "INVALID_JSON",
+            "INVALID_SCHEMA_VERSION",
+            "INVALID_REQUEST",
+            "INVALID_SNAPSHOT",
+            "UNSUPPORTED_CALENDAR",
+            "PENDING_SCORES",
+            "REPLAY_MISMATCH",
+            "LIMIT_EXCEEDED",
+            "RESOURCE_EXHAUSTED",
+            "IO_ERROR",
+            "INTERNAL_ERROR"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "path"
+      ]
+    },
+    "effective_generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "shuffle",
+            "recombine"
+          ]
+        },
+        "sampling_mode": {
+          "type": "string",
+          "enum": [
+            "independent",
+            "chain"
+          ]
+        },
+        "seed": {
+          "$ref": "#/$defs/u32"
+        },
+        "moves_per_sample": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "enable_three_round": {
+          "type": "boolean"
+        },
+        "three_round_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "three_round_node_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "chain_warmup_moves": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "chain_thinning_moves": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "method",
+        "sampling_mode",
+        "seed",
+        "moves_per_sample",
+        "enable_three_round",
+        "three_round_attempts",
+        "three_round_node_limit",
+        "chain_warmup_moves",
+        "chain_thinning_moves"
+      ]
+    }
+  }
+}

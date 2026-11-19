@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "request_id": "example-001",
+  "event": "progress",
+  "attempts": 1,
+  "accepted_samples": 1
+}

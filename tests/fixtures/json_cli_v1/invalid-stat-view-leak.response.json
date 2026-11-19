@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "request_id": "example-001",
+  "engine": {
+    "version": "3.1.3",
+    "id": "3.1.3+contract-example"
+  },
+  "ok": true,
+  "operation": "simulate",
+  "result": {
+    "completion": "completed",
+    "requested_samples": 3,
+    "attempts": 3,
+    "accepted_samples": 3,
+    "evaluated_rounds": 1,
+    "provisional": false,
+    "baseline": [
+      {
+        "team_uuid": "00000000-0000-0000-0000-000000000001",
+        "sporting_rank": 1,
+        "championship_points": 3,
+        "fantasy_total_tenths": 665,
+        "goal_difference": 1,
+        "played": 1,
+        "wins": 1,
+        "draws": 0,
+        "losses": 0,
+        "goals_for": 1,
+        "goals_against": 0
+      },
+      {
+        "team_uuid": "00000000-0000-0000-0000-000000000002",
+        "sporting_rank": 2,
+        "championship_points": 0,
+        "fantasy_total_tenths": 590,
+        "goal_difference": -1,
+        "played": 1,
+        "wins": 0,
+        "draws": 0,
+        "losses": 1,
+        "goals_for": 0,
+        "goals_against": 1
+      }
+    ],
+    "observations_file": false,
+    "basic": {
+      "teams": [
+        {
+          "team_uuid": "00000000-0000-0000-0000-000000000001",
+          "baseline_rank": 1,
+          "first_place_frequency": 1.0,
+          "mean_sporting_rank": 1.0,
+          "mean_championship_points": 3.0
+        },
+        {
+          "team_uuid": "00000000-0000-0000-0000-000000000002",
+          "baseline_rank": 2,
+          "first_place_frequency": 0.0,
+          "mean_sporting_rank": 2.0,
+          "mean_championship_points": 0.0
+        }
+      ]
+    },
+    "advanced": {
+      "teams": [
+        {
+          "team_uuid": "00000000-0000-0000-0000-000000000001",
+          "observations": 3,
+          "variance_championship_points": 0.0,
+          "mean_goal_difference": 1.0,
+          "rank_frequencies": [
+            {
+              "rank": 1,
+              "count": 3
+            },
+            {
+              "rank": 2,
+              "count": 0
+            }
+          ]
+        },
+        {
+          "team_uuid": "00000000-0000-0000-0000-000000000002",
+          "observations": 3,
+          "variance_championship_points": 0.0,
+          "mean_goal_difference": -1.0,
+          "rank_frequencies": [
+            {
+              "rank": 1,
+              "count": 0
+            },
+            {
+              "rank": 2,
+              "count": 3
+            }
+          ]
+        }
+      ],
+      "calendar_diagnostics": {
+        "two_round_attempts": 0,
+        "two_round_partial_moves": 0,
+        "two_round_whole_swaps": 0,
+        "three_round_attempts": 0,
+        "three_round_moves": 0,
+        "three_round_search_exhaustions": 0,
+        "three_round_nodes": 0,
+        "changed_base_rounds": 0,
+        "changed_season_rounds": 0
+      },
+      "uniqueness": {
+        "tracked": true,
+        "unique_calendars": 1,
+        "duplicate_attempts": 2
+      }
+    },
+    "statistics_view": "basic"
+  }
+}
