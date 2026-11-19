@@ -1,9 +1,11 @@
 # LeaderboardSystem JSON CLI v1: external integration contract
 
-**Status:** Normative proposed 3.1.3 **PR A** contract. The `leaderboard-json`
-executable, native parser and Python subprocess consumer are **not implemented**
-by this PR. Fixture responses demonstrate schema shape; they are not measured
-or independently verified native computation results.
+**Status:** Normative 3.1.3 wire contract defined in merged PR A. PR B
+implements the native `validate`, `generate` and `resolve` operations subject
+to linked CTest and CI verification. `simulate`, structured progress, CSV export
+and cancellation remain PR C. The installed Python subprocess consumer and
+Linux container remain PR D. PR A example responses are shape illustrations,
+not independently verified native golden results.
 
 ## 1. Purpose and ownership
 
@@ -26,8 +28,8 @@ JSON, container or database dependency is introduced in the installed
 - The Python caller controls the subprocess lifetime, arguments, temporary
   files, container limits and process reaping. No web server is implemented here.
 
-The CLI name in these docs is `leaderboard-json`; actual executable creation,
-installation and `--version` behavior belong to implementation PRs B-D.
+PR B creates the `leaderboard-json` CMake executable for build-tree use.
+Installation, Linux Docker packaging and `--version` behavior are PR D scope.
 
 ## 2. Versioning, schemas and serialization
 
@@ -277,8 +279,9 @@ python -m unittest discover -s tests -p test_json_contract.py -v
 python scripts/check_docs.py
 ```
 
-PR B must add actual native golden results and malformed-input/failure
-coverage; PR C must test native Monte Carlo aggregation, progression and
-cancellation; PR D must exercise the installed binary from Python in a Linux
-container. These acceptance requirements are not satisfied by fixture tests
+PR B adds linked-native assertions for default scoring, ranking backend
+equivalence, transient generation/replay, malformed inputs and error
+classification. PR C must test native Monte Carlo aggregation, progress and
+cancellation; PR D must exercise the installed binary from Python in Linux
+Docker. These acceptance requirements are not satisfied by fixture tests
 alone. See the [3.1.3 milestone](../milestones/3.1.3.md).
