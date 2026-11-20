@@ -4,7 +4,7 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native version:** 3.1.3 (CRD packaging migration in progress). The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `leaderboard-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
+**Current native version:** 3.1.3 (CRD executable and tooling migration in progress). The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `crd-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
 
 ## Read the research or use the library
 
@@ -125,17 +125,17 @@ It does not reconstruct footballer bonus/malus, integrate with a database, provi
 Linux with CMake 3.16+, Ninja and GCC or Clang:
 
 ```sh
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLEADERBOARD_WARNINGS_AS_ERRORS=ON
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCRD_WARNINGS_AS_ERRORS=ON
 cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
 The installed static-library target is `CentralRankingDogma::central_ranking_dogma` (`libcentral_ranking_dogma.a` on Linux). The umbrella header is `central_ranking_dogma.h`; legacy `Leaderboard` package aliases are not supplied. The
-installed `leaderboard-json` executable is a separate subprocess integration
-surface. `leaderboard-json --version` prints the native package version.
+installed `crd-json` executable is a separate subprocess integration
+surface. `crd-json --version` prints the native package version.
 See [building](docs/development/building.md) for Linux and Windows UCRT64,
 sanitizers and Release configurations; see [packaging](docs/development/packaging.md)
-for installed consumers. The educational `leaderboard_cli` remains separate.
+for installed consumers. The educational `crd-cli` remains separate.
 
 ## Reproducibility and history
 

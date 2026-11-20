@@ -26,9 +26,9 @@ jobs:
         run: >-
           cmake -S . -B build-profile -G Ninja
           -DCMAKE_BUILD_TYPE=Release
-          -DLEADERBOARD_BUILD_BENCHMARKS=ON
-          -DLEADERBOARD_RESEARCH_PROFILE=ON
-          -DLEADERBOARD_WARNINGS_AS_ERRORS=ON
+          -DCRD_BUILD_BENCHMARKS=ON
+          -DCRD_RESEARCH_PROFILE=ON
+          -DCRD_WARNINGS_AS_ERRORS=ON
       - name: Build
         run: cmake --build build-profile --parallel
       - name: Regression suite (no timing thresholds)

@@ -8,7 +8,7 @@
 #endif
 #include "research_profile_internal.h"
 
-#ifdef LEADERBOARD_RESEARCH_PROFILE
+#ifdef CRD_RESEARCH_PROFILE
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>

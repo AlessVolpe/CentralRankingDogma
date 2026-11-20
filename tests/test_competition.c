@@ -164,10 +164,10 @@ static int name_index(const char *name, int *registered) {
     return idx;
 }
 static int regression(void) {
-#ifndef LEADERBOARD_CALENDAR_TSV
+#ifndef CRD_CALENDAR_TSV
 #error "Set path to user-provided calendar fixture"
 #endif
-    FILE *file=fopen(LEADERBOARD_CALENDAR_TSV,"rb");
+    FILE *file=fopen(CRD_CALENDAR_TSV,"rb");
     CHECK(file!=NULL);
     char line[1024];int registered=0,fixture_lines=0,final_fixture_count=0;
     unsigned char seen[350]={0};

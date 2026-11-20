@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-only
  * NOT an installed public API. Do not use in multithreaded library calls.
  */
-#ifndef LEADERBOARD_RESEARCH_PROFILE_INTERNAL_H
-#define LEADERBOARD_RESEARCH_PROFILE_INTERNAL_H
+#ifndef CRD_RESEARCH_PROFILE_INTERNAL_H
+#define CRD_RESEARCH_PROFILE_INTERNAL_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -27,7 +27,7 @@ typedef struct leaderboard_profile_sample {
     uint64_t wrapper_requested_bytes;
 } leaderboard_profile_sample_t;
 
-#ifdef LEADERBOARD_RESEARCH_PROFILE
+#ifdef CRD_RESEARCH_PROFILE
 void leaderboard_profile_reset(void);
 void leaderboard_profile_begin(leaderboard_profile_stage_t stage);
 void leaderboard_profile_end(leaderboard_profile_stage_t stage);
@@ -41,4 +41,4 @@ int leaderboard_profile_read(leaderboard_profile_stage_t stage,
 #define LB_PROFILE_END(stage) ((void)0)
 #endif
 
-#endif /* LEADERBOARD_RESEARCH_PROFILE_INTERNAL_H */
+#endif /* CRD_RESEARCH_PROFILE_INTERNAL_H */

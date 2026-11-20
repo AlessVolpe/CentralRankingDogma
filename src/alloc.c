@@ -7,7 +7,7 @@
 #include "research_profile_internal.h"
 #include <stdlib.h>
 
-#ifdef LEADERBOARD_TEST_ALLOCATION_FAULTS
+#ifdef CRD_TEST_ALLOCATION_FAULTS
 #include <stdint.h>
 static size_t remaining = SIZE_MAX;
 
@@ -31,7 +31,7 @@ static int should_fail(void) { return 0; }
 
 void *leaderboard_alloc_malloc(size_t size) {
     void *value = should_fail() ? NULL : malloc(size);
-#ifdef LEADERBOARD_RESEARCH_PROFILE
+#ifdef CRD_RESEARCH_PROFILE
     if (value != NULL) leaderboard_profile_record_wrapper_allocation(size);
 #endif
     return value;
@@ -39,7 +39,7 @@ void *leaderboard_alloc_malloc(size_t size) {
 
 void *leaderboard_alloc_calloc(size_t count, size_t size) {
     void *value = should_fail() ? NULL : calloc(count, size);
-#ifdef LEADERBOARD_RESEARCH_PROFILE
+#ifdef CRD_RESEARCH_PROFILE
     if (value != NULL) leaderboard_profile_record_wrapper_allocation(count * size);
 #endif
     return value;

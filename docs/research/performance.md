@@ -11,7 +11,7 @@ No unmeasured algorithmic superiority or uniform-sampler claim is asserted.
 
 ## Existing experiments
 
-`leaderboard_bench` exercises deterministic public hashmap, BOSTree and ranking workloads; configuration requires `LEADERBOARD_BUILD_BENCHMARKS=ON`. The existing CSV reports `clock()`-based process CPU time and runs a correctness smoke test without failing solely on a timing threshold.
+`crd-bench` exercises deterministic public hashmap, BOSTree and ranking workloads; configuration requires `CRD_BUILD_BENCHMARKS=ON`. The existing CSV reports `clock()`-based process CPU time and runs a correctness smoke test without failing solely on a timing threshold.
 
 ## 3.1.2 evaluation protocol and measured scope
 

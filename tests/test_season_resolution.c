@@ -165,10 +165,10 @@ static const uint32_t expected[40][2] = {
 };
 
 static int workbook(void) {
-#ifndef LEADERBOARD_CALENDAR_TSV
-#error "LEADERBOARD_CALENDAR_TSV required"
+#ifndef CRD_CALENDAR_TSV
+#error "CRD_CALENDAR_TSV required"
 #endif
-    FILE *file = fopen(LEADERBOARD_CALENDAR_TSV,"rb");
+    FILE *file = fopen(CRD_CALENDAR_TSV,"rb");
     CHECK(file != NULL);
     char ids[10][TEAM_UUID_TEXT_SIZE];
     char names[10][TEAM_NAME_MAX_BYTES+1];

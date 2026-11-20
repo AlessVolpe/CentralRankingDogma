@@ -10,11 +10,11 @@ This directory contains **research tooling**, not the future Python web service.
 The C11 library and installed `CentralRankingDogma::central_ranking_dogma` package have no Python
 runtime dependency. Research scripts require pinned Python dependencies in
 [`requirements.txt`](requirements.txt). The optional benchmark C targets require
-`LEADERBOARD_BUILD_BENCHMARKS=ON`.
+`CRD_BUILD_BENCHMARKS=ON`.
 
 ## Data provenance and privacy
 
-1. **Synthetic**: `leaderboard_season_experiment 8|10|12 ...` generates fixed,
+1. **Synthetic**: `crd-season-experiment 8|10|12 ...` generates fixed,
    seeded fantasy performances and one-factorization calendars. These are not
    observations of a historical Fantacalcio league.
 2. **Existing historical workbook**: `tests/fixtures/calendar_2026_2027.tsv`
@@ -73,7 +73,7 @@ replicated scientific experiment.
 
 ```sh
 cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release \
-  -DLEADERBOARD_BUILD_BENCHMARKS=ON -DLEADERBOARD_WARNINGS_AS_ERRORS=ON
+  -DCRD_BUILD_BENCHMARKS=ON -DCRD_WARNINGS_AS_ERRORS=ON
 cmake --build build-release --parallel
 ctest --test-dir build-release --output-on-failure
 python -m pip install -r research/requirements.txt
@@ -103,7 +103,7 @@ of the Monte Carlo sampling seeds, preserving a common comparison baseline.
 To run a private or existing-workbook snapshot manually:
 
 ```sh
-./build-release/leaderboard_season_experiment \
+./build-release/crd-season-experiment \
   research/private/workbook_2026_2027/competition.tsv \
   5489 1000 heap recombine independent \
   research/output/observations.csv research/output/summary.csv \
@@ -132,7 +132,7 @@ interval. Results are descriptive conditional on the configured generator.
 
 ## Benchmark contracts and threats to validity
 
-`leaderboard_ranking_compare` emits CSV with `backend,phase,count,operations,
+`crd-ranking-compare` emits CSV with `backend,phase,count,operations,
 replication,seed,wall_seconds,cpu_seconds,checksum`. It uses identical deterministic
 input keys and update traces for heapsort (static reference), hashmap/BOSTree
 (composite AVL), and a dynamically maintained sorted array (incremental
@@ -142,7 +142,7 @@ Hash-index construction for heapsort is measured separately. Rank query
 workloads include both ID lookup and position selection for either structure.
 Integrity comparisons are performed outside timed regions where practical.
 
-`leaderboard_season_experiment` measures the **entire** Monte Carlo API call and
+`crd-season-experiment` measures the **entire** Monte Carlo API call and
 separate, repeatable generation, season-resolution and rank-access calls. These
 stage measurements are **not additive components of the full API call**:
 full batches also perform aggregation, uniqueness bookkeeping and CSV I/O.
@@ -155,7 +155,7 @@ For **instrumented internal stage measurements**, configure a separate build:
 
 ```sh
 cmake -S . -B build-profile -G Ninja -DCMAKE_BUILD_TYPE=Release \
-  -DLEADERBOARD_BUILD_BENCHMARKS=ON -DLEADERBOARD_RESEARCH_PROFILE=ON
+  -DCRD_BUILD_BENCHMARKS=ON -DCRD_RESEARCH_PROFILE=ON
 cmake --build build-profile --parallel
 python research/run_experiments.py --smoke --native-dir build-profile \
   --output research/output/profile-smoke
@@ -182,13 +182,13 @@ must be interpreted with allocator, OS and sampling interval stated.
 
 ## Full-process heap profiling and acceptance gate
 
-The internal `LEADERBOARD_RESEARCH_PROFILE` allocator counters are deliberately
+The internal `CRD_RESEARCH_PROFILE` allocator counters are deliberately
 **not** a complete memory measurement. They omit direct malloc/free calls in
 some container implementations and cannot compute peak live heap bytes.
 
 For a measured process-wide heap peak, the research protocol uses **Valgrind
 Massif on Linux/WSL** in a *separate run*. The C11
-`leaderboard_memory_compare` executable allocates the same deterministic keys
+`crd-memory-compare` executable allocates the same deterministic keys
 but selects **only one** backend per process (heapsort + index, or hashmap/AVL).
 The launcher checks that both runs produce the same rank-order checksum. An
 additional pair of Massif runs exercises the actual Monte Carlo executable.
@@ -207,7 +207,7 @@ For the complete research protocol on Linux or Ubuntu under WSL:
 ```sh
 sudo apt-get install valgrind
 cmake -S . -B build-research -G Ninja -DCMAKE_BUILD_TYPE=Release \
-  -DLEADERBOARD_BUILD_BENCHMARKS=ON -DLEADERBOARD_WARNINGS_AS_ERRORS=ON
+  -DCRD_BUILD_BENCHMARKS=ON -DCRD_WARNINGS_AS_ERRORS=ON
 cmake --build build-research --parallel
 ctest --test-dir build-research --output-on-failure
 python -m pip install -r research/requirements.txt

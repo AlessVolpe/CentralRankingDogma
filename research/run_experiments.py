@@ -57,8 +57,8 @@ def cmake_configuration(native_dir: Path) -> dict[str, str]:
     values = {}
     relevant = {"CMAKE_BUILD_TYPE", "CMAKE_C_COMPILER", "CMAKE_C_COMPILER_ID",
                 "CMAKE_C_FLAGS", "CMAKE_C_FLAGS_RELEASE", "CMAKE_C_FLAGS_DEBUG",
-                "LEADERBOARD_ENABLE_SANITIZERS", "LEADERBOARD_WARNINGS_AS_ERRORS",
-                "LEADERBOARD_BUILD_BENCHMARKS"}
+                "CRD_ENABLE_SANITIZERS", "CRD_WARNINGS_AS_ERRORS",
+                "CRD_BUILD_BENCHMARKS"}
     for line in cache.read_text(encoding="utf-8", errors="replace").splitlines():
         if line.startswith("//") or line.startswith("#") or "=" not in line or ":" not in line:
             continue
@@ -95,16 +95,16 @@ def execute(command: list[str], stdout_file: Path) -> int | None:
 def run(config_path: Path, directory: Path, native_dir: Path, smoke: bool,
         profile_memory: bool = False) -> dict:
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    ranking = native_dir / ("leaderboard_ranking_compare.exe" if os.name == "nt"
-                            else "leaderboard_ranking_compare")
-    season = native_dir / ("leaderboard_season_experiment.exe" if os.name == "nt"
-                           else "leaderboard_season_experiment")
-    memory_runner = native_dir / ("leaderboard_memory_compare.exe" if os.name == "nt"
-                                   else "leaderboard_memory_compare")
+    ranking = native_dir / ("crd-ranking-compare.exe" if os.name == "nt"
+                            else "crd-ranking-compare")
+    season = native_dir / ("crd-season-experiment.exe" if os.name == "nt"
+                           else "crd-season-experiment")
+    memory_runner = native_dir / ("crd-memory-compare.exe" if os.name == "nt"
+                                   else "crd-memory-compare")
     if not ranking.is_file() or not season.is_file():
-        raise FileNotFoundError("build with -DLEADERBOARD_BUILD_BENCHMARKS=ON first")
+        raise FileNotFoundError("build with -DCRD_BUILD_BENCHMARKS=ON first")
     if profile_memory and not memory_runner.is_file():
-        raise FileNotFoundError("build leaderboard_memory_compare for isolated Massif ranking trials")
+        raise FileNotFoundError("build crd-memory-compare for isolated Massif ranking trials")
     directory.mkdir(parents=True, exist_ok=True)
     files = []
     memory = {}
