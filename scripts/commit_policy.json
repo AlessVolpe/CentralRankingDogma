@@ -4,7 +4,7 @@
     "chore", "style", "revert"
   ],
   "scopes": [
-    "actions", "api", "benchmarks", "bostree", "calendar", "cli", "cmake",
+    "actions", "api", "benchmarks", "bostree", "build", "calendar", "cli", "cmake",
     "commits", "competition", "contributing", "core", "deps", "docs",
     "domain", "evaluation", "fuzzing", "hashmap", "integration", "license",
     "linux", "match", "milestones", "packaging", "prng", "ranking", "readme", "release",
