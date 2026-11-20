@@ -10,6 +10,7 @@
 #include "season_resolution.h"
 #include "match.h"
 #include "team.h"
+#include "simulation_cli.h"
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -592,7 +593,8 @@ static json_value_t *envelope(const cli_t *c, const char *operation,
 }
 
 static int process(cli_t *c, const json_value_t *req, const char **operation,
-                   json_value_t **result) {
+                   json_value_t **result, const char *observations_destination,
+                   simulation_csv_t *csv) {
     *result=NULL;
     if(json_kind(req)!=JSON_OBJECT)
         return fail(c,2,"INVALID_REQUEST","Request must be an object",NULL);
@@ -607,13 +609,15 @@ static int process(cli_t *c, const json_value_t *req, const char **operation,
     *operation=json_string(json_get(req,"operation"));
     if(!*operation)return fail(c,2,"INVALID_REQUEST","operation must be a string","/operation");
     const char *op=*operation;
-    if(strcmp(op,"simulate")==0)
-        return fail(c,2,"INVALID_REQUEST","simulate is reserved for milestone 3.1.3 PR C","/operation");
-    if(strcmp(op,"validate")!=0 && strcmp(op,"generate")!=0 && strcmp(op,"resolve")!=0)
+    if(strcmp(op,"validate")!=0 && strcmp(op,"generate")!=0 &&
+       strcmp(op,"resolve")!=0 && strcmp(op,"simulate")!=0)
         return fail(c,2,"INVALID_REQUEST","Unknown operation","/operation");
+    if(observations_destination && strcmp(op,"simulate")!=0)
+        return fail(c,2,"INVALID_REQUEST","--observations-file is only valid for simulate","/operation");
     if((strcmp(op,"validate")==0 && !FIELDS(req,"schema_version","request_id","operation","competition")) ||
-       (strcmp(op,"generate")==0 && !FIELDS(req,"schema_version","request_id","operation","competition","generator","sample_index")) ||
-       (strcmp(op,"resolve")==0 && !FIELDS(req,"schema_version","request_id","operation","competition","scope","calendar","rules","ranking_backend")))
+        (strcmp(op,"generate")==0 && !FIELDS(req,"schema_version","request_id","operation","competition","generator","sample_index")) ||
+        (strcmp(op,"resolve")==0 && !FIELDS(req,"schema_version","request_id","operation","competition","scope","calendar","rules","ranking_backend")) ||
+        (strcmp(op,"simulate")==0 && !FIELDS(req,"schema_version","request_id","operation","competition", "scope", "generator", "requested_samples", "max_generation_attempts", "statistics", "ranking_backend", "rules", "unique_only", "track_uniqueness", "uniqueness_memory_limit_bytes", "progress_every_attempts", "emit_progress")))
         return fail(c,2,"INVALID_REQUEST","Request contains unsupported or unknown properties",NULL);
     competition_t *comp=NULL;
     if(snapshot(c,req,&comp))return -1;
@@ -625,13 +629,35 @@ static int process(cli_t *c, const json_value_t *req, const char **operation,
         *result=json_new(JSON_OBJECT);
         if(!*result)status=fail(c,4,"RESOURCE_EXHAUSTED","Cannot allocate calendar response",NULL);
         else status=generate_response(c,req,comp,*result);
-    } else status=resolve_response(c,req,comp,result);
+    } else if(strcmp(op,"resolve")==0) {
+        status=resolve_response(c,req,comp,result);
+    } else {
+        match_rules_t rules;
+        calendar_options_t generator;
+        season_resolution_scope_t scope;
+        season_ranking_backend_t backend;
+        if(parse_rules(c,json_get(req,"rules"),&rules) ||
+           parse_generator(c,json_get(req,"generator"),false,&generator) ||
+           parse_scope(c,req,&scope) || parse_backend(c,req,&backend)) {
+            status=-1;
+        } else {
+            monte_carlo_options_t options=monte_carlo_options_default();
+            options.calendar=generator;
+            options.scope=scope;
+            options.ranking_backend=backend;
+            simulation_error_t err={0};
+            if(simulation_cli_run(req,comp,&rules,&options,c->request_id,
+                                  observations_destination,result,csv,&err))
+                status=fail(c,err.exit_code,err.code,err.message,err.path);
+        }
+    }
     competition_destroy(comp);
     if(status) {json_free(*result);*result=NULL;}
     return status;
 }
 
-static int write_final(const cli_t *c,const char *op,json_value_t *result) {
+static int write_final(const cli_t *c,const char *op,json_value_t *result,
+                       simulation_csv_t *csv) {
     json_value_t *out=envelope(c,op,result);
     if(!out)return 1;
     char *line=json_serialize(out,OUTPUT_LIMIT-1U);
@@ -651,40 +677,55 @@ static int write_final(const cli_t *c,const char *op,json_value_t *result) {
         if(puts(line)<0 || fflush(stdout)!=0) {free(line);return 5;}
         free(line);return 2;
     }
+    if(!c->error_code && csv && csv->created) {
+        if(simulation_csv_commit(csv)) {
+            free(line);
+            simulation_csv_discard(csv);
+            cli_t error=*c;
+            error.error_code="IO_ERROR";
+            error.error_message="Cannot finalize staged observations CSV";
+            error.error_path=NULL;
+            error.exit_code=5;
+            return write_final(&error,NULL,NULL,NULL);
+        }
+    }
     if(puts(line)<0 || fflush(stdout)!=0) {free(line);return 5;}
     free(line);
     return c->error_code?c->exit_code:0;
 }
 int main(int argc, char **argv) {
-    (void)argv;
     cli_t c={0};
+    simulation_csv_t csv={0};
+    const char *observations_destination=NULL;
 #if defined(_WIN32)
     /* Windows CRT text mode otherwise rewrites JSON LF bytes to CRLF. */
     if(_setmode(_fileno(stdin),_O_BINARY)==-1 ||
        _setmode(_fileno(stdout),_O_BINARY)==-1 ||
        _setmode(_fileno(stderr),_O_BINARY)==-1) {
         fail(&c,5,"IO_ERROR","Cannot configure binary JSON streams",NULL);
-        return write_final(&c,NULL,NULL);
+        return write_final(&c,NULL,NULL,NULL);
     }
 #endif
-    if(argc!=1) {
-        fail(&c,2,"INVALID_REQUEST","CLI v1 accepts JSON on stdin without command-line arguments",NULL);
-        return write_final(&c,NULL,NULL);
+    if(argc==3 && strcmp(argv[1],"--observations-file")==0 && argv[2][0])
+        observations_destination=argv[2];
+    else if(argc!=1) {
+        fail(&c,2,"INVALID_REQUEST","CLI v1 accepts only --observations-file PATH for simulate",NULL);
+        return write_final(&c,NULL,NULL,NULL);
     }
     char *buf=malloc(INPUT_LIMIT+1U);
     if(!buf) {
         fail(&c,4,"RESOURCE_EXHAUSTED","Cannot allocate input buffer",NULL);
-        return write_final(&c,NULL,NULL);
+        return write_final(&c,NULL,NULL,NULL);
     }
     size_t size=0U;int ch;
     while(size<=INPUT_LIMIT && (ch=fgetc(stdin))!=EOF)buf[size++]=(char)ch;
     if(ferror(stdin)) {
         fail(&c,5,"IO_ERROR","Cannot read stdin",NULL);
-        free(buf);return write_final(&c,NULL,NULL);
+        free(buf);return write_final(&c,NULL,NULL,NULL);
     }
     if(size>INPUT_LIMIT) {
         fail(&c,2,"LIMIT_EXCEEDED","JSON stdin request exceeds 4 MiB",NULL);
-        free(buf);return write_final(&c,NULL,NULL);
+        free(buf);return write_final(&c,NULL,NULL,NULL);
     }
     buf[size]='\0';
     json_value_t *req=NULL;
@@ -693,13 +734,14 @@ int main(int argc, char **argv) {
     if(parsed) {
         fail(&c,parsed==-2?4:2,parsed==-2?"RESOURCE_EXHAUSTED":"INVALID_JSON",
              parsed==-2?"Cannot allocate JSON parse tree":"Malformed JSON, invalid UTF-8 or duplicate object keys",NULL);
-        return write_final(&c,NULL,NULL);
+        return write_final(&c,NULL,NULL,NULL);
     }
     const char *operation=NULL;
     json_value_t *result=NULL;
-    (void)process(&c,req,&operation,&result);
+    (void)process(&c,req,&operation,&result,observations_destination,&csv);
     /* The response borrows request_id, so keep the request tree until written. */
-    int outcome=write_final(&c,operation,result);
+    int outcome=write_final(&c,operation,result,&csv);
+    simulation_csv_discard(&csv);
     json_free(req);
     return outcome;
 }

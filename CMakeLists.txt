@@ -135,6 +135,7 @@ leaderboard_apply_dev_options(leaderboard_cli)
 # Leaderboard::leaderboard or its exported target.
 add_executable(leaderboard_json
         src/json_cli/main.c
+        src/json_cli/simulation_cli.c
         src/json_cli/json_value.c)
 set_target_properties(leaderboard_json PROPERTIES
         OUTPUT_NAME "leaderboard-json" C_EXTENSIONS OFF)

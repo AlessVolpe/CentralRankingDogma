@@ -1,10 +1,11 @@
 # LeaderboardSystem JSON CLI v1: external integration contract
 
 **Status:** Normative 3.1.3 wire contract defined in merged PR A. PR B
-implements the native `validate`, `generate` and `resolve` operations subject
-to linked CTest and CI verification. `simulate`, structured progress, CSV export
-and cancellation remain PR C. The installed Python subprocess consumer and
-Linux container remain PR D. PR A example responses are shape illustrations,
+implements the native `validate`, `generate` and `resolve` operations. PR C
+adds `simulate`, structured progress, CSV export and cooperative cancellation;
+linked-native regression tests and CI are acceptance requirements. The
+installed Python subprocess consumer remains PR D. No standalone native
+Docker image is planned. PR A example responses are shape illustrations,
 not independently verified native golden results.
 
 ## 1. Purpose and ownership
@@ -29,7 +30,9 @@ JSON, container or database dependency is introduced in the installed
   files, container limits and process reaping. No web server is implemented here.
 
 PR B creates the `leaderboard-json` CMake executable for build-tree use.
-Installation, Linux Docker packaging and `--version` behavior are PR D scope.
+Linux installation, the Python subprocess consumer and `--version` behavior
+are PR D scope. Containerization belongs to the future Python worker, not the
+standalone native executable.
 
 ## 2. Versioning, schemas and serialization
 
@@ -190,10 +193,15 @@ Kendall tau-b unless a later native implementation explicitly adds them.
 
 To enable detailed research observations, the trusted Python process may
 supply a CLI argument `--observations-file PATH` **only for `simulate`**.
-The JSON request has no arbitrary output path property. This CSV uses a
-staging file and is committed to the requested destination only after a
-successful final JSON result (including explicitly partial completion);
-otherwise the temporary file is discarded. Application code must use
+The JSON request has no arbitrary output path property. This CSV uses an
+exclusively created staging file beside the requested destination; after the
+final success response has been constructed and serialized, a rename
+publishes the file before stdout is written. Rename failure produces `IO_ERROR`
+instead of a success response. Invalid requests and unsuccessful simulations
+remove their staging files. A hard crash or forced kill may leave a staged
+file for the trusted Python worker to clean up. As with all subprocess
+interfaces, a subsequent stdout I/O failure cannot retroactively undo an
+already committed file. Application code must use
 trusted paths and an isolated working directory; do not execute arbitrary
 user-submitted path strings. The `observations_file` response flag indicates
 whether a file was successfully finalized; it does not itself contain CSV.
@@ -206,7 +214,9 @@ They contain `request_id`, `attempts` and `accepted_samples`, with counts
 monotonic within one invocation. Other diagnostic prose must not pollute the
 progress stream when structured progress is enabled. stdout remains reserved
 for the final response. `progress_every_attempts` determines callback
-frequency; its default comes from `monte_carlo_options_default()`.
+frequency; its default comes from `monte_carlo_options_default()` (1,000
+attempts). The CLI also emits one terminal progress record when requested,
+avoiding duplicate records if the final callback had the same counts.
 
 On Linux, SIGINT and SIGTERM set a `volatile sig_atomic_t` cancellation flag.
 The native progress callback observes the flag and requests cooperative
@@ -229,6 +239,11 @@ Proposed **CLI v1** resource limits (separate from the broader C API):
 | Total generation attempts | 1-100,000 |
 | Generate/replay sample ordinal | 1-10,000 |
 | Uniqueness tracking memory | 256 MiB |
+
+When `track_uniqueness` is true and no memory budget is supplied, the CLI
+uses a 64 MiB default (the explicit v1 maximum is 256 MiB). Enabling
+`unique_only` requires `track_uniqueness`. Numeric output that cannot fit a
+v1 diagnostic counter produces `LIMIT_EXCEEDED`, not out-of-schema JSON.
 
 The CLI rejects data that violate configured budgets **before** allocating
 large result matrices, and rejects output overflow rather than producing
@@ -281,7 +296,8 @@ python scripts/check_docs.py
 
 PR B adds linked-native assertions for default scoring, ranking backend
 equivalence, transient generation/replay, malformed inputs and error
-classification. PR C must test native Monte Carlo aggregation, progress and
-cancellation; PR D must exercise the installed binary from Python in Linux
-Docker. These acceptance requirements are not satisfied by fixture tests
-alone. See the [3.1.3 milestone](../milestones/3.1.3.md).
+classification. PR C adds native Monte Carlo response, progress, cancellation,
+partial-completion and CSV publication tests. PR D must exercise the installed
+binary through Python `subprocess` on Linux, without requiring a standalone
+native container. These acceptance requirements are not satisfied by schema
+fixtures alone. See the [3.1.3 milestone](../milestones/3.1.3.md).
