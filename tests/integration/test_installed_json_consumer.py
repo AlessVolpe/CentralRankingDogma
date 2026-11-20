@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "examples" / "python_subprocess_consumer"))
 from crd_consumer import invoke, CRDResponseError, CRDTransportError
 

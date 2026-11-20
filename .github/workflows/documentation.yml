@@ -23,7 +23,7 @@ jobs:
       - name: Install JSON contract schema validator
         run: python3 -m pip install -r tests/requirements-json-contract.txt
       - name: Validate versioned JSON contract and fixture examples
-        run: python3 -m unittest discover -s tests -p test_json_contract.py -v
+        run: python3 -m unittest discover -s tests/contracts -p test_json_contract.py -v
       - uses: actions/setup-node@v7
         with:
           node-version: '22'

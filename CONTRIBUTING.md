@@ -62,7 +62,7 @@ scans unrelated previous commits. Run the same policy locally:
 ```sh
 python3 scripts/check_commit_messages.py --title "docs(contributing): document commit policy"
 python3 scripts/check_commit_messages.py --range origin/master..HEAD
-python3 -m unittest discover -s tests -p 'test_commit_messages.py' -v
+python3 -m unittest discover -s tests/tooling -p 'test_commit_messages.py' -v
 ```
 
 **Repository setting required:** allow *squash merging only* and configure the

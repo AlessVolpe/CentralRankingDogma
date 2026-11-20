@@ -16,6 +16,8 @@
 .ninja_*
 cmake_install.cmake
 install_manifest.txt
+/stage/
+/stage-*/
 
 # Generated benchmark results
 /benchmark-*

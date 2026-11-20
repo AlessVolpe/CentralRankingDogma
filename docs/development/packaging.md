@@ -20,7 +20,7 @@ exercise the installed binary rather than an in-tree executable:
 ```sh
 installed/bin/crd-json --version
 CRD_INSTALLED_JSON_BINARY="$PWD/installed/bin/crd-json" \
-  python3 -m unittest discover -s tests -p test_installed_json_consumer.py -v
+  python3 -m unittest discover -s tests/integration -p test_installed_json_consumer.py -v
 python3 examples/python_subprocess_consumer/crd_consumer.py \
   "$PWD/installed/bin/crd-json" \
   tests/fixtures/json_cli_v1/validate.request.json

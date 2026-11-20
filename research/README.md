@@ -19,9 +19,9 @@ runtime dependency. Research scripts require pinned Python dependencies in
    observations of a historical Fantacalcio league.
 2. **Existing historical workbook**: `tests/fixtures/calendar_2026_2027.tsv`
    contains a ten-team fixture with only its finalized prefix; import a
-   pseudonymized copy using `research/import_workbook.py`. Treat predictions or
+   pseudonymized copy using `research/tools/import_workbook.py`. Treat predictions or
    eventual champion claims as outside the available evidence.
-3. **Authorized historical exports**: `research/import_league.py` accepts three
+3. **Authorized historical exports**: `research/tools/import_league.py` accepts three
    normalized CSV files. It checks completeness and structural constraints and
    produces a pseudonymized `competition.tsv` under `research/private/`.
 
@@ -40,9 +40,9 @@ Importer input schema:
 - `scores.csv`: `matchday,team_id,points_tenths,status` (FINAL/PENDING)
 
 ```sh
-python research/import_league.py research/private/raw_export \
+python research/tools/import_league.py research/private/raw_export \
   --output research/private/pseudonymized
-python research/import_workbook.py
+python research/tools/import_workbook.py
 ```
 
 The importers support only complete score matrices, including explicit
@@ -78,15 +78,15 @@ cmake --build build-release --parallel
 ctest --test-dir build-release --output-on-failure
 python -m pip install -r research/requirements.txt
 pytest -q research/tests
-python research/run_experiments.py --smoke --native-dir build-release
+python research/tools/run_experiments.py --smoke --native-dir build-release
 ```
 
 Full research workloads (not CI):
 
 ```sh
-python research/run_experiments.py --native-dir build-release \
+python research/tools/run_experiments.py --native-dir build-release \
   --config research/config/default.json --output research/output/full
-python research/summarize_benchmarks.py research/output/full/ranking-*.csv \
+python research/tools/summarize_benchmarks.py research/output/full/ranking-*.csv \
   --output research/output/full/ranking-summary.csv
 ```
 
@@ -117,7 +117,7 @@ provisional. The C runner rejects zero finalized rounds or invalid calendars.
 For 10 independently seeded CSV pairs (not two backends for the same seed), run:
 
 ```sh
-python research/analyze.py \
+python research/tools/analyze.py \
   --pair research/output/full/league-10-seed-5489-heap.observations.csv \
          research/output/full/league-10-seed-5489-heap.summary.csv \
   --pair research/output/full/league-10-seed-5490-heap.observations.csv \
@@ -157,7 +157,7 @@ For **instrumented internal stage measurements**, configure a separate build:
 cmake -S . -B build-profile -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DCRD_BUILD_BENCHMARKS=ON -DCRD_RESEARCH_PROFILE=ON
 cmake --build build-profile --parallel
-python research/run_experiments.py --smoke --native-dir build-profile \
+python research/tools/run_experiments.py --smoke --native-dir build-profile \
   --output research/output/profile-smoke
 ```
 
@@ -211,10 +211,10 @@ cmake -S . -B build-research -G Ninja -DCMAKE_BUILD_TYPE=Release \
 cmake --build build-research --parallel
 ctest --test-dir build-research --output-on-failure
 python -m pip install -r research/requirements.txt
-python research/run_experiments.py --native-dir build-research \
+python research/tools/run_experiments.py --native-dir build-research \
   --config research/config/default.json --output research/output/full \
   --profile-memory
-python research/verify_evidence.py research/output/full
+python research/tools/verify_evidence.py research/output/full
 ```
 
 The full run is deliberately excluded from ordinary CI. The verification script

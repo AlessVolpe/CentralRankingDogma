@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Test commit policy validator
-        run: python3 -m unittest discover -s tests -p 'test_commit_messages.py' -v
+        run: python3 -m unittest discover -s tests/tooling -p 'test_commit_messages.py' -v
       - name: Validate pull request title and new commits
         env:
           EVENT_NAME: ${{ github.event_name }}

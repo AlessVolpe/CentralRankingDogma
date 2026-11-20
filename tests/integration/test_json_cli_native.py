@@ -11,7 +11,7 @@ from pathlib import Path
 import subprocess
 import unittest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests" / "fixtures" / "json_cli_v1"
 BINARY = os.getenv("CRD_JSON_BINARY")
 try:

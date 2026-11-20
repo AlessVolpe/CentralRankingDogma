@@ -295,7 +295,7 @@ snapshot passes *schema* validation and thus still needs *native* validation.
 
 ```sh
 python -m pip install -r tests/requirements-json-contract.txt
-python -m unittest discover -s tests -p test_json_contract.py -v
+python -m unittest discover -s tests/contracts -p test_json_contract.py -v
 python scripts/check_docs.py
 ```
 

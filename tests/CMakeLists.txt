@@ -141,7 +141,7 @@ add_test(NAME installed_consumer
         "-DC_COMPILER=${CMAKE_C_COMPILER}"
         "-DCONFIG=$<CONFIG>"
         "-DSANITIZERS=${CRD_ENABLE_SANITIZERS}"
-        -P "${PROJECT_SOURCE_DIR}/tests/verify_installed_consumer.cmake")
+        -P "${PROJECT_SOURCE_DIR}/tests/support/verify_installed_consumer.cmake")
 
 # 3.0.8: exhaustive logical state checks around controlled allocation failures.
 add_executable(test_failure_matrix adversarial/test_failure_matrix.c)
@@ -244,7 +244,7 @@ add_test(NAME ranking_batch_example COMMAND crd_ranking_batch)
 # In contrast to a combined include test, this also catches missing headers.
 foreach (header IN ITEMS
         central_ranking_dogma bostree commons hashmap_base hashmap_typed mtwister team competition standings calendar ranking match season_resolution monte_carlo)
-    add_library(header_c11_${header} OBJECT test_public_header_c11.c)
+    add_library(header_c11_${header} OBJECT contracts/test_public_header_c11.c)
     target_include_directories(header_c11_${header} PRIVATE ${PROJECT_SOURCE_DIR}/native/include)
     target_compile_definitions(header_c11_${header} PRIVATE
         "CRD_PUBLIC_HEADER=\"${header}.h\"")
@@ -420,6 +420,6 @@ if (BUILD_TESTING)
         add_test(NAME json_cli_native_contract
                  COMMAND "${CMAKE_COMMAND}" -E env
                  "CRD_JSON_BINARY=$<TARGET_FILE:crd_json>"
-                 "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/test_json_cli_native.py")
+                 "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/integration/test_json_cli_native.py")
     endif ()
 endif ()

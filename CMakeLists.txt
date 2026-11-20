@@ -27,7 +27,7 @@ include(cmake/modules/CompilerOptions.cmake)
 add_subdirectory(native)
 
 # Deterministic, non-interactive public ranking API example.
-add_executable(crd_ranking_batch examples/ranking_batch.c)
+add_executable(crd_ranking_batch examples/native/ranking_batch.c)
 set_target_properties(crd_ranking_batch PROPERTIES OUTPUT_NAME "crd-ranking-batch")
 target_link_libraries(crd_ranking_batch PRIVATE CentralRankingDogma::central_ranking_dogma)
 crd_apply_dev_options(crd_ranking_batch)
