@@ -48,11 +48,11 @@ With exactly eight configurable thresholds, goal conversion and optional correct
 
 ## 6. Public C11 interface and ownership
 
-[`include/match.h`](../../include/match.h) exposes `match_rules_t`, `match_result_t`, `match_rules_default`, `match_rules_uniform`, `match_rules_validate`, and `match_resolve_scores`. All inputs are borrowed and read-only; the returned result is copied into caller memory. Errors are `-EINVAL` for invalid arguments or configurations. Uniform-profile constructors also reject threshold arithmetic that cannot be represented. No global state exists.
+[`include/match.h`](../../native/include/match.h) exposes `match_rules_t`, `match_result_t`, `match_rules_default`, `match_rules_uniform`, `match_rules_validate`, and `match_resolve_scores`. All inputs are borrowed and read-only; the returned result is copied into caller memory. Errors are `-EINVAL` for invalid arguments or configurations. Uniform-profile constructors also reject threshold arithmetic that cannot be represented. No global state exists.
 
 ## 7. Verification
 
-[`test_match.c`](../../tests/test_match.c) covers boundary-adjacent values at every default threshold, goals nine through eleven, configurable post-eighth intervals, irregular bands, invalid rule profiles, equal-score immunity, both correction predicates and their below-threshold flags, operand exchange, and error-atomic output. The [historical ten-team regression](../../tests/test_season_resolution.c) supplies independent fixture-level expectations for the first eight completed rounds. It contains no scores above the eighth goal; post-eighth behavior is tested synthetically and is specified by the league-settings screenshot, **not** inferred from the workbook.
+[`test_match.c`](../../tests/contracts/test_match.c) covers boundary-adjacent values at every default threshold, goals nine through eleven, configurable post-eighth intervals, irregular bands, invalid rule profiles, equal-score immunity, both correction predicates and their below-threshold flags, operand exchange, and error-atomic output. The [historical ten-team regression](../../tests/contracts/test_season_resolution.c) supplies independent fixture-level expectations for the first eight completed rounds. It contains no scores above the eighth goal; post-eighth behavior is tested synthetically and is specified by the league-settings screenshot, **not** inferred from the workbook.
 
 ## 8. Limitations
 

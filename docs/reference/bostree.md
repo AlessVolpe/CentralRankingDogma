@@ -36,7 +36,7 @@ AVL height is $O(\log n)$. Search, insertion, deletion, rank and selection are $
 
 ## 6. Public C11 interface and ownership
 
-Use opaque handles and accessors from [`bostree.h`](../../include/bostree.h), including `bostree_select`, `bostree_rank`, `bostree_lookup` and `bostree_node_is_valid`. The tree's finalization callback and retained-reference conventions control payload lifetime. Private node structure is not a public ABI.
+Use opaque handles and accessors from [`bostree.h`](../../native/include/bostree.h), including `bostree_select`, `bostree_rank`, `bostree_lookup` and `bostree_node_is_valid`. The tree's finalization callback and retained-reference conventions control payload lifetime. Private node structure is not a public ABI.
 
 ## 7. Verification
 

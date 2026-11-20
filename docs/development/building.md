@@ -39,11 +39,11 @@ cmake --build build-ucrt --parallel
 ctest --test-dir build-ucrt --output-on-failure
 ```
 
-Do not reuse old Visual Studio/NMake CMake caches. Sanitizer runtimes on Windows vary by toolchain; enabling sanitizers is optional and CMake verifies link support.
+Do not reuse old Visual Studio/NMake CMake caches. Sanitizer runtimes on Windows vary by toolchain; enabling sanitizers is optional and CMake verifies link support. The configured UCRT64 Python may not ship `pip`, `pytest` or `jsonschema`; use matching Pacman packages or a separate WSL Python environment for test-only dependencies.
 
 ## Installed-package validation
 
 See [packaging](packaging.md). Benchmark consumers remain optional and do not
 add runtime dependencies to the installed native library. For reproducible
 research workloads and the separate pinned Python environment, follow the
-[3.1.2 research guide](../../research/README.md).
+[3.1.2 research guide](../../research/README.md). For the complete native, Python, packaging, sanitizer, research and documentation verification sequence, use the [local verification matrix](local-verification.md).

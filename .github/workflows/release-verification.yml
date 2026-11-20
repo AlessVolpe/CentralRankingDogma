@@ -36,7 +36,7 @@ jobs:
         run: |
           test -x "$PWD/stage/bin/crd-json"
           CRD_INSTALLED_JSON_BINARY="$PWD/stage/bin/crd-json" \
-            python3 -m unittest discover -s tests -p test_installed_json_consumer.py -v
+            python3 -m unittest discover -s tests/integration -p test_installed_json_consumer.py -v
       - name: Configure and build independent package consumer
         run: |
           cmake -S examples/external_consumer -B build-consumer -G Ninja \

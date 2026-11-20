@@ -39,7 +39,7 @@ The mandatory $NR$ score matrix requires $\Theta(NR)$ memory. The pair-frequency
 
 ## 6. Public C11 interface and ownership
 
-See [`competition.h`](../../include/competition.h): `competition_create/destroy`, `competition_team_at`, `competition_fixture_at`, `competition_score_at`, `competition_pair_count`, `competition_round_matchday` and `competition_is_simulation_ready`. Input strings/arrays may be freed after successful construction. Borrowed display-name pointers remain valid only while the competition exists.
+See [`competition.h`](../../native/include/competition.h): `competition_create/destroy`, `competition_team_at`, `competition_fixture_at`, `competition_score_at`, `competition_pair_count`, `competition_round_matchday` and `competition_is_simulation_ready`. Input strings/arrays may be freed after successful construction. Borrowed display-name pointers remain valid only while the competition exists.
 
 ## 7. Verification
 

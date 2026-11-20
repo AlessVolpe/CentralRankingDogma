@@ -32,7 +32,7 @@ Storing one record per team uses $\Theta(N)$ space. Access by index and local re
 
 ## 6. Public C11 interface and ownership
 
-[`standings.h`](../../include/standings.h) exposes `standings_create`, `standings_entry_at`, `standings_entry_for_uuid`, `standings_record_result`, `standings_record_match`, `standings_reset` and `standings_destroy`, with 3.1.0 additions `standings_record_scored_match` and `standings_goal_stats_at`. `standing_entry_t` retains its original published field layout; the opaque standings allocation privately owns goal counters. The `home` argument to `standings_record_match` identifies the fixture's first side and **does not introduce home advantage**.
+[`standings.h`](../../native/include/standings.h) exposes `standings_create`, `standings_entry_at`, `standings_entry_for_uuid`, `standings_record_result`, `standings_record_match`, `standings_reset` and `standings_destroy`, with 3.1.0 additions `standings_record_scored_match` and `standings_goal_stats_at`. `standing_entry_t` retains its original published field layout; the opaque standings allocation privately owns goal counters. The `home` argument to `standings_record_match` identifies the fixture's first side and **does not introduce home advantage**.
 
 ## 7. Verification
 

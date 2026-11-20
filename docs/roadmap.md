@@ -20,7 +20,7 @@ This file is the **canonical documentation status ledger**, not a package releas
 | `3.1.1` | Monte Carlo simulation engine | Implemented in master; CI verified | [Details](milestones/3.1.1.md) |
 | `3.1.2` | Ranking integration and scientific evaluation | Implemented in current source; scoped synthetic evidence verified (PR #23) | [Details](milestones/3.1.2.md) |
 | `3.1.3` | External integration contract and JSON CLI | Implemented in master; independent Python consumer and Linux installation merged (PR #27) | [Details](milestones/3.1.3.md) |
-| `3.1.4` | Central Ranking Dogma identity migration and repository maintenance | Implementation in progress; PR A merged, PR B tooling migration underway | [Details](milestones/3.1.4.md) |
+| `3.1.4` | Central Ranking Dogma identity migration and repository maintenance | PR A/B merged (#28/#29); PR C source and documentation reorganization in progress (#30) | [Details](milestones/3.1.4.md) |
 
 ## Evidence and change policy
 
@@ -29,4 +29,4 @@ This file is the **canonical documentation status ledger**, not a package releas
 - Tests and CI are evidence for specific commits, workloads and toolchains; they do not prove all possible executions correct.
 - On future releases, update this ledger and the affected milestone *in the same PR*. Record the commit, tests/CI results, breaking changes, and scientific assumptions when verified.
 - The 3.1.1 implementation is merged via [PR #19](https://github.com/AlessVolpe/LeaderboardSystem/pull/19); the recorded `master` build, release and documentation checks succeeded. This supports implementation status, not claims of uniform calendar sampling or thesis-level statistical validity.
-- Milestone 3.1.2 completed the composite-key ranking integration and controlled synthetic research evaluation. Milestone 3.1.3 delivered the [versioned JSON CLI boundary](integration/json-cli-v1.md) and independent Python consumer. Milestone 3.1.4 renames the package and reorganizes current tooling without rewriting historical evidence. The Python web application remains outside this C repository.
+- Milestone 3.1.2 completed the composite-key ranking integration and controlled synthetic research evaluation. Milestone 3.1.3 delivered the [versioned JSON CLI boundary](integration/json-cli-v1.md) and independent Python consumer. Milestone 3.1.4 renames the package, executables and build configuration and modularizes the current [repository layout](development/repository-layout.md), without rewriting historical evidence. The [migration guide](development/migration-3.1.4.md) documents downstream integration changes. The Python web application remains outside this C repository.

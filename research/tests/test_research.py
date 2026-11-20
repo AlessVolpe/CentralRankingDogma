@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 from analyze import analyze, bootstrap_seed_means, load_batch, kendall_tie_aware
 from import_league import normalize
 from import_workbook import convert

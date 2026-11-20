@@ -45,4 +45,4 @@ jobs:
       - name: Static analysis smoke and example
         run: |
           python -m pytest -q research/tests
-          python research/analyze.py --pair research/examples/observations.csv research/examples/summary.csv --output research/output/demo
+          python research/tools/analyze.py --pair research/examples/observations.csv research/examples/summary.csv --output research/output/demo
