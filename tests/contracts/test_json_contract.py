@@ -1,4 +1,4 @@
-"""Schema and example contract tests for planned 3.1.3 JSON CLI v1.
+"""Schema and example contract tests for implemented JSON CLI v1.
 
 These fixtures are illustrative; they do not assert native algorithm outputs.
 """

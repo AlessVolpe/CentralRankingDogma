@@ -1,0 +1,33 @@
+# GitHub's automatically generated release notes use PR labels when present.
+# Unlabelled PRs fall through to Other changes rather than disappearing.
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - dependabot[bot]
+  categories:
+    - title: Breaking changes
+      labels:
+        - breaking
+        - breaking-change
+    - title: Features
+      labels:
+        - enhancement
+        - feature
+    - title: Fixes
+      labels:
+        - bug
+        - fix
+    - title: Build and release engineering
+      labels:
+        - ci
+        - build
+        - release
+    - title: Documentation and research
+      labels:
+        - documentation
+        - research
+    - title: Other changes
+      labels:
+        - '*'

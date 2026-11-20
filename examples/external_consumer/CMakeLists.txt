@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-find_package(CentralRankingDogma 3.1.3 CONFIG REQUIRED)
+find_package(CentralRankingDogma 3.1.4 CONFIG REQUIRED)
 add_executable(crd_external_consumer main.c)
 set_target_properties(crd_external_consumer PROPERTIES
     OUTPUT_NAME "crd-external-consumer")

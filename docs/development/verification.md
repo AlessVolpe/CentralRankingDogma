@@ -17,12 +17,12 @@ The reproducible ten-team fixture has 40 FINAL matches and the remaining season 
 
 ## 3.1.1 merged baseline and CI evidence
 
-The merged 3.1.1 [PR #19](https://github.com/AlessVolpe/LeaderboardSystem/pull/19)
+The merged 3.1.1 [PR #19](https://github.com/AlessVolpe/CentralRankingDogma/pull/19)
 adds `monte_carlo_contract` and `monte_carlo_failure_contract` alongside the
 existing deterministic season and calendar tests. On 2026-11-18, the
-post-merge `master` [C library workflow](https://github.com/AlessVolpe/LeaderboardSystem/actions/runs/44204500916),
-[Release/installed-consumer workflow](https://github.com/AlessVolpe/LeaderboardSystem/actions/runs/44204500913), and
-[scientific documentation workflow](https://github.com/AlessVolpe/LeaderboardSystem/actions/runs/44204500788)
+post-merge `master` [C library workflow](https://github.com/AlessVolpe/CentralRankingDogma/actions/runs/44204500916),
+[Release/installed-consumer workflow](https://github.com/AlessVolpe/CentralRankingDogma/actions/runs/44204500913), and
+[scientific documentation workflow](https://github.com/AlessVolpe/CentralRankingDogma/actions/runs/44204500788)
 all completed successfully. Such finite verification establishes build and
 regression evidence for a recorded revision, not uniformity, statistical
 independence, comparative ranking performance or universal memory safety.

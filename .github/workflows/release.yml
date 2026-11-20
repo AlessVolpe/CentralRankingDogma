@@ -1,0 +1,338 @@
+name: Automatic native release
+
+# Merging a new CMake project version to master is the sole publishing trigger.
+# PRs and manual dispatches validate the release process without publishing.
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: automatic-native-release-${{ github.ref == 'refs/heads/master' && 'master' || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Detect version and release intent
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      validate: ${{ steps.version.outputs.validate }}
+      publish: ${{ steps.version.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Audit release source metadata and canonical integration contracts
+        run: python3 scripts/verify_release_bundle.py source --repo .
+      - name: Validate project version and detect unpublished releases
+        id: version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(sed -nE 's/^project\(CentralRankingDogma VERSION ([0-9]+\.[0-9]+\.[0-9]+) LANGUAGES C\)$/\1/p' CMakeLists.txt)"
+          if [[ -z "$version" ]]; then
+            echo '::error::CMakeLists.txt must declare a three-component CentralRankingDogma version'
+            exit 1
+          fi
+          tag="v${version}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo 'validate=true' >> "$GITHUB_OUTPUT"
+          echo 'publish=false' >> "$GITHUB_OUTPUT"
+
+          # Never publish from pull requests, forks, or manual validation runs.
+          if [[ "$GITHUB_EVENT_NAME" != 'push' || "$GITHUB_REF" != 'refs/heads/master' ]]; then
+            echo "Validation only: ${tag}"
+            exit 0
+          fi
+
+          # The baseline 3.1.3 predated automated releases. Never publish it
+          # accidentally if the workflow lands before the final version bump.
+          if [[ "$(printf '%s\n%s\n' "$tag" 'v3.1.4' | sort -V | head -n 1)" != 'v3.1.4' ]]; then
+            echo "Version ${tag} predates the first automated release (v3.1.4)."
+            echo 'validate=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Subsequent merges without a version bump do not republish releases.
+          if gh release view "$tag" --json tagName >/dev/null 2>&1; then
+            echo "Release ${tag} already exists; no publishing work is needed."
+            echo 'validate=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Refuse to reuse an orphaned/previously created tag. A release must
+          # never silently be rebuilt from a different source revision.
+          if git ls-remote --exit-code --tags --refs origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "::error::Tag ${tag} already exists without a published release; resolve it explicitly."
+            exit 1
+          fi
+
+          # Prevent accidental release of a version older than the latest
+          # versioned stable tag. No prerelease tags participate in this check.
+          latest="$(git ls-remote --tags --refs origin 'refs/tags/v*' \
+            | awk '{print $2}' | sed 's@^refs/tags/@@' \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
+          if [[ -n "$latest" && "$(printf '%s\n%s\n' "$tag" "$latest" | sort -V | tail -n 1)" == "$latest" ]]; then
+            echo "::error::Version ${tag} is not newer than the latest existing stable tag ${latest}."
+            exit 1
+          fi
+
+          echo 'publish=true' >> "$GITHUB_OUTPUT"
+          echo "Unreleased native version detected: ${tag}"
+
+  linux:
+    name: Linux / GCC / installable release
+    needs: plan
+    if: needs.plan.outputs.validate == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure, build, and run CTest
+        run: |
+          cmake -S . -B build-release -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCRD_BUILD_BENCHMARKS=ON \
+            -DCRD_WARNINGS_AS_ERRORS=ON
+          cmake --build build-release --parallel
+          ctest --test-dir build-release --output-on-failure
+      - name: Install package and test independent consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --install build-release --prefix "$PWD/stage"
+          test -x stage/bin/crd-json
+          test "$(stage/bin/crd-json --version)" = "crd-json ${{ needs.plan.outputs.version }}"
+          CRD_INSTALLED_JSON_BINARY="$PWD/stage/bin/crd-json" \
+            python3 -m unittest discover -s tests/integration \
+              -p test_installed_json_consumer.py -v
+          cmake -S examples/external_consumer -B build-consumer -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$PWD/stage"
+          cmake --build build-consumer --parallel
+          ctest --test-dir build-consumer --output-on-failure
+      - name: Package installed Linux distribution
+        shell: bash
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          set -euo pipefail
+          cp LICENSE README.md THIRD_PARTY_NOTICES.md stage/
+          mkdir -p dist
+          tar -C stage -czf "dist/central-ranking-dogma-v${VERSION}-linux-x86_64.tar.gz" .
+      - name: Verify packaged Linux distribution
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          python3 scripts/verify_release_bundle.py archive \
+            --path "dist/central-ranking-dogma-v${VERSION}-linux-x86_64.tar.gz" \
+            --platform linux --version "${VERSION}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: crd-linux-x86_64
+          path: dist/*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+  windows:
+    name: Windows / UCRT64 / installable release
+    needs: plan
+    if: needs.plan.outputs.validate == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+      - name: Build, test, install and verify the public package
+        shell: msys2 {0}
+        run: |
+          set -e
+          cmake -S . -B build-release -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCRD_BUILD_BENCHMARKS=ON \
+            -DCRD_WARNINGS_AS_ERRORS=ON
+          cmake --build build-release --parallel
+          ctest --test-dir build-release --output-on-failure
+          cmake --install build-release --prefix "$PWD/stage"
+          test -f stage/bin/crd-json.exe
+          test "$(stage/bin/crd-json.exe --version)" = "crd-json ${{ needs.plan.outputs.version }}"
+          cmake -S examples/external_consumer -B build-consumer -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$PWD/stage"
+          cmake --build build-consumer --parallel
+          ctest --test-dir build-consumer --output-on-failure
+      - name: Package installed UCRT64 distribution
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          Copy-Item LICENSE,README.md,THIRD_PARTY_NOTICES.md stage/
+          New-Item -ItemType Directory -Force dist | Out-Null
+          $archive = "dist/central-ranking-dogma-v{0}-windows-ucrt64-x86_64.zip" -f $env:VERSION
+          Compress-Archive -Path stage/* -DestinationPath $archive
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Verify packaged Windows UCRT64 distribution
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          $archive = "dist/central-ranking-dogma-v{0}-windows-ucrt64-x86_64.zip" -f $env:VERSION
+          python scripts/verify_release_bundle.py archive `
+            --path $archive --platform windows-ucrt64 --version $env:VERSION
+      - uses: actions/upload-artifact@v7
+        with:
+          name: crd-windows-ucrt64-x86_64
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  sanitizers:
+    name: Linux / Clang / ASan + UBSan
+    needs: plan
+    if: needs.plan.outputs.validate == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Clang runtime
+        run: sudo apt-get update && sudo apt-get install -y clang-18 libclang-rt-18-dev
+      - name: Configure, build and test with sanitizers
+        run: |
+          cmake -S . -B build-asan -G Ninja \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCRD_ENABLE_SANITIZERS=ON \
+            -DCRD_WARNINGS_AS_ERRORS=ON
+          cmake --build build-asan --parallel
+          ctest --test-dir build-asan --output-on-failure
+
+  libfuzzer:
+    name: Linux / Clang / libFuzzer (${{ matrix.structure }})
+    needs: plan
+    if: needs.plan.outputs.validate == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        structure: [hashmap, bostree]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Clang with libFuzzer
+        run: sudo apt-get update && sudo apt-get install -y clang-18 libclang-rt-18-dev
+      - name: Run a bounded instrumented fuzz campaign
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S . -B build-fuzz -G Ninja \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCRD_BUILD_FUZZERS=ON \
+            -DCRD_WARNINGS_AS_ERRORS=ON
+          cmake --build build-fuzz --target 'fuzz_${{ matrix.structure }}_libfuzzer'
+          mkdir -p fuzz-corpus
+          './build-fuzz/tests/fuzz_${{ matrix.structure }}_libfuzzer' fuzz-corpus \
+            -runs=1000 -max_len=4096 -timeout=10
+
+  scientific-and-docs:
+    name: Research, JSON schema and documentation
+    needs: plan
+    if: needs.plan.outputs.validate == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install pinned Python test and research dependencies
+        run: python -m pip install -r tests/requirements-json-contract.txt -r research/requirements.txt
+      - name: Verify schema, research and documentation
+        run: |
+          python scripts/check_docs.py
+          python -m unittest discover -s tests/contracts -p test_json_contract.py -v
+          python -m unittest discover -s tests/tooling -p test_commit_messages.py -v
+          python -m unittest discover -s tests/tooling -p test_release_verification.py -v
+          python -m pytest -q research/tests
+          cmake -S . -B build-research -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DCRD_BUILD_BENCHMARKS=ON
+          cmake --build build-research --parallel
+          python research/tools/run_experiments.py --smoke \
+            --native-dir build-research --output research/output/release-native-smoke
+          python research/tools/analyze.py \
+            --pair research/examples/observations.csv research/examples/summary.csv \
+            --output research/output/release-smoke
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Lint current Markdown and parse diagrams
+        run: |
+          npm install --no-save --package-lock=false \
+            markdownlint-cli2@0.20.0 mermaid@11.12.0 jsdom@26.1.0
+          npx --no-install markdownlint-cli2 \
+            'README.md' 'CONTRIBUTING.md' 'docs/**/*.md' '#docs/archive/**'
+          node scripts/check_mermaid.mjs
+
+  publish:
+    name: Publish new version to GitHub Releases
+    if: github.event_name == 'push' && needs.plan.outputs.publish == 'true'
+    needs: [plan, linux, windows, sanitizers, libfuzzer, scientific-and-docs]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: crd-*
+          merge-multiple: true
+          path: dist
+      - name: Generate distribution checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          test "$(find . -maxdepth 1 -name '*.tar.gz' | wc -l)" -eq 1
+          test "$(find . -maxdepth 1 -name '*.zip' | wc -l)" -eq 1
+          sha256sum *.tar.gz *.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - name: Verify downloaded artifacts and final checksum manifest
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          python3 scripts/verify_release_bundle.py checksums \
+            --directory dist --version "${VERSION}"
+      - name: Create tag and release after all required checks succeed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          set -euo pipefail
+          # gh release create creates the tag on this exact validated commit.
+          # Do not create the tag in another workflow: GITHUB_TOKEN tag pushes
+          # do not trigger independent push workflows.
+          gh release create "$TAG" \
+            dist/*.tar.gz dist/*.zip dist/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" \
+            --title "Central Ranking Dogma $TAG" \
+            --generate-notes \
+            --latest

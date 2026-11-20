@@ -33,16 +33,16 @@ Milestone 3.1.3 originally installed `leaderboard-json`; milestone 3.1.4
 PR B renames it to `crd-json` under the CMake runtime bindir (normally
 `bin`), and provides a standalone Python subprocess consumer. The command
 `crd-json --version` exits zero and prints
-`crd-json 3.1.3` followed by LF to stdout, with empty stderr and no
+`crd-json 3.1.4` followed by LF to stdout, with empty stderr and no
 stdin request. It is the **only** non-JSON stdout success mode. The JSON wire
-schema remains `1.0` independent of the native 3.1.3 package version.
+schema remains `1.0` independent of the native 3.1.4 package version.
 Containerization belongs to the future Python worker, not the standalone
 native executable.
 
 ## 2. Versioning, schemas and serialization
 
 The external protocol version is **`"1.0"`**, deliberately independent of
-the planned native 3.1.3 release and subsequent native versions.
+the historical 3.1.3 implementation and subsequent native releases.
 The accepted JSON documents are defined by Draft 2020-12 schemas:
 
 - [Request schema](../../schemas/leaderboard-cli-v1-request.schema.json)
