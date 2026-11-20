@@ -52,7 +52,7 @@ With exactly eight configurable thresholds, goal conversion and optional correct
 
 ## 7. Verification
 
-[`test_match.c`](../../tests/test_match.c) covers boundary-adjacent values at every default threshold, goals nine through eleven, configurable post-eighth intervals, irregular bands, invalid rule profiles, equal-score immunity, both correction predicates and their below-threshold flags, operand exchange, and error-atomic output. The [historical ten-team regression](../../tests/test_season_resolution.c) supplies independent fixture-level expectations for the first eight completed rounds. It contains no scores above the eighth goal; post-eighth behavior is tested synthetically and is specified by the league-settings screenshot, **not** inferred from the workbook.
+[`test_match.c`](../../tests/contracts/test_match.c) covers boundary-adjacent values at every default threshold, goals nine through eleven, configurable post-eighth intervals, irregular bands, invalid rule profiles, equal-score immunity, both correction predicates and their below-threshold flags, operand exchange, and error-atomic output. The [historical ten-team regression](../../tests/contracts/test_season_resolution.c) supplies independent fixture-level expectations for the first eight completed rounds. It contains no scores above the eighth goal; post-eighth behavior is tested synthetically and is specified by the league-settings screenshot, **not** inferred from the workbook.
 
 ## 8. Limitations
 

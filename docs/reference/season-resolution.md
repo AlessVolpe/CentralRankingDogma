@@ -76,9 +76,9 @@ Results are single-threaded immutable snapshots after publication. Neither selec
 
 ## 7. Verification
 
-[`test_season_resolution.c`](../../tests/test_season_resolution.c) exercises the original baseline, generated alternatives, finalized-prefix stopping rules, empty prefixes, score invariance, shared ties and ownership. The historical 2026/27 regression fixture contains ten teams, 35 scheduled league rounds and the first eight rounds finalized. Forty precomputed fixture goal pairs are checked independently, together with all ten championship point totals, scope-local fantasy totals, goal differences, $\sum P_i=106$ and $\sum GF_i=166$. These finite observations do not imply uniform calendar sampling.
+[`test_season_resolution.c`](../../tests/contracts/test_season_resolution.c) exercises the original baseline, generated alternatives, finalized-prefix stopping rules, empty prefixes, score invariance, shared ties and ownership. The historical 2026/27 regression fixture contains ten teams, 35 scheduled league rounds and the first eight rounds finalized. Forty precomputed fixture goal pairs are checked independently, together with all ten championship point totals, scope-local fantasy totals, goal differences, $\sum P_i=106$ and $\sum GF_i=166$. These finite observations do not imply uniform calendar sampling.
 
-[`test_resolution_failures.c`](../../tests/test_resolution_failures.c) exercises fault-injected construction and two-team rollback, legacy/scored state completeness and invalid arguments. The installed public C headers, Windows UCRT64, GCC Linux and sanitizer jobs remain release gates. No new CI result is asserted before the branch is tested on GitHub.
+[`test_resolution_failures.c`](../../tests/adversarial/test_resolution_failures.c) exercises fault-injected construction and two-team rollback, legacy/scored state completeness and invalid arguments. The installed public C headers, Windows UCRT64, GCC Linux and sanitizer jobs remain release gates. No new CI result is asserted before the branch is tested on GitHub.
 
 ## 8. Limitations
 
