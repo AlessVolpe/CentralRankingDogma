@@ -28,7 +28,7 @@
 
 ---
 
-**Current native version:** 3.1.4 (PR D release candidate; automatic publication follows merge to `master` and successful release verification). The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `crd-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
+**Current native version:** 3.1.4 (first official release). Central Ranking Dogma provides a reusable ISO C11 library, an independently installed JSON subprocess adapter, and a controlled research toolkit. The default ranking backend remains heapsort, with an optional composite-key AVL backend. The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `crd-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
 
 ## Read the research or use the library
 
