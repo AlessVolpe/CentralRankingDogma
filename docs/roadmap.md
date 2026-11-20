@@ -20,7 +20,7 @@ This file is the **canonical documentation status ledger**, not a package releas
 | `3.1.1` | Monte Carlo simulation engine | Implemented in master; CI verified | [Details](milestones/3.1.1.md) |
 | `3.1.2` | Ranking integration and scientific evaluation | Implemented in current source; scoped synthetic evidence verified (PR #23) | [Details](milestones/3.1.2.md) |
 | `3.1.3` | External integration contract and JSON CLI | Implemented in master; independent Python consumer and Linux installation merged (PR #27) | [Details](milestones/3.1.3.md) |
-| `3.1.4` | Central Ranking Dogma identity migration and repository maintenance | Planned; PR A packaging migration in progress | [Details](milestones/3.1.4.md) |
+| `3.1.4` | Central Ranking Dogma identity migration and repository maintenance | Implementation in progress; PR A merged, PR B tooling migration underway | [Details](milestones/3.1.4.md) |
 
 ## Evidence and change policy
 

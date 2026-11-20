@@ -146,7 +146,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
 }
 
-#ifndef LEADERBOARD_LIBFUZZER
+#ifndef CRD_LIBFUZZER
 static uint32_t next_random(uint32_t *state) {
     uint32_t x = *state;
     x ^= x << 13; x ^= x >> 17; x ^= x << 5;

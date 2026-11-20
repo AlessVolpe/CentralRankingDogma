@@ -14,7 +14,7 @@
 #include "match.h"
 #include "monte_carlo.h"
 #include "season_resolution.h"
-#ifdef LEADERBOARD_RESEARCH_PROFILE
+#ifdef CRD_RESEARCH_PROFILE
 #include "research_profile_internal.h"
 #endif
 #include <errno.h>
@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
     FILE *observations = fopen(argv[7], "wb");
     check(observations != NULL, "cannot open observation output");
     monte_carlo_result_t *result = NULL;
-#ifdef LEADERBOARD_RESEARCH_PROFILE
+#ifdef CRD_RESEARCH_PROFILE
     leaderboard_profile_reset();
 #endif
     double start_wall = wall_time(), start_cpu = cpu_time();
@@ -239,7 +239,7 @@ int main(int argc, char **argv) {
           "summary CSV write failed");
     printf("experiment,dataset,backend,phase,count,operations,replication,seed,"
            "wall_seconds,cpu_seconds,checksum,wrapper_allocations,wrapper_requested_bytes\n");
-#ifdef LEADERBOARD_RESEARCH_PROFILE
+#ifdef CRD_RESEARCH_PROFILE
     static const char *names[] = {
         "profile_generation", "profile_resolution_including_ranking",
         "profile_ranking", "profile_aggregation", "profile_canonicalization"

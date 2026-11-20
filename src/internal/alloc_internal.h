@@ -12,7 +12,7 @@
 void *leaderboard_alloc_malloc(size_t size);
 void *leaderboard_alloc_calloc(size_t count, size_t size);
 
-#ifdef LEADERBOARD_TEST_ALLOCATION_FAULTS
+#ifdef CRD_TEST_ALLOCATION_FAULTS
 /* The next allocation after `successes` successful attempts fails once.
  * Global, deterministic, single-threaded testing hook; never installed. */
 void leaderboard_alloc_fail_after(size_t successes);

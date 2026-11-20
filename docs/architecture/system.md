@@ -6,8 +6,8 @@ This is a **planned integration architecture**, not an assertion that the Python
 flowchart LR
     UI["Future web client"] <--> PY["Future Python application"]
     PY <--> DB[(Future league database)]
-    PY -.->|Planned JSON stdin/stdout| TRANSPORT["3.1.3 leaderboard-json CLI"]
-    TRANSPORT -->|PR B native validate/generate/resolve calls| C["LeaderboardSystem / ISO C11"]
+    PY -.->|Planned JSON stdin/stdout| TRANSPORT["3.1.3 crd-json CLI"]
+    TRANSPORT -->|PR B native validate/generate/resolve calls| C["Central Ranking Dogma / ISO C11"]
     C --> CLI["Current native example consumers"]
 ```
 

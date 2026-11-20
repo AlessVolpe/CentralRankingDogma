@@ -1,5 +1,5 @@
 /*
- * LeaderboardSystem CLI example (legacy).
+ * Central Ranking Dogma CLI example (legacy).
  * Copyright (C) 2024-2026 Alessandro Volpe
  * SPDX-License-Identifier: GPL-3.0-only
  */

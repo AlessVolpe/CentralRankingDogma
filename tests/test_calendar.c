@@ -69,10 +69,10 @@ static int reject_incompatible(void) {
 /* Import the literal 10-team/35-round user calendar (including pending dates)
  * to check the anchored ninth base round and real directed home/away counts. */
 static int real_calendar(void) {
-#ifndef LEADERBOARD_CALENDAR_TSV
-#error "Define LEADERBOARD_CALENDAR_TSV"
+#ifndef CRD_CALENDAR_TSV
+#error "Define CRD_CALENDAR_TSV"
 #endif
-    FILE *file=fopen(LEADERBOARD_CALENDAR_TSV,"rb");CHECK(file!=NULL);
+    FILE *file=fopen(CRD_CALENDAR_TSV,"rb");CHECK(file!=NULL);
     char ids[10][TEAM_UUID_TEXT_SIZE];
     char names[10][TEAM_NAME_MAX_BYTES+1];
     competition_team_input_t teams[10];

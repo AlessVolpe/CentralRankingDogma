@@ -13,7 +13,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "json_cli_v1"
-BINARY = os.getenv("LEADERBOARD_JSON_BINARY")
+BINARY = os.getenv("CRD_JSON_BINARY")
 try:
     from jsonschema import Draft202012Validator
 except ImportError:
@@ -25,7 +25,7 @@ else:
     RESPONSE_SCHEMA = None
 
 
-@unittest.skipUnless(BINARY and Path(BINARY).exists(), "set LEADERBOARD_JSON_BINARY")
+@unittest.skipUnless(BINARY and Path(BINARY).exists(), "set CRD_JSON_BINARY")
 class NativeCliContract(unittest.TestCase):
     def call(self, request: dict | bytes, args: list[str] | None = None) -> tuple[int, dict, str]:
         raw = request if isinstance(request, bytes) else json.dumps(request).encode("utf-8")

@@ -1,4 +1,4 @@
-# LeaderboardSystem JSON CLI v1: external integration contract
+# Central Ranking Dogma JSON CLI v1: external integration contract
 
 **Status:** Normative 3.1.3 wire contract defined in merged PR A. PR B
 implements the native `validate`, `generate` and `resolve` operations. PR C
@@ -13,7 +13,7 @@ not independently verified native golden results.
 The future Python web application owns authentication, team registration, UUID
 creation, database persistence, authorized Fantagazzetta source import,
 background jobs, request timeouts and displaying decimal fantasy scores.
-An installed `leaderboard-json` **Linux executable** supplies stateless,
+An installed `crd-json` **Linux executable** supplies stateless,
 validated access to the existing ISO C11 computational library. No Python,
 JSON, container or database dependency is introduced in the installed
 `CentralRankingDogma::central_ranking_dogma` static library. Windows remains a CI/test target.
@@ -29,10 +29,11 @@ JSON, container or database dependency is introduced in the installed
 - The Python caller controls the subprocess lifetime, arguments, temporary
   files, container limits and process reaping. No web server is implemented here.
 
-PR D installs `leaderboard-json` under the CMake runtime bindir (normally
+Milestone 3.1.3 originally installed `leaderboard-json`; milestone 3.1.4
+PR B renames it to `crd-json` under the CMake runtime bindir (normally
 `bin`), and provides a standalone Python subprocess consumer. The command
-`leaderboard-json --version` exits zero and prints
-`leaderboard-json 3.1.3` followed by LF to stdout, with empty stderr and no
+`crd-json --version` exits zero and prints
+`crd-json 3.1.3` followed by LF to stdout, with empty stderr and no
 stdin request. It is the **only** non-JSON stdout success mode. The JSON wire
 schema remains `1.0` independent of the native 3.1.3 package version.
 Containerization belongs to the future Python worker, not the standalone

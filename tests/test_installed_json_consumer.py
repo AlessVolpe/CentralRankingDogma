@@ -12,13 +12,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "examples" / "python_subprocess_consumer"))
-from leaderboard_consumer import invoke, LeaderboardResponseError, LeaderboardTransportError
+from crd_consumer import invoke, CRDResponseError, CRDTransportError
 
-BINARY = os.environ.get("LEADERBOARD_INSTALLED_JSON_BINARY")
+BINARY = os.environ.get("CRD_INSTALLED_JSON_BINARY")
 FIXTURES = ROOT / "tests" / "fixtures" / "json_cli_v1"
 
 
-@unittest.skipUnless(BINARY and Path(BINARY).is_file(), "requires installed leaderboard-json")
+@unittest.skipUnless(BINARY and Path(BINARY).is_file(), "requires installed crd-json")
 class InstalledConsumerTests(unittest.TestCase):
     def fixture(self, name):
         return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
@@ -27,7 +27,7 @@ class InstalledConsumerTests(unittest.TestCase):
         cp = subprocess.run([BINARY, "--version"], input=b"", capture_output=True,
                             timeout=10, check=True)
         self.assertEqual(cp.stderr, b"")
-        self.assertEqual(cp.stdout, b"leaderboard-json 3.1.3\n")
+        self.assertEqual(cp.stdout, b"crd-json 3.1.3\n")
 
     def test_validate(self):
         request = self.fixture("validate.request.json")
@@ -61,7 +61,7 @@ class InstalledConsumerTests(unittest.TestCase):
     def test_error_envelope(self):
         req = self.fixture("validate.request.json")
         req["schema_version"] = "invalid"
-        with self.assertRaises(LeaderboardResponseError) as caught:
+        with self.assertRaises(CRDResponseError) as caught:
             invoke(BINARY, req)
         self.assertEqual(caught.exception.code, "INVALID_SCHEMA_VERSION")
         self.assertEqual(caught.exception.exit_code, 2)
@@ -73,7 +73,7 @@ class InstalledConsumerTests(unittest.TestCase):
             sleeper = Path(tmp) / "slow.py"
             sleeper.write_text("#!/usr/bin/env python3\nimport time\ntime.sleep(10)\n", encoding="utf-8")
             sleeper.chmod(0o755)
-            with self.assertRaisesRegex(LeaderboardTransportError, "timed out"):
+            with self.assertRaisesRegex(CRDTransportError, "timed out"):
                 invoke(sleeper, self.fixture("validate.request.json"),
                        timeout=0.1, observations_file=None)
 

@@ -18,7 +18,7 @@ execute_process(
     COMMAND "${CMAKE_COMMAND}" -S "${ROOT}/examples/external_consumer" -B "${consumer_build}"
             -G "${GENERATOR}" "-DCMAKE_PREFIX_PATH=${prefix}"
             "-DCMAKE_C_COMPILER=${C_COMPILER}" "-DCMAKE_BUILD_TYPE=Debug"
-            "-DLEADERBOARD_EXTERNAL_SANITIZERS=${SANITIZERS}"
+            "-DCRD_EXTERNAL_SANITIZERS=${SANITIZERS}"
     RESULT_VARIABLE status
     OUTPUT_VARIABLE out ERROR_VARIABLE err)
 if(NOT status EQUAL 0)

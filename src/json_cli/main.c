@@ -24,11 +24,11 @@
 #include <io.h>
 #endif
 
-#ifndef LEADERBOARD_ENGINE_VERSION
-#define LEADERBOARD_ENGINE_VERSION "3.1.3"
+#ifndef CRD_ENGINE_VERSION
+#define CRD_ENGINE_VERSION "3.1.3"
 #endif
-#ifndef LEADERBOARD_ENGINE_ID
-#define LEADERBOARD_ENGINE_ID "3.1.3-json-v1"
+#ifndef CRD_ENGINE_ID
+#define CRD_ENGINE_ID "3.1.3-json-v1"
 #endif
 
 #define INPUT_LIMIT (4U * 1024U * 1024U)
@@ -268,7 +268,7 @@ static json_value_t *replay_json(const calendar_options_t *g, size_t ordinal) {
         json_free(opts);json_free(o);return NULL;
     }
     if(put(o,"generator",opts)) {json_free(o);return NULL;}
-    if(num(o,"sample_index",ordinal) || str(o,"expected_engine_id",LEADERBOARD_ENGINE_ID)) {
+    if(num(o,"sample_index",ordinal) || str(o,"expected_engine_id",CRD_ENGINE_ID)) {
         json_free(o);return NULL;
     }
     return o;
@@ -522,7 +522,7 @@ static int resolve_response(cli_t *c,const json_value_t *req, const competition_
         const char *expected=json_string(json_get(sel,"expected_engine_id"));
         if(!valid_engine_id(expected))
             return fail(c,2,"INVALID_REQUEST","Generated replay requires a valid engine ID","/calendar/expected_engine_id");
-        if(strcmp(expected,LEADERBOARD_ENGINE_ID)!=0)
+        if(strcmp(expected,CRD_ENGINE_ID)!=0)
             return fail(c,3,"REPLAY_MISMATCH","Replay requires the original engine build","/calendar/expected_engine_id");
         calendar_options_t opts;
         uint64_t ordinal;
@@ -566,8 +566,8 @@ static json_value_t *envelope(const cli_t *c, const char *operation,
     if(!o || !engine) {
         json_free(o);json_free(engine);json_free(result);return NULL;
     }
-    if(str(engine,"version",LEADERBOARD_ENGINE_VERSION) ||
-       str(engine,"id",LEADERBOARD_ENGINE_ID)) {
+    if(str(engine,"version",CRD_ENGINE_VERSION) ||
+       str(engine,"id",CRD_ENGINE_ID)) {
         json_free(o);json_free(engine);json_free(result);return NULL;
     }
     if(str(o,"schema_version","1.0") ||
@@ -699,7 +699,7 @@ int main(int argc, char **argv) {
     const char *observations_destination=NULL;
     /* A metadata query is the sole plain-text exception to JSON CLI v1. */
     if(argc==2 && strcmp(argv[1],"--version")==0) {
-        if(printf("leaderboard-json %s\n",LEADERBOARD_ENGINE_VERSION)<0 ||
+        if(printf("crd-json %s\n",CRD_ENGINE_VERSION)<0 ||
            fflush(stdout)!=0)return 5;
         return 0;
     }
