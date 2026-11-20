@@ -131,6 +131,40 @@ add_executable(leaderboard_cli
 target_link_libraries(leaderboard_cli PRIVATE Leaderboard::leaderboard)
 leaderboard_apply_dev_options(leaderboard_cli)
 
+# 3.1.3 private JSON subprocess adapter. JSON parsing is NOT linked into
+# Leaderboard::leaderboard or its exported target.
+add_executable(leaderboard_json
+        src/json_cli/main.c
+        src/json_cli/json_value.c)
+set_target_properties(leaderboard_json PROPERTIES
+        OUTPUT_NAME "leaderboard-json" C_EXTENSIONS OFF)
+target_include_directories(leaderboard_json PRIVATE
+        "${PROJECT_SOURCE_DIR}/include"
+        "${PROJECT_SOURCE_DIR}/src/json_cli")
+target_link_libraries(leaderboard_json PRIVATE Leaderboard::leaderboard)
+leaderboard_apply_dev_options(leaderboard_json)
+
+# Replay identifiers incorporate native algorithm sources and the actual
+# compiler/toolchain. An old replay recipe cannot silently move to a new build.
+set(json_engine_fingerprints "${PROJECT_VERSION}|${CMAKE_C_COMPILER_ID}|
+    ${CMAKE_C_COMPILER_VERSION}|${CMAKE_SYSTEM_NAME}|${CMAKE_SYSTEM_PROCESSOR}|
+    ${CMAKE_C_FLAGS}|${CMAKE_C_FLAGS_DEBUG}|${CMAKE_C_FLAGS_RELEASE}|
+    ${CMAKE_C_FLAGS_RELWITHDEBINFO}|${CMAKE_BUILD_TYPE}")
+file(GLOB_RECURSE json_engine_sources CONFIGURE_DEPENDS
+        "${PROJECT_SOURCE_DIR}/src/*.c"
+        "${PROJECT_SOURCE_DIR}/src/*.h"
+        "${PROJECT_SOURCE_DIR}/include/*.h")
+list(SORT json_engine_sources)
+foreach (path IN LISTS json_engine_sources)
+    file(SHA256 "${path}" file_fingerprint)
+    string(APPEND json_engine_fingerprints "|${file_fingerprint}")
+endforeach ()
+string(SHA256 json_engine_hash "${json_engine_fingerprints}")
+string(SUBSTRING "${json_engine_hash}" 0 16 json_engine_short)
+target_compile_definitions(leaderboard_json PRIVATE
+        "LEADERBOARD_ENGINE_VERSION=\"${PROJECT_VERSION}\""
+        "LEADERBOARD_ENGINE_ID=\"${PROJECT_VERSION}-${json_engine_short}\"")
+
 # Deterministic, non-interactive public ranking API example.
 add_executable(leaderboard_ranking_batch examples/ranking_batch.c)
 target_link_libraries(leaderboard_ranking_batch PRIVATE Leaderboard::leaderboard)
@@ -190,6 +224,18 @@ if (BUILD_TESTING)
                  COMMAND leaderboard_season_experiment 8 5489 3 avl shuffle independent
                  "${CMAKE_CURRENT_BINARY_DIR}/research_smoke_avl_obs.csv"
                  "${CMAKE_CURRENT_BINARY_DIR}/research_smoke_avl_summary.csv")
+    endif ()
+endif ()
+
+# Exercise the linked native executable (not the mock API) when Python is
+# available. The old contract-schema tests remain separate documentation CI.
+if (BUILD_TESTING)
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if (Python3_Interpreter_FOUND)
+        add_test(NAME json_cli_native_contract
+                 COMMAND "${CMAKE_COMMAND}" -E env
+                 "LEADERBOARD_JSON_BINARY=$<TARGET_FILE:leaderboard_json>"
+                 "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/test_json_cli_native.py")
     endif ()
 endif ()
 

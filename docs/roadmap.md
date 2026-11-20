@@ -19,7 +19,7 @@ This file is the **canonical documentation status ledger**, not a package releas
 | `3.1.0` | Match resolution and standings integration | Implemented in current source | [Details](milestones/3.1.0.md) |
 | `3.1.1` | Monte Carlo simulation engine | Implemented in master; CI verified | [Details](milestones/3.1.1.md) |
 | `3.1.2` | Ranking integration and scientific evaluation | Implemented in current source; scoped synthetic evidence verified (PR #23) | [Details](milestones/3.1.2.md) |
-| `3.1.3` | External integration contract and JSON CLI | PR A contract/schema specification; native executable pending | [Contract](milestones/3.1.3.md) |
+| `3.1.3` | External integration contract and JSON CLI | PR A merged; PR B native transport implementation in progress | [Contract](milestones/3.1.3.md) |
 
 ## Evidence and change policy
 
