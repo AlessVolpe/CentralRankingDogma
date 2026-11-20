@@ -32,7 +32,7 @@ Failure checks and cleanup are bounded by the affected allocation/state sizes; a
 
 ## 6. Public C11 interface and ownership
 
-Public error and lifecycle contracts live in [`include/`](../../include/). The allocation failure controls are private in `src/internal/` and available only to dedicated test archives. Consumers cannot call those hooks in a production package.
+Public error and lifecycle contracts live in [`include/`](../../native/include/). The allocation failure controls are private in `native/src/internal/` and available only to dedicated test archives. Consumers cannot call those hooks in a production package.
 
 ## 7. Verification
 

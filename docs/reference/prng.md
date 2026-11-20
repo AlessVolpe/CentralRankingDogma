@@ -32,7 +32,7 @@ A pseudorandom draw has amortized $O(1)$ time with a fixed 624-word state; initi
 
 ## 6. Public C11 interface and ownership
 
-[`mtwister.h`](../../include/mtwister.h) exposes `mtwister_new`, `mtwister_seed_standard`, `mtwister_next_u32` and `mtwister_destroy`, plus historical `seedRand`/`genRandLong`. Heap-owned states must be destroyed; stack-allocated `mtwister_t` must not be passed to `mtwister_destroy`.
+[`mtwister.h`](../../native/include/mtwister.h) exposes `mtwister_new`, `mtwister_seed_standard`, `mtwister_next_u32` and `mtwister_destroy`, plus historical `seedRand`/`genRandLong`. Heap-owned states must be destroyed; stack-allocated `mtwister_t` must not be passed to `mtwister_destroy`.
 
 ## 7. Verification
 

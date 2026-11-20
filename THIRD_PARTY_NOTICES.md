@@ -16,8 +16,8 @@ later-version permissions for new LeaderboardSystem contributions.
 - Original project: <https://github.com/DavidLeeds/hashmap>
 - Copyright (c) 2016-2020 David Leeds
 - Original license: **MIT License**
-- Adapted files: `src/hashmap.c`, `include/hashmap.h`,
-  `include/hashmap_base.h`
+- Adapted files: `native/src/containers/hashmap.c`, `native/include/hashmap.h`,
+  `native/include/hashmap_base.h`
 - Modified for LeaderboardSystem during 2024-2026 by Alessandro Volpe,
   including stabilization, API corrections, and regression testing.
 
@@ -53,7 +53,7 @@ SOFTWARE.
 - Original project: <https://github.com/phillipberndt/bostree>
 - Copyright (c) 2017, Phillip Berndt
 - Original license: **GNU GPL version 3 or (at your option) any later version**
-- Adapted files: `src/bostree.c`, `include/bostree.h`
+- Adapted files: `native/src/containers/bostree.c`, `native/include/bostree.h`
 - Modified for LeaderboardSystem during 2024-2026 by Alessandro Volpe,
   including AVL metadata, deletion, lifetime management, and tests.
 
@@ -67,7 +67,7 @@ contains the full terms of GNU GPL version 3.
 - Original author: Evan Sultanik
 - Original license status: The upstream `README.md` declares the code
   **public domain** ("Public domain. Have fun!").
-- Adapted files: `src/mtwister.c`, `include/mtwister.h`
+- Adapted files: `native/src/random/mtwister.c`, `native/include/mtwister.h`
 - Modified for LeaderboardSystem during 2024-2026 by Alessandro Volpe,
   including fixed-width types, allocation changes, and correctness fixes.
 

@@ -35,7 +35,7 @@ Expected average lookup/update is $O(1)$ under adequate hashing and controlled l
 
 ## 6. Public C11 interface and ownership
 
-Use [`hashmap_base.h`](../../include/hashmap_base.h) for the opaque base and [`hashmap_typed.h`](../../include/hashmap_typed.h) for named C11 typed wrappers. The deprecated `HASHMAP(...)` macros require GNU extensions. API clients must not inspect the private bucket representation. Key allocation callbacks, hash function and comparator determine storage and lifetime contracts.
+Use [`hashmap_base.h`](../../native/include/hashmap_base.h) for the opaque base and [`hashmap_typed.h`](../../native/include/hashmap_typed.h) for named C11 typed wrappers. The deprecated `HASHMAP(...)` macros require GNU extensions. API clients must not inspect the private bucket representation. Key allocation callbacks, hash function and comparator determine storage and lifetime contracts.
 
 <details>
 <summary>Minimal typed usage pattern</summary>

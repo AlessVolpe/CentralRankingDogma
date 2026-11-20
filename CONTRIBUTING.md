@@ -5,7 +5,7 @@ Contributions must preserve the C11 library's mathematical contracts, ownership 
 ## Code changes
 
 - Use CMake 3.16+, Ninja and a supported C11 GCC/Clang toolchain. Run the [Linux or Windows build](docs/development/building.md), [CTest suite](docs/development/verification.md) and installed-package verification where relevant.
-- Keep the exported `CentralRankingDogma::central_ranking_dogma` CMake target stable unless a versioned migration is deliberate. New public interfaces belong in `include/`; private implementation details belong in `src/internal/`.
+- Keep the exported `CentralRankingDogma::central_ranking_dogma` CMake target stable unless a versioned migration is deliberate. New public interfaces belong in `native/include/`; private implementation details belong in `native/src/internal/`.
 - Describe pointer ownership, allocation rollback, error return behavior, deterministic test seeds and platform limitations.
 - Retain third-party licenses and author provenance in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

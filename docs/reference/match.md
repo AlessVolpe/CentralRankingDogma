@@ -48,7 +48,7 @@ With exactly eight configurable thresholds, goal conversion and optional correct
 
 ## 6. Public C11 interface and ownership
 
-[`include/match.h`](../../include/match.h) exposes `match_rules_t`, `match_result_t`, `match_rules_default`, `match_rules_uniform`, `match_rules_validate`, and `match_resolve_scores`. All inputs are borrowed and read-only; the returned result is copied into caller memory. Errors are `-EINVAL` for invalid arguments or configurations. Uniform-profile constructors also reject threshold arithmetic that cannot be represented. No global state exists.
+[`include/match.h`](../../native/include/match.h) exposes `match_rules_t`, `match_result_t`, `match_rules_default`, `match_rules_uniform`, `match_rules_validate`, and `match_resolve_scores`. All inputs are borrowed and read-only; the returned result is copied into caller memory. Errors are `-EINVAL` for invalid arguments or configurations. Uniform-profile constructors also reject threshold arithmetic that cannot be represented. No global state exists.
 
 ## 7. Verification
 

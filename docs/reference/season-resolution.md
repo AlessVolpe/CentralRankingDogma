@@ -18,7 +18,7 @@ The invariant fantasy total for evaluated rounds is
 F_i(k)=\sum_{r=0}^{k-1}s_{i,r}.
 ```
 
-For a match with goals $(g_h,g_a)$ computed by [`match.h`](../../include/match.h), the two corresponding records receive win/loss, draw/draw or loss/win. For each team, $P_i=3W_i+D_i$ and $G_i=W_i+D_i+L_i$. Each scored match updates the goals-for and goals-against accumulators, with $\mathrm{GD}_i=\mathrm{GF}_i-\mathrm{GA}_i$ represented in `int64_t`.
+For a match with goals $(g_h,g_a)$ computed by [`match.h`](../../native/include/match.h), the two corresponding records receive win/loss, draw/draw or loss/win. For each team, $P_i=3W_i+D_i$ and $G_i=W_i+D_i+L_i$. Each scored match updates the goals-for and goals-against accumulators, with $\mathrm{GD}_i=\mathrm{GF}_i-\mathrm{GA}_i$ represented in `int64_t`.
 
 The sporting ordering key is lexicographic, descending:
 
@@ -67,7 +67,7 @@ of allocation and cache locality is reserved for the 3.1.2 evaluation PR.
 
 ## 6. Public C11 interface and ownership
 
-[`include/season_resolution.h`](../../include/season_resolution.h) defines `season_resolution_scope_t`, `season_fixture_result_t`, `season_rank_entry_t` and the opaque `season_resolution_t`. `season_resolve` creates an owned result or sets the output pointer to NULL on failure; `season_resolution_destroy` releases every owned resource. Accessors return copies. Public indexes always use the same UUID-sorted team-index mapping as the source competition. The mutable `standings_t` remains internal to the completed season output; its public scored-match and goal-statistics APIs are covered in [standings](standings.md).
+[`include/season_resolution.h`](../../native/include/season_resolution.h) defines `season_resolution_scope_t`, `season_fixture_result_t`, `season_rank_entry_t` and the opaque `season_resolution_t`. `season_resolve` creates an owned result or sets the output pointer to NULL on failure; `season_resolution_destroy` releases every owned resource. Accessors return copies. Public indexes always use the same UUID-sorted team-index mapping as the source competition. The mutable `standings_t` remains internal to the completed season output; its public scored-match and goal-statistics APIs are covered in [standings](standings.md).
 
 `season_resolution_options_t` selects `SEASON_RANKING_HEAPSORT` (default)
 or `SEASON_RANKING_AVL`. Invalid options return `-EINVAL` and a NULL output.

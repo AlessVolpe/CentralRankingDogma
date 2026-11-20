@@ -69,9 +69,9 @@ add_test(NAME ranking_differential COMMAND test_ranking_differential)
 # 3.0.6: structural white-box tests explicitly opt into private headers;
 # applications and public API tests do not receive that include directory.
 target_include_directories(test_bostree_invariants PRIVATE
-    ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_include_directories(test_bostree_deletion PRIVATE
-    ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/src/internal)
 
 add_executable(test_bostree_public_api test_bostree_public_api.c)
 target_link_libraries(test_bostree_public_api PRIVATE CentralRankingDogma::central_ranking_dogma)
@@ -80,7 +80,7 @@ add_test(NAME bostree_public_api COMMAND test_bostree_public_api)
 
 # The base regressions inspect the table as an explicitly private white-box test.
 target_include_directories(test_hashmap_regressions PRIVATE
-    ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/src/internal)
 
 add_executable(test_hashmap_public_api test_hashmap_public_api.c)
 target_link_libraries(test_hashmap_public_api PRIVATE CentralRankingDogma::central_ranking_dogma)
@@ -104,28 +104,28 @@ add_test(NAME hashmap_portable_callbacks COMMAND test_hashmap_portable)
 # Fault injection is compiled only into a separate test archive. Production
 # library objects do not expose the failure-control functions.
 add_library(crd_fault_test STATIC
-    ${PROJECT_SOURCE_DIR}/src/hashmap.c
-    ${PROJECT_SOURCE_DIR}/src/bostree.c
-    ${PROJECT_SOURCE_DIR}/src/ranking.c
-    ${PROJECT_SOURCE_DIR}/src/team.c
-    ${PROJECT_SOURCE_DIR}/src/competition.c
-    ${PROJECT_SOURCE_DIR}/src/standings.c
-    ${PROJECT_SOURCE_DIR}/src/calendar.c
-    ${PROJECT_SOURCE_DIR}/src/calendar_shuffle.c
-    ${PROJECT_SOURCE_DIR}/src/calendar_recombine.c
-    ${PROJECT_SOURCE_DIR}/src/match.c
-    ${PROJECT_SOURCE_DIR}/src/season_resolution.c
-    ${PROJECT_SOURCE_DIR}/src/monte_carlo.c
-    ${PROJECT_SOURCE_DIR}/src/mtwister.c
-    ${PROJECT_SOURCE_DIR}/src/alloc.c)
+    ${PROJECT_SOURCE_DIR}/native/src/containers/hashmap.c
+    ${PROJECT_SOURCE_DIR}/native/src/containers/bostree.c
+    ${PROJECT_SOURCE_DIR}/native/src/ranking/ranking.c
+    ${PROJECT_SOURCE_DIR}/native/src/domain/team.c
+    ${PROJECT_SOURCE_DIR}/native/src/domain/competition.c
+    ${PROJECT_SOURCE_DIR}/native/src/domain/standings.c
+    ${PROJECT_SOURCE_DIR}/native/src/calendar/calendar.c
+    ${PROJECT_SOURCE_DIR}/native/src/calendar/calendar_shuffle.c
+    ${PROJECT_SOURCE_DIR}/native/src/calendar/calendar_recombine.c
+    ${PROJECT_SOURCE_DIR}/native/src/resolution/match.c
+    ${PROJECT_SOURCE_DIR}/native/src/resolution/season_resolution.c
+    ${PROJECT_SOURCE_DIR}/native/src/simulation/monte_carlo.c
+    ${PROJECT_SOURCE_DIR}/native/src/random/mtwister.c
+    ${PROJECT_SOURCE_DIR}/native/src/support/alloc.c)
 target_include_directories(crd_fault_test PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(crd_fault_test PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 crd_apply_dev_options(crd_fault_test)
 add_executable(test_allocation_failures test_allocation_failures.c)
 target_include_directories(test_allocation_failures PRIVATE
-        ${PROJECT_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}/src/internal)
+        ${PROJECT_SOURCE_DIR}/native/include
+        ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_allocation_failures PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_allocation_failures PRIVATE crd_fault_test)
 crd_apply_dev_options(test_allocation_failures)
@@ -144,7 +144,7 @@ add_test(NAME installed_consumer
 # 3.0.8: exhaustive logical state checks around controlled allocation failures.
 add_executable(test_failure_matrix test_failure_matrix.c)
 target_include_directories(test_failure_matrix PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_failure_matrix PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_failure_matrix PRIVATE crd_fault_test)
 crd_apply_dev_options(test_failure_matrix)
@@ -161,7 +161,7 @@ foreach (container IN ITEMS hashmap bostree)
     add_executable(test_fuzz_${container} fuzz_${container}.c)
     target_link_libraries(test_fuzz_${container} PRIVATE CentralRankingDogma::central_ranking_dogma)
     target_include_directories(test_fuzz_${container} PRIVATE
-        ${PROJECT_SOURCE_DIR}/src/internal)
+        ${PROJECT_SOURCE_DIR}/native/src/internal)
     crd_apply_dev_options(test_fuzz_${container})
     add_test(NAME ${container}_adversarial COMMAND test_fuzz_${container})
 endforeach ()
@@ -206,11 +206,11 @@ if (CRD_BUILD_FUZZERS)
 
     # Instrument the data structures themselves, not only the fuzz entry points.
     add_library(crd_fuzz_core STATIC
-        ${PROJECT_SOURCE_DIR}/src/hashmap.c
-        ${PROJECT_SOURCE_DIR}/src/bostree.c
-        ${PROJECT_SOURCE_DIR}/src/alloc.c)
+        ${PROJECT_SOURCE_DIR}/native/src/containers/hashmap.c
+        ${PROJECT_SOURCE_DIR}/native/src/containers/bostree.c
+        ${PROJECT_SOURCE_DIR}/native/src/support/alloc.c)
     target_include_directories(crd_fuzz_core PRIVATE
-        ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+        ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
     target_compile_options(crd_fuzz_core PRIVATE
         -fsanitize=fuzzer-no-link,address,undefined -fno-omit-frame-pointer)
     crd_apply_dev_options(crd_fuzz_core)
@@ -218,7 +218,7 @@ if (CRD_BUILD_FUZZERS)
         add_executable(fuzz_${container}_libfuzzer fuzz_${container}.c)
         target_compile_definitions(fuzz_${container}_libfuzzer PRIVATE CRD_LIBFUZZER)
         target_include_directories(fuzz_${container}_libfuzzer PRIVATE
-            ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+            ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
         target_link_libraries(fuzz_${container}_libfuzzer PRIVATE crd_fuzz_core)
         target_compile_options(fuzz_${container}_libfuzzer PRIVATE
             -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer)
@@ -243,7 +243,7 @@ add_test(NAME ranking_batch_example COMMAND crd_ranking_batch)
 foreach (header IN ITEMS
         central_ranking_dogma bostree commons hashmap_base hashmap_typed mtwister team competition standings calendar ranking match season_resolution monte_carlo)
     add_library(header_c11_${header} OBJECT test_public_header_c11.c)
-    target_include_directories(header_c11_${header} PRIVATE ${PROJECT_SOURCE_DIR}/include)
+    target_include_directories(header_c11_${header} PRIVATE ${PROJECT_SOURCE_DIR}/native/include)
     target_compile_definitions(header_c11_${header} PRIVATE
         "CRD_PUBLIC_HEADER=\"${header}.h\"")
     set_target_properties(header_c11_${header} PROPERTIES C_EXTENSIONS OFF)
@@ -270,7 +270,7 @@ add_test(NAME competition_snapshot_contract COMMAND test_competition)
 
 add_executable(test_competition_failures test_competition_failures.c)
 target_include_directories(test_competition_failures PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_competition_failures PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_competition_failures PRIVATE crd_fault_test)
 crd_apply_dev_options(test_competition_failures)
@@ -295,7 +295,7 @@ add_test(NAME standings_contract COMMAND test_standings)
 # White-box overflow plus deterministic allocation-failure rollback.
 add_executable(test_standings_failures test_standings_failures.c)
 target_include_directories(test_standings_failures PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_standings_failures PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_standings_failures PRIVATE crd_fault_test)
 crd_apply_dev_options(test_standings_failures)
@@ -314,7 +314,7 @@ add_test(NAME calendar_permutation_contract COMMAND test_calendar)
 # White-box validation and allocation-failure atomicity.
 add_executable(test_calendar_failures test_calendar_failures.c)
 target_include_directories(test_calendar_failures PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_calendar_failures PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_calendar_failures PRIVATE crd_fault_test)
 crd_apply_dev_options(test_calendar_failures)
@@ -346,7 +346,7 @@ add_test(NAME season_resolution_contract COMMAND test_season_resolution)
 # Full fault-injection version of the resolver must use the dedicated archive.
 add_executable(test_resolution_failures test_resolution_failures.c)
 target_include_directories(test_resolution_failures PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_resolution_failures PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_resolution_failures PRIVATE crd_fault_test)
 crd_apply_dev_options(test_resolution_failures)
@@ -362,7 +362,7 @@ add_test(NAME ranking_custom_differential COMMAND test_ranking_custom)
 
 add_executable(test_ranking_custom_failures test_ranking_custom_failures.c)
 target_include_directories(test_ranking_custom_failures PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_ranking_custom_failures PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_ranking_custom_failures PRIVATE crd_fault_test)
 crd_apply_dev_options(test_ranking_custom_failures)
@@ -377,7 +377,7 @@ add_test(NAME ranking_backend_equivalence COMMAND test_ranking_backends)
 
 add_executable(test_ranking_backends_failures test_ranking_backends_failures.c)
 target_include_directories(test_ranking_backends_failures PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_ranking_backends_failures PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_ranking_backends_failures PRIVATE crd_fault_test)
 crd_apply_dev_options(test_ranking_backends_failures)
@@ -393,7 +393,7 @@ add_test(NAME monte_carlo_contract COMMAND test_monte_carlo)
 
 add_executable(test_monte_carlo_failures test_monte_carlo_failures.c)
 target_include_directories(test_monte_carlo_failures PRIVATE
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/internal)
+    ${PROJECT_SOURCE_DIR}/native/include ${PROJECT_SOURCE_DIR}/native/src/internal)
 target_compile_definitions(test_monte_carlo_failures PRIVATE CRD_TEST_ALLOCATION_FAULTS)
 target_link_libraries(test_monte_carlo_failures PRIVATE crd_fault_test)
 crd_apply_dev_options(test_monte_carlo_failures)

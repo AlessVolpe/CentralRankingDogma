@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-/* Tree and node representations are private to src/internal/. */
+/* Tree and node representations are private to native/src/internal/. */
 typedef struct bostree bostree_t;
 typedef struct bostree_node bostree_node_t;
 

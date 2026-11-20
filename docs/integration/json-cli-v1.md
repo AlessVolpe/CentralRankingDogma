@@ -84,7 +84,7 @@ version, not by relaxing `additionalProperties: false` in-place.
 | `fixtures[]` | `{home_uuid, away_uuid}` | Directed, distinct and known teams; complete original schedule |
 | `scores[]` | `{team_uuid, serie_a_matchday, points_tenths, status}` | Exactly one score per team and imported round; `FINAL` or `PENDING` |
 
-UUID parsing follows [`team_uuid_parse`](../../include/team.h): the textual
+UUID parsing follows [`team_uuid_parse`](../../native/include/team.h): the textual
 8-4-4-4-12 format is case-insensitive and does not require UUIDv4. Canonical
 JSON output uses lowercase UUIDs and stable sorting by UUID bytes.
 
@@ -99,7 +99,7 @@ The JSON Schema checks types, ranges, required properties and pending-zero
 shape. The native importer must additionally enforce UTF-8 byte length,
 canonical UUID uniqueness, unique mapped days, score-matrix completeness,
 team participation, self-fixture rejection, checked arithmetic and all
-[`competition_create`](../../include/competition.h) invariants. Schema validity
+[`competition_create`](../../native/include/competition.h) invariants. Schema validity
 alone does **not** certify a runnable season. If an original schedule satisfies
 the competition snapshot contract but not the generator's strict
 no-early-rematch constraint, `validate` and original-season resolution may
@@ -109,7 +109,7 @@ succeed while `generate` and `simulate` return `UNSUPPORTED_CALENDAR`.
 
 The optional `rules` object is **all-or-nothing**: omit it to call
 `match_rules_default()`; otherwise supply every existing field in
-[`match_rules_t`](../../include/match.h): the eight ordered goal thresholds,
+[`match_rules_t`](../../native/include/match.h): the eight ordered goal thresholds,
 post-eighth step, victory limitation and subthreshold flags, draw limitation
 and subthreshold flags, home-advantage enable/value and final-cycle exclusion.
 All score thresholds and adjustments use integer tenths. The C library
@@ -128,7 +128,7 @@ are errors.
 
 `generator` requires explicit `method` (`shuffle`/`recombine`), `sampling_mode`
 (`independent`/`chain`) and 32-bit `seed`. The remaining generation options are
-optional in a **generation request**: absent values are populated by [`calendar_options_default`](../../include/calendar.h)
+optional in a **generation request**: absent values are populated by [`calendar_options_default`](../../native/include/calendar.h)
 and the complete effective configuration is echoed in a replay recipe.
 Requesting `sample_index: 3` means creating **three successive** calendars in
 one generator instance and returning the **third**, not computing a calendar
@@ -170,7 +170,7 @@ UUIDs rather than ephemeral C indices.
 
 ### 4.2 Simulation and basic/advanced separation
 
-`simulate` uses [`monte_carlo_run`](../../include/monte_carlo.h) on one
+`simulate` uses [`monte_carlo_run`](../../native/include/monte_carlo.h) on one
 snapshot and one configured generator. Every result includes a separately
 resolved original-calendar `baseline`, progress-independent count fields,
 `completion`, and explicit `provisional` status.

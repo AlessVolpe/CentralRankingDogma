@@ -9,7 +9,7 @@
 ## Read the research or use the library
 
 - **Research path:** [Scientific documentation](docs/index.md#research-reading-path), [notation](docs/notation.md), [calendar mathematics](docs/reference/calendar.md), [match scoring](docs/reference/match.md), [season resolution](docs/reference/season-resolution.md), [Monte Carlo experiments](docs/reference/monte-carlo.md), [methodology](docs/research/methodology.md), [bibliography](docs/bibliography.md).
-- **Developer path:** [Library reference](docs/index.md#developer-reading-path), [build and test](docs/development/building.md), [packaging](docs/development/packaging.md), [public headers](include/), [current C architecture](docs/architecture/internal-c.md).
+- **Developer path:** [Library reference](docs/index.md#developer-reading-path), [build and test](docs/development/building.md), [packaging](docs/development/packaging.md), [public headers](native/include/), [current C architecture](docs/architecture/internal-c.md).
 - **Development record:** [Roadmap and milestone ledger](docs/roadmap.md); the original documentation is [archived](docs/archive/README.md), not discarded.
 
 ## Internal C architecture

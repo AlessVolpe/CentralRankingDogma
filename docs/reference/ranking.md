@@ -40,7 +40,7 @@ AVL order queries are $O(\log n)$ worst-case, after ID lookup. Hashmap lookup is
 
 ## 6. Public C11 interface and ownership
 
-Use [`ranking.h`](../../include/ranking.h): `ranking_new`, `ranking_upsert`, `ranking_get`, `ranking_at`, `ranking_remove` and `ranking_destroy`. Identifiers are copied by the ranking implementation. Signed 64-bit ranking scores are **not** implicitly championship points or fantasy scores.
+Use [`ranking.h`](../../native/include/ranking.h): `ranking_new`, `ranking_upsert`, `ranking_get`, `ranking_at`, `ranking_remove` and `ranking_destroy`. Identifiers are copied by the ranking implementation. Signed 64-bit ranking scores are **not** implicitly championship points or fantasy scores.
 
 `ranking_new_custom(key_size, compare, context)` enables a custom key type.
 `ranking_upsert_key`, `ranking_get_key` and `ranking_at_key` transfer key bytes

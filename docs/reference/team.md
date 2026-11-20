@@ -26,7 +26,7 @@ UUID compare, parse and format have $O(1)$ cost for fixed-width identifiers. Tea
 
 ## 6. Public C11 interface and ownership
 
-See [`team.h`](../../include/team.h) for `team_uuid_parse`, `team_uuid_format`, `team_create` and `team_destroy`. A standalone team owns its copied name. The legacy `player_t` API was removed in 3.0.11; see the [migration milestone](../milestones/3.0.11.md).
+See [`team.h`](../../native/include/team.h) for `team_uuid_parse`, `team_uuid_format`, `team_create` and `team_destroy`. A standalone team owns its copied name. The legacy `player_t` API was removed in 3.0.11; see the [migration milestone](../milestones/3.0.11.md).
 
 ## 7. Verification
 

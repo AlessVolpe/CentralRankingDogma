@@ -54,7 +54,7 @@ Fixture storage is $\Theta(NR)$. A full base-round shuffle is $O(P)$ round swaps
 
 ## 6. Public C11 interface and ownership
 
-See [`calendar.h`](../../include/calendar.h). `calendar_options_default` supplies an explicit seed and default recombination options; callers can choose `CALENDAR_METHOD_ROUND_SHUFFLE` or `CALENDAR_METHOD_RECOMBINE`, and `CALENDAR_SAMPLING_INDEPENDENT` or `CALENDAR_SAMPLING_CHAIN`. `calendar_generator_create` borrows the original competition; `calendar_generator_next` returns an independent `calendar_t` and optional diagnostics. `calendar_fingerprint` uses FNV-1a over a canonical unordered representation, not collision-proof deduplication.
+See [`calendar.h`](../../native/include/calendar.h). `calendar_options_default` supplies an explicit seed and default recombination options; callers can choose `CALENDAR_METHOD_ROUND_SHUFFLE` or `CALENDAR_METHOD_RECOMBINE`, and `CALENDAR_SAMPLING_INDEPENDENT` or `CALENDAR_SAMPLING_CHAIN`. `calendar_generator_create` borrows the original competition; `calendar_generator_next` returns an independent `calendar_t` and optional diagnostics. `calendar_fingerprint` uses FNV-1a over a canonical unordered representation, not collision-proof deduplication.
 
 ## 7. Verification
 
