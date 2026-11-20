@@ -153,6 +153,48 @@ def check_references() -> None:
         fail("references.bib", f"unbalanced entry braces ({depth})")
 
 
+def check_project_layout_and_version() -> None:
+    """Detect stale active package metadata and broken PR C source layout."""
+    cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
+    match = re.search(
+        r"(?m)^project\(CentralRankingDogma\s+VERSION\s+(\d+\.\d+\.\d+)\b",
+        cmake,
+    )
+    if not match:
+        fail("CMakeLists.txt", "canonical project name/version missing")
+        return
+    version = match.group(1)
+    current_documents = {
+        "README.md": f"**Current native version:** {version}",
+        "docs/index.md": f"**{version} native C11 implementation**",
+        "docs/development/packaging.md":
+            f"find_package(CentralRankingDogma {version} CONFIG REQUIRED)",
+    }
+    for relative, expected in current_documents.items():
+        if expected not in (ROOT / relative).read_text(encoding="utf-8"):
+            fail(relative, f"active native package version must be {version}")
+    for relative in (
+        "native/CMakeLists.txt",
+        "native/include/central_ranking_dogma.h",
+        "native/src/containers/hashmap.c",
+        "native/src/internal",
+        "native/cli/json/main.c",
+        "native/cli/educational/crd_cli.c",
+        "benchmarks/CMakeLists.txt",
+        "tests/contracts/test_json_contract.py",
+        "tests/integration/test_json_cli_native.py",
+        "tests/tooling/test_commit_messages.py",
+        "tests/support/calendar_test_fixture.h",
+        "examples/native/ranking_batch.c",
+        "research/tools/run_experiments.py",
+        "docs/development/repository-layout.md",
+        "docs/development/migration-3.1.4.md",
+        "docs/development/local-verification.md",
+    ):
+        if not (ROOT / relative).exists():
+            fail("repository layout", f"missing maintained path: {relative}")
+
+
 def check_structure() -> None:
     for path in REF_DIR.glob("*.md"):
         text = path.read_text(encoding="utf-8")
@@ -196,8 +238,6 @@ def check_structure() -> None:
     implemented = DOCS / "milestones" / "3.1.0.md"
     if "`3.1.0`" not in ledger or "**Status:** Implemented" not in implemented.read_text(encoding="utf-8"):
         fail("roadmap", "3.1.0 must have implemented status and a ledger entry")
-    if "3.1.0" not in (ROOT / "README.md").read_text(encoding="utf-8"):
-        fail("README", "current implemented version missing")
     if "```mermaid" not in (ROOT / "README.md").read_text(encoding="utf-8"):
         fail("README", "missing central internal C diagram")
     for required in ("system.md", "data-flow.md"):
@@ -215,6 +255,7 @@ def main() -> int:
     for path in sorted((DOCS / "archive").rglob("*.md")):
         check_unsupported_math_macros(path, path.read_text(encoding="utf-8"))
     check_references()
+    check_project_layout_and_version()
     check_structure()
     if ERRORS:
         print("Documentation checks failed:")

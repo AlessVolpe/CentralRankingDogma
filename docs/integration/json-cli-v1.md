@@ -1,19 +1,19 @@
 # Central Ranking Dogma JSON CLI v1: external integration contract
 
-**Status:** Normative 3.1.3 wire contract defined in merged PR A. PR B
-implements the native `validate`, `generate` and `resolve` operations. PR C
-adds `simulate`, structured progress, CSV export and cooperative cancellation;
-linked-native regression tests and CI are acceptance requirements. The
-installed Python subprocess consumer remains PR D. No standalone native
-Docker image is planned. PR A example responses are shape illustrations,
-not independently verified native golden results.
+**Status:** Implemented 3.1.3 JSON CLI v1 contract, including native
+`validate`, `generate`, `resolve`, and `simulate` operations, structured progress,
+CSV export, cooperative cancellation, and independent Python subprocess
+consumption. Milestone 3.1.4 PR B renamed the executable to `crd-json` without
+changing wire schema `1.0`; PR C reorganizes source paths without protocol
+changes. No standalone native Docker image is planned. Fixture response
+examples are illustrative shape checks, not native golden results.
 
 ## 1. Purpose and ownership
 
 The future Python web application owns authentication, team registration, UUID
 creation, database persistence, authorized Fantagazzetta source import,
 background jobs, request timeouts and displaying decimal fantasy scores.
-An installed `crd-json` **Linux executable** supplies stateless,
+An installed `crd-json` executable (Linux production target; Windows CI also supported) supplies stateless,
 validated access to the existing ISO C11 computational library. No Python,
 JSON, container or database dependency is introduced in the installed
 `CentralRankingDogma::central_ranking_dogma` static library. Windows remains a CI/test target.
@@ -299,10 +299,10 @@ python -m unittest discover -s tests/contracts -p test_json_contract.py -v
 python scripts/check_docs.py
 ```
 
-PR B adds linked-native assertions for default scoring, ranking backend
-equivalence, transient generation/replay, malformed inputs and error
-classification. PR C adds native Monte Carlo response, progress, cancellation,
-partial-completion and CSV publication tests. PR D must exercise the installed
-binary through Python `subprocess` on Linux, without requiring a standalone
-native container. These acceptance requirements are not satisfied by schema
-fixtures alone. See the [3.1.3 milestone](../milestones/3.1.3.md).
+The linked-native `json_cli_native_contract` CTest exercises default scoring,
+ranking backend equivalence, transient generation/replay, malformed inputs,
+error classification, Monte Carlo response, progress, cancellation,
+partial-completion and CSV publication. The independent installed-consumer
+suite exercises the `crd-json` process boundary through Python `subprocess`.
+The schema-only tests cannot replace those runtime checks. See the
+[3.1.3 milestone](../milestones/3.1.3.md) and [local verification matrix](../development/local-verification.md).

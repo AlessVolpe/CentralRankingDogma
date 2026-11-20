@@ -1,6 +1,6 @@
 # Scientific documentation and developer reference
 
-This repository's GitHub Markdown is the canonical documentation source for the **3.1.2** C11 implementation. The connected Python application and documentation website are future work. The library is the research instrument; the documentation describes its mathematics, tested behavior, limitations and historical development.
+GitHub Markdown is the canonical documentation source for the **3.1.3 native C11 implementation** and the ongoing **3.1.4 Central Ranking Dogma repository migration**. The 3.1.2 papers and result files describe scoped historical research evidence, not the current package version. The JSON subprocess adapter and its independent Python example consumer are implemented; the Python web application and a separate documentation website remain future work.
 
 ## Research reading path
 
@@ -13,10 +13,10 @@ This repository's GitHub Markdown is the canonical documentation source for the 
 
 ## Developer reading path
 
-1. [Build instructions](development/building.md) and [installed consumers](development/packaging.md)
+1. [Repository layout](development/repository-layout.md), [build instructions](development/building.md) and [installed consumers](development/packaging.md)
 2. [System boundary](architecture/system.md), [internal C architecture](architecture/internal-c.md)
 3. [API-level reference](#module-sub-papers) and [failure contracts](reference/failure-safety.md)
-4. [Verification procedures](development/verification.md), [3.1.3 JSON CLI contract](integration/json-cli-v1.md) and [contribution style](STYLE_GUIDE.md)
+4. [Local verification matrix](development/local-verification.md), [3.1.3 JSON CLI contract](integration/json-cli-v1.md), [3.1.4 migration guide](development/migration-3.1.4.md) and [contribution style](STYLE_GUIDE.md)
 
 ## Module sub-papers
 
@@ -38,7 +38,7 @@ This repository's GitHub Markdown is the canonical documentation source for the 
 
 ## Development and source provenance
 
-- [Canonical roadmap](roadmap.md) and [individual milestones](milestones/)
+- [Canonical roadmap](roadmap.md), [individual milestones](milestones/) and [repository ownership map](development/repository-layout.md)
 - [Documentation standards](STYLE_GUIDE.md) and [CI instructions](development/documentation.md)
 - [Human-readable references](bibliography.md) and [central BibTeX](references.bib)
 - [Unmodified historical snapshots](archive/README.md), retained to prevent silent loss of earlier scientific and implementation material

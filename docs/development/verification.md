@@ -27,9 +27,17 @@ all completed successfully. Such finite verification establishes build and
 regression evidence for a recorded revision, not uniformity, statistical
 independence, comparative ranking performance or universal memory safety.
 
-For 3.1.2, require separate differential ranking-backend tests (implementation
-PR) and reproducible performance/sampling analyses (evaluation PR). No
-integrated ranking-backend result is presently claimed.
+## Current 3.1.2–3.1.4 regression boundary
+
+Milestone 3.1.2 completed differential verification of the optional composite-key
+AVL ranking backend and a [scoped synthetic evaluation](../research/results-3.1.2.md).
+Milestone 3.1.3 added native JSON CLI `validate`, `generate`, `resolve`, and
+`simulate` contracts, with an independent installed Python consumer. Milestone
+3.1.4 PR A/B migrated package and executable identity; PR C modularizes source,
+tests and research tooling without changing those contracts. Use the
+[local verification matrix](local-verification.md) and [JSON CLI contract](../integration/json-cli-v1.md)
+for the current test commands. The installed-consumer test and native JSON CLI
+CTest run only when their corresponding build/test prerequisites are met.
 
 ## Evidence interpretation
 
@@ -38,4 +46,4 @@ integrated ranking-backend result is presently claimed.
 - Error-injection tests check enumerated failure points, not arbitrary memory corruption.
 - Benchmarks establish measured workloads on recorded environments, not universal complexity constants.
 
-The original detailed [3.0.11 verification guide](../archive/verification.md) remains archived for project history. This reconciliation changes documentation only; the recorded CI evidence refers to the merged 3.1.1 source revision.
+The original detailed [3.0.11 verification guide](../archive/verification.md) remains archived for project history. Recorded 3.1.1 CI runs remain historical evidence about that revision; current PR C results must be evaluated independently, not inferred from earlier green checks.

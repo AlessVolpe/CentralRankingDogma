@@ -5,7 +5,7 @@ Contributions must preserve the C11 library's mathematical contracts, ownership 
 ## Code changes
 
 - Use CMake 3.16+, Ninja and a supported C11 GCC/Clang toolchain. Run the [Linux or Windows build](docs/development/building.md), [CTest suite](docs/development/verification.md) and installed-package verification where relevant.
-- Keep the exported `CentralRankingDogma::central_ranking_dogma` CMake target stable unless a versioned migration is deliberate. New public interfaces belong in `native/include/`; private implementation details belong in `native/src/internal/`.
+- Keep the exported `CentralRankingDogma::central_ranking_dogma` CMake target stable unless a versioned migration is deliberate. New public interfaces belong in `native/include/`; private implementation details belong in `native/src/internal/`. Consult the [repository ownership map](docs/development/repository-layout.md) before adding native modules, adapters, tests or research tools.
 - Describe pointer ownership, allocation rollback, error return behavior, deterministic test seeds and platform limitations.
 - Retain third-party licenses and author provenance in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
@@ -14,7 +14,7 @@ Contributions must preserve the C11 library's mathematical contracts, ownership 
 - Read [scientific style guide](docs/STYLE_GUIDE.md). Each module is a scientific sub-paper with a mathematical model, algorithms, correctness argument, complexity, API/ownership, verification and limitations.
 - Update the **current reference**, then the [roadmap](docs/roadmap.md) and corresponding [milestone](docs/milestones/) in the same PR. Historical snapshots in `docs/archive/` must not be silently edited.
 - Use author-year hyperlinks to [bibliography.md](docs/bibliography.md), with consistent keys in [references.bib](docs/references.bib). Credit source-code adaptations separately.
-- Run `python3 scripts/check_docs.py` and the [Markdown/Mermaid checks](docs/development/documentation.md) locally; CI also gates documentation quality.
+- Run `python3 scripts/check_docs.py`, the [Markdown/Mermaid checks](docs/development/documentation.md), and the appropriate [local verification matrix](docs/development/local-verification.md) commands; CI also gates documentation quality.
 
 ## Commit and pull request naming
 

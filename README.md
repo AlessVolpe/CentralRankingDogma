@@ -4,12 +4,12 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native version:** 3.1.3 (CRD executable and tooling migration in progress). The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `crd-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
+**Current native version:** 3.1.3 (3.1.4 PR A/B identity migration merged; PR C repository and documentation reconciliation in progress). The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `crd-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
 
 ## Read the research or use the library
 
 - **Research path:** [Scientific documentation](docs/index.md#research-reading-path), [notation](docs/notation.md), [calendar mathematics](docs/reference/calendar.md), [match scoring](docs/reference/match.md), [season resolution](docs/reference/season-resolution.md), [Monte Carlo experiments](docs/reference/monte-carlo.md), [methodology](docs/research/methodology.md), [bibliography](docs/bibliography.md).
-- **Developer path:** [Library reference](docs/index.md#developer-reading-path), [build and test](docs/development/building.md), [packaging](docs/development/packaging.md), [public headers](native/include/), [current C architecture](docs/architecture/internal-c.md).
+- **Developer path:** [Library reference](docs/index.md#developer-reading-path), [repository layout](docs/development/repository-layout.md), [local verification](docs/development/local-verification.md), [packaging](docs/development/packaging.md), [public headers](native/include/), [current C architecture](docs/architecture/internal-c.md).
 - **Development record:** [Roadmap and milestone ledger](docs/roadmap.md); the original documentation is [archived](docs/archive/README.md), not discarded.
 
 ## Internal C architecture
@@ -135,7 +135,8 @@ installed `crd-json` executable is a separate subprocess integration
 surface. `crd-json --version` prints the native package version.
 See [building](docs/development/building.md) for Linux and Windows UCRT64,
 sanitizers and Release configurations; see [packaging](docs/development/packaging.md)
-for installed consumers. The educational `crd-cli` remains separate.
+for installed consumers and [migration notes](docs/development/migration-3.1.4.md)
+for renamed developer interfaces. The educational `crd-cli` remains separate.
 
 ## Reproducibility and history
 
