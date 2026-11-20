@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/AlessVolpe/LeaderboardSystem/blob/master/schemas/leaderboard-cli-v1-request.schema.json",
-  "title": "LeaderboardSystem JSON CLI v1 request",
-  "description": "3.1.3 PR A contract; no native executable is implemented in this PR.",
+  "$id": "https://github.com/AlessVolpe/CentralRankingDogma/blob/master/schemas/leaderboard-cli-v1-request.schema.json",
+  "title": "Central Ranking Dogma JSON CLI v1 request",
+  "description": "JSON CLI v1 request contract; implemented by the native crd-json executable.",
   "oneOf": [
     {
       "type": "object",

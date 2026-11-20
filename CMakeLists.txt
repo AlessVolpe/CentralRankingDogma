@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(CentralRankingDogma VERSION 3.1.3 LANGUAGES C)
+project(CentralRankingDogma VERSION 3.1.4 LANGUAGES C)
 
 include(CTest)
 include(GNUInstallDirs)

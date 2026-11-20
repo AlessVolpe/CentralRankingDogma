@@ -21,6 +21,8 @@ the version bump cannot accidentally publish the old `3.1.3` baseline.
 4. Only after all required jobs succeed does the workflow create the `vX.Y.Z`
    tag **at the verified `master` commit** and publish a GitHub Release with
    generated release notes, the two archives, and a `SHA256SUMS.txt` file.
+   Release notes use the [category configuration](../../.github/release.yml),
+   falling back to Other changes for unlabelled pull requests.
 
 For the first canonical CRD release, merge a reviewed PR that changes CMake and
 all active version references to `3.1.4`. The resulting `master` push then

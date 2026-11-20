@@ -1,6 +1,6 @@
 # Scientific documentation and developer reference
 
-GitHub Markdown is the canonical documentation source for the **3.1.3 native C11 implementation** and the ongoing **3.1.4 Central Ranking Dogma repository migration**. The 3.1.2 papers and result files describe scoped historical research evidence, not the current package version. The JSON subprocess adapter and its independent Python example consumer are implemented; the Python web application and a separate documentation website remain future work.
+GitHub Markdown is the canonical documentation source for the **3.1.4 native C11 implementation** (PR D release candidate). The Central Ranking Dogma repository rename and source reorganization are complete; automatic release publication awaits successful verification on `master`. The 3.1.2 papers and result files describe scoped historical research evidence, not the current package version. The JSON subprocess adapter and its independent Python example consumer are implemented; the Python web application and a separate documentation website remain future work.
 
 ## Research reading path
 

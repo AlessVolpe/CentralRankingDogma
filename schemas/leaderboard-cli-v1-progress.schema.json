@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/AlessVolpe/LeaderboardSystem/blob/master/schemas/leaderboard-cli-v1-progress.schema.json",
-  "title": "LeaderboardSystem JSON CLI v1 progress event",
+  "$id": "https://github.com/AlessVolpe/CentralRankingDogma/blob/master/schemas/leaderboard-cli-v1-progress.schema.json",
+  "title": "Central Ranking Dogma JSON CLI v1 progress event",
   "type": "object",
   "additionalProperties": false,
   "properties": {

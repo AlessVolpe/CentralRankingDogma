@@ -1,6 +1,6 @@
 # CMake packaging and independent consumers
 
-The native modules are compiled into a single static archive, `libcentral_ranking_dogma.a` on Linux. Independent CMake consumers use `find_package(CentralRankingDogma 3.1.3 CONFIG REQUIRED)` and link `CentralRankingDogma::central_ranking_dogma`. The portable umbrella header `central_ranking_dogma.h` and individual public module headers are installed; private headers under `native/src/internal/` are not. This is a deliberate clean break: no `Leaderboard` CMake package or target alias is installed.
+The native modules are compiled into a single static archive, `libcentral_ranking_dogma.a` on Linux. Independent CMake consumers use `find_package(CentralRankingDogma 3.1.4 CONFIG REQUIRED)` and link `CentralRankingDogma::central_ranking_dogma`. The portable umbrella header `central_ranking_dogma.h` and individual public module headers are installed; private headers under `native/src/internal/` are not. This is a deliberate clean break: no `Leaderboard` CMake package or target alias is installed.
 
 ## Linux Release installation
 
@@ -32,6 +32,6 @@ the response envelope and process status, and imposes a configurable timeout.
 It is a demonstration consumer, not the future Python worker or web app.
 A build-specific `engine.id` is required for generated-calendar replay.
 
-External code includes only installed public headers. The reorganized PR C source keeps native version `3.1.3`; the final 3.1.4 milestone release number is decided in PR D. The package rename is a breaking *build integration* change but does not rename exported C functions or domain types. The version check is not a guarantee of ABI compatibility with older `player_t` clients.
+External code includes only installed public headers. PR D sets native package version `3.1.4`, with publication pending successful verification after merge into `master`. The package rename is a breaking *build integration* change but does not rename exported C functions or domain types. The version check is not a guarantee of ABI compatibility with older `player_t` clients.
 
 Legacy GNU-extension hashmap macros remain available but modern consumers should use the strict C11 typed interface. See [API architecture](../architecture/internal-c.md), the [source layout](repository-layout.md), [migration guide](migration-3.1.4.md), and [historical portable packaging contract](../archive/portable-callbacks-failures-packaging.md).

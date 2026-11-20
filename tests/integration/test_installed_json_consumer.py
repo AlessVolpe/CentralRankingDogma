@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -27,7 +28,12 @@ class InstalledConsumerTests(unittest.TestCase):
         cp = subprocess.run([BINARY, "--version"], input=b"", capture_output=True,
                             timeout=10, check=True)
         self.assertEqual(cp.stderr, b"")
-        self.assertEqual(cp.stdout, b"crd-json 3.1.3\n")
+        version = re.search(
+            r"(?m)^project\(CentralRankingDogma VERSION ([0-9]+\.[0-9]+\.[0-9]+) LANGUAGES C\)$",
+            (ROOT / "CMakeLists.txt").read_text(encoding="utf-8"),
+        )
+        self.assertIsNotNone(version)
+        self.assertEqual(cp.stdout, f"crd-json {version.group(1)}\n".encode("ascii"))
 
     def test_validate(self):
         request = self.fixture("validate.request.json")

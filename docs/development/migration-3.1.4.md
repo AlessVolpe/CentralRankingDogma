@@ -1,17 +1,16 @@
 # Migration to Central Ranking Dogma (3.1.4)
 
 Milestone **3.1.4** changes the *project and developer-tooling identity* of the
-former `LeaderboardSystem` library. The current native package version remains
-**3.1.3** until PR D decides and verifies its release version. This document
-describes the completed PR A/B interfaces and their reorganized PR C source
-paths, not a new C API or transport protocol.
+former `LeaderboardSystem` library. PR D sets the native package version to **3.1.4**; the GitHub Release will be
+created automatically after the verified change reaches `master`. This document
+describes the merged PR A/B/C interfaces, not a new C API or transport protocol.
 
 ## CMake consumers
 
 Use the new package name and link target:
 
 ```cmake
-find_package(CentralRankingDogma 3.1.3 CONFIG REQUIRED)
+find_package(CentralRankingDogma 3.1.4 CONFIG REQUIRED)
 target_link_libraries(my_app PRIVATE
     CentralRankingDogma::central_ranking_dogma)
 ```
