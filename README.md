@@ -1,10 +1,10 @@
-# LeaderboardSystem
+# Central Ranking Dogma
 
 [![C library build and smoke tests](https://github.com/AlessVolpe/LeaderboardSystem/actions/workflows/ci.yml/badge.svg)](https://github.com/AlessVolpe/LeaderboardSystem/actions/workflows/ci.yml)
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native version:** 3.1.3 (PR D candidate). The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `leaderboard-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
+**Current native version:** 3.1.3 (CRD packaging migration in progress). The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `leaderboard-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
 
 ## Read the research or use the library
 
@@ -130,7 +130,7 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-The installed static-library target is `Leaderboard::leaderboard`. The
+The installed static-library target is `CentralRankingDogma::central_ranking_dogma` (`libcentral_ranking_dogma.a` on Linux). The umbrella header is `central_ranking_dogma.h`; legacy `Leaderboard` package aliases are not supplied. The
 installed `leaderboard-json` executable is a separate subprocess integration
 surface. `leaderboard-json --version` prints the native package version.
 See [building](docs/development/building.md) for Linux and Windows UCRT64,

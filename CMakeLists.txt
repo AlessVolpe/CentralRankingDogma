@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(leaderboardsystem VERSION 3.1.3 LANGUAGES C)
+project(CentralRankingDogma VERSION 3.1.3 LANGUAGES C)
 
 include(CTest)
 include(GNUInstallDirs)
@@ -62,7 +62,7 @@ function(leaderboard_apply_dev_options target)
 endfunction()
 
 # Compile modules independently while preserving the original single static
-# archive and its Leaderboard::leaderboard link target for existing consumers.
+# archive and its CentralRankingDogma::central_ranking_dogma link target.
 add_library(leaderboard_containers_obj OBJECT
         src/hashmap.c
         src/bostree.c
@@ -106,33 +106,33 @@ if (LEADERBOARD_RESEARCH_PROFILE)
     target_compile_definitions(leaderboard_domain_obj PRIVATE LEADERBOARD_RESEARCH_PROFILE)
 endif ()
 
-add_library(leaderboard STATIC
+add_library(central_ranking_dogma STATIC
         $<TARGET_OBJECTS:leaderboard_containers_obj>
         $<TARGET_OBJECTS:leaderboard_ranking_obj>
         $<TARGET_OBJECTS:leaderboard_legacy_obj>
         $<TARGET_OBJECTS:leaderboard_domain_obj>
 )
-add_library(Leaderboard::leaderboard ALIAS leaderboard)
+add_library(CentralRankingDogma::central_ranking_dogma ALIAS central_ranking_dogma)
 
-set_target_properties(leaderboard PROPERTIES
-        OUTPUT_NAME leaderboard
+set_target_properties(central_ranking_dogma PROPERTIES
+        OUTPUT_NAME central_ranking_dogma
         POSITION_INDEPENDENT_CODE ON
 )
 
-target_include_directories(leaderboard PUBLIC
+target_include_directories(central_ranking_dogma PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-leaderboard_apply_dev_options(leaderboard)
+leaderboard_apply_dev_options(central_ranking_dogma)
 
 add_executable(leaderboard_cli
         examples/leaderboard_cli.c
 )
-target_link_libraries(leaderboard_cli PRIVATE Leaderboard::leaderboard)
+target_link_libraries(leaderboard_cli PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(leaderboard_cli)
 
 # 3.1.3 private JSON subprocess adapter. JSON parsing is NOT linked into
-# Leaderboard::leaderboard or its exported target.
+# CentralRankingDogma::central_ranking_dogma or its exported target.
 add_executable(leaderboard_json
         src/json_cli/main.c
         src/json_cli/simulation_cli.c
@@ -142,7 +142,7 @@ set_target_properties(leaderboard_json PROPERTIES
 target_include_directories(leaderboard_json PRIVATE
         "${PROJECT_SOURCE_DIR}/include"
         "${PROJECT_SOURCE_DIR}/src/json_cli")
-target_link_libraries(leaderboard_json PRIVATE Leaderboard::leaderboard)
+target_link_libraries(leaderboard_json PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(leaderboard_json)
 
 # Replay identifiers incorporate native algorithm sources and the actual
@@ -168,12 +168,12 @@ target_compile_definitions(leaderboard_json PRIVATE
 
 # Deterministic, non-interactive public ranking API example.
 add_executable(leaderboard_ranking_batch examples/ranking_batch.c)
-target_link_libraries(leaderboard_ranking_batch PRIVATE Leaderboard::leaderboard)
+target_link_libraries(leaderboard_ranking_batch PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(leaderboard_ranking_batch)
 
 if (LEADERBOARD_BUILD_BENCHMARKS)
     add_executable(leaderboard_bench benchmarks/benchmark.c)
-    target_link_libraries(leaderboard_bench PRIVATE Leaderboard::leaderboard)
+    target_link_libraries(leaderboard_bench PRIVATE CentralRankingDogma::central_ranking_dogma)
     leaderboard_apply_dev_options(leaderboard_bench)
     set_target_properties(leaderboard_bench PROPERTIES C_EXTENSIONS OFF)
     if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -183,7 +183,7 @@ if (LEADERBOARD_BUILD_BENCHMARKS)
     # 3.1.2 research tools are optional, C11-only public-API consumers.
     foreach (name IN ITEMS ranking_compare season_experiment memory_compare)
         add_executable(leaderboard_${name} benchmarks/${name}.c)
-        target_link_libraries(leaderboard_${name} PRIVATE Leaderboard::leaderboard)
+        target_link_libraries(leaderboard_${name} PRIVATE CentralRankingDogma::central_ranking_dogma)
         leaderboard_apply_dev_options(leaderboard_${name})
         set_target_properties(leaderboard_${name} PROPERTIES C_EXTENSIONS OFF)
         if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -204,7 +204,7 @@ if (BUILD_TESTING)
         target_include_directories(test_research_profile PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
         target_compile_definitions(test_research_profile PRIVATE LEADERBOARD_RESEARCH_PROFILE)
-        target_link_libraries(test_research_profile PRIVATE Leaderboard::leaderboard)
+        target_link_libraries(test_research_profile PRIVATE CentralRankingDogma::central_ranking_dogma)
         leaderboard_apply_dev_options(test_research_profile)
         add_test(NAME research_profile_contract COMMAND test_research_profile)
     endif ()
@@ -240,27 +240,27 @@ if (BUILD_TESTING)
     endif ()
 endif ()
 
-# Build-tree consumers keep using Leaderboard::leaderboard; installed consumers
-# get the same target via find_package(Leaderboard CONFIG REQUIRED).
+# Build-tree consumers keep using CentralRankingDogma::central_ranking_dogma; installed consumers
+# get the same target via find_package(CentralRankingDogma CONFIG REQUIRED).
 # The JSON transport remains a separate executable, not an exported C library.
 install(TARGETS leaderboard_json
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-install(TARGETS leaderboard EXPORT LeaderboardTargets
+install(TARGETS central_ranking_dogma EXPORT CentralRankingDogmaTargets
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" FILES_MATCHING PATTERN "*.h")
-set(package_dir "${CMAKE_INSTALL_LIBDIR}/cmake/Leaderboard")
+set(package_dir "${CMAKE_INSTALL_LIBDIR}/cmake/CentralRankingDogma")
 configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/LeaderboardConfig.cmake.in"
-    "${PROJECT_BINARY_DIR}/LeaderboardConfig.cmake"
+    "${PROJECT_SOURCE_DIR}/cmake/CentralRankingDogmaConfig.cmake.in"
+    "${PROJECT_BINARY_DIR}/CentralRankingDogmaConfig.cmake"
     INSTALL_DESTINATION "${package_dir}")
 write_basic_package_version_file(
-    "${PROJECT_BINARY_DIR}/LeaderboardConfigVersion.cmake"
+    "${PROJECT_BINARY_DIR}/CentralRankingDogmaConfigVersion.cmake"
     VERSION "${PROJECT_VERSION}" COMPATIBILITY SameMajorVersion)
-install(FILES "${PROJECT_BINARY_DIR}/LeaderboardConfig.cmake"
-              "${PROJECT_BINARY_DIR}/LeaderboardConfigVersion.cmake"
+install(FILES "${PROJECT_BINARY_DIR}/CentralRankingDogmaConfig.cmake"
+              "${PROJECT_BINARY_DIR}/CentralRankingDogmaConfigVersion.cmake"
         DESTINATION "${package_dir}")
-install(EXPORT LeaderboardTargets NAMESPACE Leaderboard::
+install(EXPORT CentralRankingDogmaTargets NAMESPACE CentralRankingDogma::
         DESTINATION "${package_dir}")

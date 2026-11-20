@@ -165,7 +165,7 @@ def check_structure() -> None:
         path = DOCS / "milestones" / f"{version}.md"
         if not path.exists() or f"`{version}`" not in ledger:
             fail("roadmap", f"missing {version} milestone/ledger entry")
-    for version in ("3.1.1", "3.1.2", "3.1.3"):
+    for version in ("3.1.1", "3.1.2", "3.1.3", "3.1.4"):
         path = DOCS / "milestones" / f"{version}.md"
         if not path.exists() or f"`{version}`" not in ledger:
             fail("roadmap", f"missing {version} planned milestone/ledger entry")
@@ -187,6 +187,12 @@ def check_structure() -> None:
                 "**Status:** Planned", "**Status:** Contract-first development",
                 "**Status:** Implementation in progress", "**Status:** Implemented")):
                 fail(str(path), "3.1.3 milestone status unrecognized")
+        elif version == "3.1.4":
+            status = path.read_text(encoding="utf-8")
+            if not any(marker in status for marker in (
+                "**Status:** Planned", "**Status:** Implementation in progress",
+                "**Status:** Implemented")):
+                fail(str(path), "3.1.4 milestone status unrecognized")
     implemented = DOCS / "milestones" / "3.1.0.md"
     if "`3.1.0`" not in ledger or "**Status:** Implemented" not in implemented.read_text(encoding="utf-8"):
         fail("roadmap", "3.1.0 must have implemented status and a ledger entry")

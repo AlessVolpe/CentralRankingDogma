@@ -7,7 +7,7 @@ findings and evidence hashes. No universal algorithm advantage or uniform
 calendar-sampling claim is made; chain/shuffle comparisons remain future work.
 
 This directory contains **research tooling**, not the future Python web service.
-The C11 library and installed `Leaderboard::leaderboard` package have no Python
+The C11 library and installed `CentralRankingDogma::central_ranking_dogma` package have no Python
 runtime dependency. Research scripts require pinned Python dependencies in
 [`requirements.txt`](requirements.txt). The optional benchmark C targets require
 `LEADERBOARD_BUILD_BENCHMARKS=ON`.
