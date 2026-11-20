@@ -5,9 +5,9 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-find_package(Leaderboard 3.1.1 CONFIG REQUIRED)
+find_package(CentralRankingDogma 3.1.3 CONFIG REQUIRED)
 add_executable(leaderboard_external_consumer main.c)
-target_link_libraries(leaderboard_external_consumer PRIVATE Leaderboard::leaderboard)
+target_link_libraries(leaderboard_external_consumer PRIVATE CentralRankingDogma::central_ranking_dogma)
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(leaderboard_external_consumer PRIVATE -Wall -Wextra -Werror -pedantic-errors)

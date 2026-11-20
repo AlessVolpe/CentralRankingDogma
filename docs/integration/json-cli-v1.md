@@ -16,7 +16,7 @@ background jobs, request timeouts and displaying decimal fantasy scores.
 An installed `leaderboard-json` **Linux executable** supplies stateless,
 validated access to the existing ISO C11 computational library. No Python,
 JSON, container or database dependency is introduced in the installed
-`Leaderboard::leaderboard` static library. Windows remains a CI/test target.
+`CentralRankingDogma::central_ranking_dogma` static library. Windows remains a CI/test target.
 
 - The CLI accepts one JSON document from **stdin**, terminated by EOF.
 - It emits exactly one complete JSON envelope followed by `\n` to **stdout**;

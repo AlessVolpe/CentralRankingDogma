@@ -6,16 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ranking.h"
-#include "mtwister.h"
-#include "team.h"
-#include "competition.h"
-#include "standings.h"
-#include "calendar.h"
-#include "match.h"
-#include "season_resolution.h"
-#include "monte_carlo.h"
-#include "hashmap_typed.h"
+#include "central_ranking_dogma.h"
 
 HASHMAP_TYPED_DEFINE(external_score_map, char, int)
 

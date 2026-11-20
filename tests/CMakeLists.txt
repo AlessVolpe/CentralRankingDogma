@@ -1,30 +1,30 @@
 add_executable(test_hashmap test_hashmap.c)
-target_link_libraries(test_hashmap PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_hashmap PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_hashmap)
 add_test(NAME hashmap_smoke COMMAND test_hashmap)
 
 add_executable(test_hashmap_regressions test_hashmap_regressions.c)
-target_link_libraries(test_hashmap_regressions PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_hashmap_regressions PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_hashmap_regressions)
 add_test(NAME hashmap_regressions COMMAND test_hashmap_regressions)
 
 add_executable(test_hashmap_macros test_hashmap_macros.c)
-target_link_libraries(test_hashmap_macros PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_hashmap_macros PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_hashmap_macros)
 add_test(NAME hashmap_typed_macros COMMAND test_hashmap_macros)
 
 add_executable(test_bostree test_bostree.c)
-target_link_libraries(test_bostree PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_bostree PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_bostree)
 add_test(NAME bostree_smoke COMMAND test_bostree)
 
 add_executable(test_bostree_invariants test_bostree_invariants.c)
-target_link_libraries(test_bostree_invariants PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_bostree_invariants PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_bostree_invariants)
 add_test(NAME bostree_invariants COMMAND test_bostree_invariants)
 
 add_executable(test_bostree_deletion test_bostree_deletion.c)
-target_link_libraries(test_bostree_deletion PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_bostree_deletion PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_bostree_deletion)
 add_test(NAME bostree_deletion COMMAND test_bostree_deletion)
 
@@ -57,12 +57,12 @@ add_test(NAME leaderboard_cli_incomplete_input COMMAND ${CMAKE_COMMAND}
 
 # 3.0.5: deterministic ranking API and independent reference-model tests.
 add_executable(test_ranking test_ranking.c)
-target_link_libraries(test_ranking PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_ranking PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_ranking)
 add_test(NAME ranking_regressions COMMAND test_ranking)
 
 add_executable(test_ranking_differential test_ranking_differential.c)
-target_link_libraries(test_ranking_differential PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_ranking_differential PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_ranking_differential)
 add_test(NAME ranking_differential COMMAND test_ranking_differential)
 
@@ -74,7 +74,7 @@ target_include_directories(test_bostree_deletion PRIVATE
     ${PROJECT_SOURCE_DIR}/src/internal)
 
 add_executable(test_bostree_public_api test_bostree_public_api.c)
-target_link_libraries(test_bostree_public_api PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_bostree_public_api PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_bostree_public_api)
 add_test(NAME bostree_public_api COMMAND test_bostree_public_api)
 
@@ -83,7 +83,7 @@ target_include_directories(test_hashmap_regressions PRIVATE
     ${PROJECT_SOURCE_DIR}/src/internal)
 
 add_executable(test_hashmap_public_api test_hashmap_public_api.c)
-target_link_libraries(test_hashmap_public_api PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_hashmap_public_api PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_hashmap_public_api)
 add_test(NAME hashmap_public_api COMMAND test_hashmap_public_api)
 
@@ -93,7 +93,7 @@ set_target_properties(test_hashmap test_hashmap_macros test_hashmap_public_api
 
 # New C11 typed wrappers never cast between incompatible function pointer types.
 add_executable(test_hashmap_portable test_hashmap_portable.c)
-target_link_libraries(test_hashmap_portable PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_hashmap_portable PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_hashmap_portable)
 set_target_properties(test_hashmap_portable PROPERTIES C_EXTENSIONS OFF)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -152,14 +152,14 @@ add_test(NAME allocation_failure_matrix COMMAND test_failure_matrix)
 
 # Malformed inputs and boundary-value behavior on the supported public API.
 add_executable(test_api_edges test_api_edges.c)
-target_link_libraries(test_api_edges PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_api_edges PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_api_edges)
 add_test(NAME api_adversarial_edges COMMAND test_api_edges)
 
 # Identical input-driven state machines serve both CTest and optional libFuzzer.
 foreach (container IN ITEMS hashmap bostree)
     add_executable(test_fuzz_${container} fuzz_${container}.c)
-    target_link_libraries(test_fuzz_${container} PRIVATE Leaderboard::leaderboard)
+    target_link_libraries(test_fuzz_${container} PRIVATE CentralRankingDogma::central_ranking_dogma)
     target_include_directories(test_fuzz_${container} PRIVATE
         ${PROJECT_SOURCE_DIR}/src/internal)
     leaderboard_apply_dev_options(test_fuzz_${container})
@@ -230,7 +230,7 @@ endif ()
 
 # 3.0.9: frozen historical MTwister vectors and published MT19937 vectors.
 add_executable(test_mtwister_vectors test_mtwister_vectors.c)
-target_link_libraries(test_mtwister_vectors PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_mtwister_vectors PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_mtwister_vectors)
 set_target_properties(test_mtwister_vectors PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME mtwister_reference_vectors COMMAND test_mtwister_vectors)
@@ -241,7 +241,7 @@ add_test(NAME ranking_batch_example COMMAND leaderboard_ranking_batch)
 # Standalone ISO C11 translation units for installed public headers.
 # In contrast to a combined include test, this also catches missing headers.
 foreach (header IN ITEMS
-        bostree commons hashmap_base hashmap_typed mtwister team competition standings calendar ranking match season_resolution monte_carlo)
+        central_ranking_dogma bostree commons hashmap_base hashmap_typed mtwister team competition standings calendar ranking match season_resolution monte_carlo)
     add_library(header_c11_${header} OBJECT test_public_header_c11.c)
     target_include_directories(header_c11_${header} PRIVATE ${PROJECT_SOURCE_DIR}/include)
     target_compile_definitions(header_c11_${header} PRIVATE
@@ -255,13 +255,13 @@ endforeach()
 
 # 3.0.11 team/UUID contract and the full user-provided fixture regression.
 add_executable(test_team test_team.c)
-target_link_libraries(test_team PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_team PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_team)
 set_target_properties(test_team PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME team_model_contract COMMAND test_team)
 
 add_executable(test_competition test_competition.c)
-target_link_libraries(test_competition PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_competition PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_competition)
 set_target_properties(test_competition PROPERTIES C_EXTENSIONS OFF)
 target_compile_definitions(test_competition PRIVATE
@@ -287,7 +287,7 @@ add_test(NAME leaderboard_cli_team_names COMMAND ${CMAKE_COMMAND}
 
 # 3.0.11: reusable mutable W/D/L and championship-points state.
 add_executable(test_standings test_standings.c)
-target_link_libraries(test_standings PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_standings PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_standings)
 set_target_properties(test_standings PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME standings_contract COMMAND test_standings)
@@ -304,7 +304,7 @@ add_test(NAME standings_failure_contract COMMAND test_standings_failures)
 
 # 3.0.12: fixture permutations and strict rematch cooldown.
 add_executable(test_calendar test_calendar.c)
-target_link_libraries(test_calendar PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_calendar PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_calendar)
 set_target_properties(test_calendar PROPERTIES C_EXTENSIONS OFF)
 target_compile_definitions(test_calendar PRIVATE
@@ -323,20 +323,20 @@ add_test(NAME calendar_permutation_failures COMMAND test_calendar_failures)
 
 # 3.0.12: empirical seeded-sampling diagnostics, not a uniformity guarantee.
 add_executable(test_calendar_sampling test_calendar_sampling.c)
-target_link_libraries(test_calendar_sampling PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_calendar_sampling PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_calendar_sampling)
 set_target_properties(test_calendar_sampling PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME calendar_sampling_diagnostics COMMAND test_calendar_sampling)
 
 # 3.1.0: public pure rules and match-by-match scientific regression.
 add_executable(test_match test_match.c)
-target_link_libraries(test_match PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_match PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_match)
 set_target_properties(test_match PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME match_contract COMMAND test_match)
 
 add_executable(test_season_resolution test_season_resolution.c)
-target_link_libraries(test_season_resolution PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_season_resolution PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_season_resolution)
 set_target_properties(test_season_resolution PROPERTIES C_EXTENSIONS OFF)
 target_compile_definitions(test_season_resolution PRIVATE
@@ -355,7 +355,7 @@ add_test(NAME season_resolution_failures COMMAND test_resolution_failures)
 
 # 3.1.2 PR A: scalar API compatibility and custom-key reference model.
 add_executable(test_ranking_custom test_ranking_custom.c)
-target_link_libraries(test_ranking_custom PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_ranking_custom PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_ranking_custom)
 set_target_properties(test_ranking_custom PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME ranking_custom_differential COMMAND test_ranking_custom)
@@ -370,7 +370,7 @@ set_target_properties(test_ranking_custom_failures PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME ranking_custom_failures COMMAND test_ranking_custom_failures)
 
 add_executable(test_ranking_backends test_ranking_backends.c)
-target_link_libraries(test_ranking_backends PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_ranking_backends PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_ranking_backends)
 set_target_properties(test_ranking_backends PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME ranking_backend_equivalence COMMAND test_ranking_backends)
@@ -386,7 +386,7 @@ add_test(NAME ranking_backend_failures COMMAND test_ranking_backends_failures)
 
 # 3.1.1: reproducible batches, directed prefix uniqueness, CSV, cancellation.
 add_executable(test_monte_carlo test_monte_carlo.c)
-target_link_libraries(test_monte_carlo PRIVATE Leaderboard::leaderboard)
+target_link_libraries(test_monte_carlo PRIVATE CentralRankingDogma::central_ranking_dogma)
 leaderboard_apply_dev_options(test_monte_carlo)
 set_target_properties(test_monte_carlo PROPERTIES C_EXTENSIONS OFF)
 add_test(NAME monte_carlo_contract COMMAND test_monte_carlo)

@@ -17,7 +17,7 @@ The principal Mermaid dependency diagram is in the [root README](../../README.md
 | Season resolution | `season_resolution.h` | Owns independently resolved fixtures, standings and deterministic ranks |
 | Monte Carlo experiments | `monte_carlo.h` | Owns batch statistics and independent baseline; streams CSV, optionally tracks exact schedule identities |
 
-The CMake build combines distinct object modules into a single installed static target `Leaderboard::leaderboard`. These components are **not independently installed libraries**. The original CLI is an example consumer and is not part of the research simulator.
+The CMake build combines distinct object modules into a single installed static target `CentralRankingDogma::central_ranking_dogma`. These components are **not independently installed libraries**. The original CLI is an example consumer and is not part of the research simulator.
 
 ## Ownership map
 
