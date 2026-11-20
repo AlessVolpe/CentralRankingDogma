@@ -25,10 +25,10 @@
 #endif
 
 #ifndef LEADERBOARD_ENGINE_VERSION
-#define LEADERBOARD_ENGINE_VERSION "3.1.2"
+#define LEADERBOARD_ENGINE_VERSION "3.1.3"
 #endif
 #ifndef LEADERBOARD_ENGINE_ID
-#define LEADERBOARD_ENGINE_ID "3.1.2-json-v1"
+#define LEADERBOARD_ENGINE_ID "3.1.3-json-v1"
 #endif
 
 #define INPUT_LIMIT (4U * 1024U * 1024U)
@@ -697,6 +697,12 @@ int main(int argc, char **argv) {
     cli_t c={0};
     simulation_csv_t csv={0};
     const char *observations_destination=NULL;
+    /* A metadata query is the sole plain-text exception to JSON CLI v1. */
+    if(argc==2 && strcmp(argv[1],"--version")==0) {
+        if(printf("leaderboard-json %s\n",LEADERBOARD_ENGINE_VERSION)<0 ||
+           fflush(stdout)!=0)return 5;
+        return 0;
+    }
 #if defined(_WIN32)
     /* Windows CRT text mode otherwise rewrites JSON LF bytes to CRLF. */
     if(_setmode(_fileno(stdin),_O_BINARY)==-1 ||

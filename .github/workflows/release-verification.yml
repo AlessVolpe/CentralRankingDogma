@@ -32,6 +32,11 @@ jobs:
           ./build-release/leaderboard_bench 10000 3 > benchmark-10000.csv
       - name: Install library into a disposable prefix
         run: cmake --install build-release --prefix "$PWD/stage"
+      - name: Verify installed JSON CLI through independent Python subprocess
+        run: |
+          test -x "$PWD/stage/bin/leaderboard-json"
+          LEADERBOARD_INSTALLED_JSON_BINARY="$PWD/stage/bin/leaderboard-json" \
+            python3 -m unittest discover -s tests -p test_installed_json_consumer.py -v
       - name: Configure and build independent package consumer
         run: |
           cmake -S examples/external_consumer -B build-consumer -G Ninja \

@@ -29,10 +29,14 @@ JSON, container or database dependency is introduced in the installed
 - The Python caller controls the subprocess lifetime, arguments, temporary
   files, container limits and process reaping. No web server is implemented here.
 
-PR B creates the `leaderboard-json` CMake executable for build-tree use.
-Linux installation, the Python subprocess consumer and `--version` behavior
-are PR D scope. Containerization belongs to the future Python worker, not the
-standalone native executable.
+PR D installs `leaderboard-json` under the CMake runtime bindir (normally
+`bin`), and provides a standalone Python subprocess consumer. The command
+`leaderboard-json --version` exits zero and prints
+`leaderboard-json 3.1.3` followed by LF to stdout, with empty stderr and no
+stdin request. It is the **only** non-JSON stdout success mode. The JSON wire
+schema remains `1.0` independent of the native 3.1.3 package version.
+Containerization belongs to the future Python worker, not the standalone
+native executable.
 
 ## 2. Versioning, schemas and serialization
 

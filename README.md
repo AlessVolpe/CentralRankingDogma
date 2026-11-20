@@ -4,7 +4,7 @@
 
 **An ISO C11 library for ranking, validated Fantacalcio competitions, and constrained calendar experiments.** The implementation is designed both as a reusable developer dependency and as a reproducible foundation for scientific evaluation. It is developed alongside, but independently of, the planned Python application.
 
-**Current native version:** 3.1.2. The composite-key AVL backend and [controlled research toolkit](research/README.md) are implemented. The [published 3.1.2 evaluation](docs/research/results-3.1.2.md) records ranking, process-wide memory, and synthetic-calendar outcomes from a clean Release build, with limitations stated explicitly. The original heapsort remains the default. External integration contracts are planned for 3.1.3.
+**Current native version:** 3.1.3 (PR D candidate). The composite-key AVL backend and [controlled research toolkit](research/README.md) remain available, with [published 3.1.2 evaluation](docs/research/results-3.1.2.md). The default ranking backend is heapsort. The separately installed `leaderboard-json` executable exposes JSON CLI v1 (`validate`, `generate`, `resolve`, `simulate`); the native library remains JSON-free. See [integration contract](docs/integration/json-cli-v1.md) and [packaging](docs/development/packaging.md).
 
 ## Read the research or use the library
 
@@ -116,7 +116,7 @@ Separate standings have the invariant $P_{\mathrm{league}}=3W+D$, whereas the or
 <details>
 <summary>What the library does not yet do</summary>
 
-It does not reconstruct footballer bonus/malus, integrate with a database, provide a Python web application, guarantee uniform scheduling samples, or produce thesis-level statistical inference. `calendar_t` generates fixtures, `season_resolve()` evaluates them, and `monte_carlo_run()` aggregates batches. JSON/external integration remains planned for 3.1.3.
+It does not reconstruct footballer bonus/malus, integrate with a database, provide a Python web application, guarantee uniform scheduling samples, or produce thesis-level statistical inference. `calendar_t` generates fixtures, `season_resolve()` evaluates them, and `monte_carlo_run()` aggregates batches. The versioned JSON subprocess transport is implemented in 3.1.3; the Python web application remains outside this repository.
 
 </details>
 
@@ -130,7 +130,12 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-The exported static-library target is `Leaderboard::leaderboard`. Use [building](docs/development/building.md) for Linux and Windows UCRT64, sanitizers, and Release configurations; use [packaging](docs/development/packaging.md) for installed consumers. The CLI is an educational example, not the Fantacalcio simulator.
+The installed static-library target is `Leaderboard::leaderboard`. The
+installed `leaderboard-json` executable is a separate subprocess integration
+surface. `leaderboard-json --version` prints the native package version.
+See [building](docs/development/building.md) for Linux and Windows UCRT64,
+sanitizers and Release configurations; see [packaging](docs/development/packaging.md)
+for installed consumers. The educational `leaderboard_cli` remains separate.
 
 ## Reproducibility and history
 

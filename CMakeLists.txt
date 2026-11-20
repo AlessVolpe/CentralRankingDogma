@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(leaderboardsystem VERSION 3.1.2 LANGUAGES C)
+project(leaderboardsystem VERSION 3.1.3 LANGUAGES C)
 
 include(CTest)
 include(GNUInstallDirs)
@@ -242,6 +242,9 @@ endif ()
 
 # Build-tree consumers keep using Leaderboard::leaderboard; installed consumers
 # get the same target via find_package(Leaderboard CONFIG REQUIRED).
+# The JSON transport remains a separate executable, not an exported C library.
+install(TARGETS leaderboard_json
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 install(TARGETS leaderboard EXPORT LeaderboardTargets
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
