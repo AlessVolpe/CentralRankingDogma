@@ -40,6 +40,7 @@ GitHub Markdown is the canonical documentation source for the **3.1.3 native C11
 
 - [Canonical roadmap](roadmap.md), [individual milestones](milestones/) and [repository ownership map](development/repository-layout.md)
 - [Documentation standards](STYLE_GUIDE.md) and [CI instructions](development/documentation.md)
+- [Automated native releases](development/release-automation.md) and [release verification](development/local-verification.md)
 - [Human-readable references](bibliography.md) and [central BibTeX](references.bib)
 - [Unmodified historical snapshots](archive/README.md), retained to prevent silent loss of earlier scientific and implementation material
 
