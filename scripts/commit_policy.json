@@ -7,7 +7,7 @@
     "actions", "api", "benchmarks", "bostree", "calendar", "cli", "cmake",
     "commits", "competition", "contributing", "core", "deps", "docs",
     "domain", "evaluation", "fuzzing", "hashmap", "integration", "license",
-    "linux", "match", "packaging", "prng", "ranking", "readme", "release",
+    "linux", "match", "milestones", "packaging", "prng", "ranking", "readme", "release",
     "repo", "research", "sampling", "security", "serialization",
     "simulation", "standings", "statistics", "team", "testing", "tooling",
     "windows"
