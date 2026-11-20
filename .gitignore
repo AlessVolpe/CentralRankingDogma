@@ -109,7 +109,3 @@ htmlcov/
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
-# Temporary milestone delivery packages
-/LeaderboardSystem-*.zip
-/LeaderboardSystem-*-APPLY.md
